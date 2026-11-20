@@ -87,9 +87,9 @@
       <div class="flex items-center gap-2">
 
         <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-xs">
-          <button type="button" onclick="setAppFontSize('normal')" id="fontBtnNormal" class="px-2 py-1 rounded text-slate-300 font-bold hover:text-white transition" title="標準字體">A</button>
-          <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition text-sm" title="大字體">A+</button>
-          <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition text-base" title="特大字體">A++</button>
+          <button type="button" onclick="setAppFontSize('normal')" id="fontBtnNormal" class="px-2 py-1 rounded text-slate-300 font-bold hover:text-white transition" title="標準 18px">18</button>
+          <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="放大 20px">20</button>
+          <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="特大 22px">22</button>
         </div>
         <button onclick="loadFullAdminData()" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
           <i class="fa-solid fa-rotate-right" id="adminRefreshIcon"></i>
@@ -430,15 +430,15 @@
                 <div class="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/70">
                   <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">標準</span>
-                    <span class="text-xs font-black">14px</span>
+                    <span class="text-xs font-black">18px</span>
                   </button>
                   <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
-                    <span class="text-[10px] opacity-85">預設推薦</span>
-                    <span class="text-xs font-black">15px</span>
+                    <span class="text-[10px] opacity-85">放大</span>
+                    <span class="text-xs font-black">20px</span>
                   </button>
                   <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
-                    <span class="text-[10px] opacity-75">放大</span>
-                    <span class="text-xs font-black">17px</span>
+                    <span class="text-[10px] opacity-75">特大</span>
+                    <span class="text-xs font-black">22px</span>
                   </button>
                 </div>
               </div>
@@ -457,18 +457,18 @@
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/70">
-                  <input type="hidden" id="settingDefaultFontSize" value="large">
+                  <input type="hidden" id="settingDefaultFontSize" value="normal">
                   <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">標準</span>
-                    <span class="text-xs font-black">14px</span>
+                    <span class="text-xs font-black">18px</span>
                   </button>
                   <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
-                    <span class="text-[10px] opacity-85">預設推薦</span>
-                    <span class="text-xs font-black">15px</span>
+                    <span class="text-[10px] opacity-85">放大</span>
+                    <span class="text-xs font-black">20px</span>
                   </button>
                   <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
-                    <span class="text-[10px] opacity-75">放大</span>
-                    <span class="text-xs font-black">17px</span>
+                    <span class="text-[10px] opacity-75">特大</span>
+                    <span class="text-xs font-black">22px</span>
                   </button>
                 </div>
               </div>
@@ -726,21 +726,23 @@
     let API_URL = "";
     localStorage.removeItem("appsheet_gas_api");
 
-    // 管理後台永久字級設定 (全面放大三號，頂部與設定頁同步聯動)
+    // 管理後台字級設定 (手機版標準 18px，提供 18, 20, 22 縮放選項)
     function setAppFontSize(size, save = true) {
       if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
-        size = "large";
+        size = "normal"; // 預設標準 18px
       }
 
       const isDesktop = window.innerWidth >= 768;
-      const base = isDesktop ? 16 : 15;
-      let fs = base + "px";
-      if (size === "xlarge") {
-        fs = (base + 2) + "px";
-      } else if (size === "normal") {
-        fs = (base - 1) + "px";
+      let fs = "18px";
+      if (isDesktop) {
+        if (size === "xlarge") fs = "20px";
+        else if (size === "large") fs = "18px";
+        else fs = "16px";
       } else {
-        fs = base + "px";
+        // 手機版：標準 18px, 20px, 22px
+        if (size === "xlarge") fs = "22px";
+        else if (size === "large") fs = "20px";
+        else fs = "18px";
       }
 
       document.documentElement.style.setProperty("--app-font-size", fs);
@@ -1732,9 +1734,9 @@
       }
 
       // 永久讀取管理後台字級與前台預設字級
-      const savedAdminFont = localStorage.getItem("admin_app_font_size") || "large";
+      const savedAdminFont = localStorage.getItem("admin_app_font_size") || "normal";
       setAppFontSize(savedAdminFont, false);
-      const savedClientDefFont = localStorage.getItem("appsheet_default_fontsize") || "large";
+      const savedClientDefFont = localStorage.getItem("appsheet_default_fontsize") || "normal";
       setClientDefaultFont(savedClientDefFont);
       
       
