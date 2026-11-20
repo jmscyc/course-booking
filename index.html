@@ -9,6 +9,12 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --client-font-size: 18px;
+    }
+    html {
+      font-size: var(--client-font-size) !important;
+    }
     body {
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -23,6 +29,18 @@
       -webkit-backdrop-filter: blur(12px);
     }
   </style>
+  <script>
+    // 立即生效防閃爍：在頁面渲染前讀取永久保存的學員前台字級
+    (function() {
+      // 優先序：訪客個人自選設定 > 管理者統一設定的預設值 > 系統預設大字體 (large)
+      var adminDef = localStorage.getItem("appsheet_default_fontsize") || "large";
+      var saved = localStorage.getItem("client_user_font_size") || adminDef;
+      var fs = "18px";
+      if (saved === "xlarge") fs = "21px";
+      else if (saved === "normal") fs = "16px";
+      document.documentElement.style.setProperty("--client-font-size", fs);
+    })();
+  </script>
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
@@ -220,7 +238,7 @@
   <script>
     /**
      * 後端 API 連線設定
-     * 預設提供內建模擬模式（Demo Mode），只要部署好 Google Apps Script，將產生的 Web App URL 替換此變數即可直接連上真實 Google Sheets！
+     * 預設提供內建模擬模式（Demo Mode），部署後端 API 即可全自動連線！
      */
     let API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
 
@@ -235,22 +253,27 @@
       const bXLarge = document.getElementById("clientFontXLarge");
 
       [bNormal, bLarge, bXLarge].forEach(b => {
-        if (b) b.className = "px-1.5 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition";
+        if (b) b.className = "px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition";
       });
 
-      if (size === "large") {
-        document.documentElement.style.fontSize = "18px";
-        if (bLarge) bLarge.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-base shadow-sm";
-      } else if (size === "xlarge") {
-        document.documentElement.style.fontSize = "21px";
+      let fs = "18px";
+      if (size === "xlarge") {
+        fs = "21px";
         if (bXLarge) bXLarge.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-lg shadow-sm";
-      } else {
-        document.documentElement.style.fontSize = "16px";
+      } else if (size === "normal") {
+        fs = "16px";
         if (bNormal) bNormal.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-sm shadow-sm";
+      } else {
+        size = "large";
+        fs = "18px";
+        if (bLarge) bLarge.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-base shadow-sm";
       }
 
+      document.documentElement.style.setProperty("--client-font-size", fs);
+      document.documentElement.style.fontSize = fs;
+
       if (save) {
-        localStorage.setItem("user_font_size", size);
+        localStorage.setItem("client_user_font_size", size);
       }
     }
 
