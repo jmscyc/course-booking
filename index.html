@@ -15,10 +15,10 @@
     html {
       font-size: var(--client-font-size) !important;
     }
-    /* 平板與桌機筆電端 (>= 768px)：字級自動調至 16px，大氣舒適 */
+    /* 平板與桌機筆電端 (>= 768px)：字級自動調至 16.5px，大氣舒適 */
     @media (min-width: 768px) {
       :root {
-        --client-font-size: 16px;
+        --client-font-size: 16.5px;
       }
       /* 強制覆蓋確保多欄網格不受任何 Tailwind 快取影響 */
       #courseContainer {
@@ -30,7 +30,7 @@
     /* 桌上型電腦大螢幕 (>= 1024px)：自動切換為三欄 (3 欄) 寬版視野 */
     @media (min-width: 1024px) {
       :root {
-        --client-font-size: 16.5px;
+        --client-font-size: 17px;
       }
       #courseContainer {
         display: grid !important;
@@ -57,10 +57,10 @@
     }
   </style>
   <script>
-    // 立即生效防閃爍：手機與桌機自動區分基準字級
+    // 立即生效防閃爍：手機與桌機自動區分基準字級 (舒適可讀，不縮太小)
     (function() {
       var isDesktop = window.innerWidth >= 768;
-      var base = isDesktop ? 16 : 14;
+      var base = isDesktop ? 16.5 : 15.5;
       var adminDef = localStorage.getItem("appsheet_default_fontsize") || "large";
       var saved = localStorage.getItem("client_user_font_size") || adminDef;
       var fs = base + "px";
@@ -92,9 +92,10 @@
       </div>
       <div class="flex items-center gap-2">
         <!-- 學員自主查預約按鈕 -->
-        <button type="button" onclick="openMyBookingsModal()" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1.5 border border-blue-200/60 shadow-sm">
+        <button type="button" onclick="openMyBookingsModal()" class="px-2.5 sm:px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1 border border-blue-200/60 shadow-sm whitespace-nowrap shrink-0">
           <i class="fa-solid fa-ticket text-blue-500 text-xs"></i>
-          <span>查詢我的預約</span>
+          <span class="hidden xs:inline sm:inline">查詢預約</span>
+          <span class="xs:hidden sm:hidden">查預約</span>
         </button>
         <!-- 字體縮放按鈕 -->
         <div class="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-xs">
@@ -112,16 +113,7 @@
   <!-- 主內容容器 -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5">
 
-    <!-- 頂部公告橫幅 -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/80 rounded-2xl p-3.5 mb-4 flex items-start gap-3 shadow-sm">
-      <div class="text-blue-600 text-lg mt-0.5">
-        <i class="fa-solid fa-circle-info"></i>
-      </div>
-      <div class="text-xs text-blue-900 leading-relaxed">
-        <p class="font-bold mb-0.5">預約須知：</p>
-        <p id="announcementText">選擇您喜歡的時段即可登記報名，早鳥優惠名額有限，額滿即止。完成報名後請於備註填寫匯款末五碼方便對帳！</p>
-      </div>
-    </div>
+
 
     <!-- 日期篩選 Tab -->
     <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3" id="dateFilterTabs">
@@ -173,8 +165,8 @@
   </main>
 
   <!-- 報名表單彈出視窗 (Modal) -->
-  <div id="bookingModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl transform transition-transform border border-slate-100">
+  <div id="bookingModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity p-0 sm:p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl transform transition-transform border border-slate-100 max-h-[92vh] sm:max-h-[88vh] overflow-y-auto my-auto">
       
       <!-- Modal 標題列 -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
@@ -337,7 +329,7 @@
       });
 
       const isDesktop = window.innerWidth >= 768;
-      const base = isDesktop ? 16 : 14;
+      const base = isDesktop ? 16.5 : 15.5;
       let fs = base + "px";
       if (size === "xlarge") {
         fs = (base + 2) + "px";
