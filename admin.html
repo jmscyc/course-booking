@@ -309,44 +309,63 @@
           </div>
         </div>
 
-        <!-- 視圖 A: 學員報名次數統計表 (誰報名了幾次) -->
-        <div id="historyStudentsContainer" class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80">
-              <tr>
-                <th class="px-4 py-3">排行</th>
-                <th class="px-4 py-3">學員姓名</th>
-                <th class="px-4 py-3">聯絡電話</th>
-                <th class="px-4 py-3">Line ID</th>
-                <th class="px-4 py-3 text-center">報名累積次數</th>
-                <th class="px-4 py-3">報名過的課程與時段記錄</th>
-              </tr>
-            </thead>
-            <tbody id="historyStudentsTableBody" class="divide-y divide-slate-100">
-              <!-- 動態渲染 -->
-            </tbody>
-          </table>
+        <!-- 視圖 A: 學員報名次數統計 (誰報名了幾次) -->
+        <div id="historyStudentsContainer" class="space-y-4">
+          <!-- 手機版專屬學員統計卡片 (md:hidden) -->
+          <div id="historyStudentsMobileContainer" class="md:hidden space-y-3">
+            <!-- 手機專用卡片動態渲染 -->
+          </div>
+
+          <!-- 電腦版學員統計表格 (hidden md:block) -->
+          <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-200/80">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
+                <tr>
+                  <th class="px-4 py-3">排行</th>
+                  <th class="px-4 py-3">學員姓名</th>
+                  <th class="px-4 py-3">聯絡電話</th>
+                  <th class="px-4 py-3">Line ID</th>
+                  <th class="px-4 py-3 text-center">報名累積次數</th>
+                  <th class="px-4 py-3">報名過的課程與時段記錄</th>
+                  <th class="px-4 py-3 text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="historyStudentsTableBody" class="divide-y divide-slate-100">
+                <!-- 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- 視圖 B: 完整過往報名明細表 -->
-        <div id="historyRecordsContainer" class="overflow-x-auto hidden">
-          <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80">
-              <tr>
-                <th class="px-4 py-3">報名日期時間</th>
-                <th class="px-4 py-3">課程名稱 (編號)</th>
-                <th class="px-4 py-3">學員姓名</th>
-                <th class="px-4 py-3">聯絡電話</th>
-                <th class="px-4 py-3">Line ID</th>
-                <th class="px-4 py-3 text-center">匯款五碼 / 付款</th>
-                <th class="px-4 py-3">備註需求</th>
-                <th class="px-4 py-3 text-center">簽到狀態</th>
-              </tr>
-            </thead>
-            <tbody id="historyRecordsTableBody" class="divide-y divide-slate-100">
-              <!-- 動態渲染 -->
-            </tbody>
-          </table>
+        <!-- 視圖 B: 完整過往報名明細 (支援所有欄位修改與管理備註) -->
+        <div id="historyRecordsContainer" class="space-y-4 hidden">
+          <!-- 手機版專屬過往報名紀錄卡片 (md:hidden) -->
+          <div id="historyRecordsMobileContainer" class="md:hidden space-y-3">
+            <!-- 手機專用卡片動態渲染 -->
+          </div>
+
+          <!-- 電腦版過往報名紀錄表格 (hidden md:block) -->
+          <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-200/80">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
+                <tr>
+                  <th class="px-3.5 py-3 whitespace-nowrap">報名日期時間</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap">課程名稱</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap">學員姓名</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap">聯絡電話</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap">Line ID</th>
+                  <th class="px-3.5 py-3 text-center whitespace-nowrap">付款方式 / 五碼</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap max-w-[130px]">備註需求</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap max-w-[130px] text-amber-700 bg-amber-50/50">管理備註</th>
+                  <th class="px-3.5 py-3 text-center whitespace-nowrap">狀態</th>
+                  <th class="px-3.5 py-3 text-center whitespace-nowrap sticky right-0 bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">操作</th>
+                </tr>
+              </thead>
+              <tbody id="historyRecordsTableBody" class="divide-y divide-slate-100">
+                <!-- 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div id="noHistoryRow" class="hidden text-center py-8 text-xs text-slate-400">
@@ -3062,12 +3081,12 @@
       return Object.values(stats).sort((a, b) => b.count - a.count);
     }
 
-    // 渲染「過往報名與學員統計」區塊
+    // 渲染「過往報名與學員統計」區塊（支援手機專用卡片排版與內容修改功能）
     function renderHistorySection() {
       const studentStats = getStudentBookingStats();
       const query = (document.getElementById("historySearchInput")?.value || "").toLowerCase().trim();
 
-      // 更新指標
+      // 更新頂部指標
       document.getElementById("statHistoryStudentTotal").innerText = studentStats.length;
       document.getElementById("statHistoryBookingTotal").innerText = adminBookings.length;
       document.getElementById("statHistoryRepeatTotal").innerText = studentStats.filter(s => s.count >= 2).length;
@@ -3075,24 +3094,29 @@
         document.getElementById("historyStudentCountBadge").innerText = studentStats.length;
       }
 
-      // 1. 渲染學員統計表
-      const tbodyStudents = document.getElementById("historyStudentsTableBody");
       const noHistoryRow = document.getElementById("noHistoryRow");
 
-      const filteredStudents = studentStats.filter(s => 
-        s.name.toLowerCase().includes(query) ||
-        s.phone.includes(query) ||
-        s.line.toLowerCase().includes(query) ||
-        s.courses.some(c => c.courseTitle.toLowerCase().includes(query))
-      );
-
       if (currentHistorySubMode === "students") {
+        // 模式 A: 學員報名次數統計
+        const tbodyStudents = document.getElementById("historyStudentsTableBody");
+        const mContainer = document.getElementById("historyStudentsMobileContainer");
+
+        const filteredStudents = studentStats.filter(s => 
+          s.name.toLowerCase().includes(query) ||
+          s.phone.includes(query) ||
+          s.line.toLowerCase().includes(query) ||
+          s.courses.some(c => c.courseTitle.toLowerCase().includes(query))
+        );
+
         if (filteredStudents.length === 0) {
-          tbodyStudents.innerHTML = "";
+          if (tbodyStudents) tbodyStudents.innerHTML = "";
+          if (mContainer) mContainer.innerHTML = "";
           noHistoryRow.classList.remove("hidden");
         } else {
           noHistoryRow.classList.add("hidden");
-          let html = "";
+          let tHtml = "";
+          let mHtml = "";
+
           filteredStudents.forEach((s, idx) => {
             let rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${idx + 1}</span>`;
             if (idx === 0) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-amber-950 font-black text-xs shadow-sm">🥇</span>`;
@@ -3100,21 +3124,24 @@
             else if (idx === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white font-black text-xs shadow-sm">🥉</span>`;
 
             const repeatBadge = s.count >= 3
-              ? `<span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700">★ 核心忠實 (${s.count}次)</span>`
-              : (s.count === 2 ? `<span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">回流學員 (2次)</span>` : "");
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700">★ 核心忠實 (${s.count}次)</span>`
+              : (s.count === 2 ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">回流學員 (2次)</span>` : "");
 
+            // 桌機表格標籤
             const courseTags = s.courses.map(c => 
-              `<span class="inline-block bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] mr-1.5 mb-1 transition" title="${c.notes || ''}">
-                <span class="font-semibold">${c.courseTitle}</span>
-                <span class="text-slate-400 font-mono ml-1">(${c.date})</span>
-              </span>`
+              `<div class="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] mr-1.5 mb-1 transition">
+                <span class="font-bold">${c.courseTitle}</span>
+                <span class="text-slate-400 font-mono">(${c.date})</span>
+                ${c.bookingId ? `<button type="button" onclick="openEditBookingModal('${c.bookingId}')" class="text-blue-600 hover:text-blue-800 ml-1" title="修改此筆預約"><i class="fa-solid fa-pen text-[10px]"></i></button>` : ''}
+              </div>`
             ).join("");
 
-            html += `
+            // 電腦版 Table Row
+            tHtml += `
               <tr class="hover:bg-slate-50 transition">
                 <td class="px-4 py-3 text-center">${rankBadge}</td>
                 <td class="px-4 py-3">
-                  <div class="flex items-center">
+                  <div class="flex items-center gap-1.5">
                     <span class="font-bold text-slate-900">${s.name}</span>
                     ${repeatBadge}
                   </div>
@@ -3123,28 +3150,105 @@
                 <td class="px-4 py-3 text-slate-500 font-mono">${s.line}</td>
                 <td class="px-4 py-3 text-center font-black text-base text-blue-600">${s.count} 次</td>
                 <td class="px-4 py-3 max-w-md">${courseTags}</td>
+                <td class="px-4 py-3 text-center">
+                  ${s.courses[0] && s.courses[0].bookingId ? `
+                    <button type="button" onclick="openEditBookingModal('${s.courses[0].bookingId}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="編輯最新預約紀錄">
+                      <i class="fa-solid fa-pen text-blue-600"></i> 修改
+                    </button>
+                  ` : '-'}
+                </td>
               </tr>
             `;
+
+            // 手機版專屬統計卡片 (Mobile UI)
+            mHtml += `
+              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    ${rankBadge}
+                    <div>
+                      <h4 class="font-black text-slate-900 text-base leading-tight">${s.name}</h4>
+                      <p class="text-xs font-mono text-slate-500 mt-0.5">${s.phone}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="inline-block px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-xs border border-blue-200">
+                      累計 ${s.count} 次
+                    </span>
+                    <div class="mt-1">${repeatBadge}</div>
+                  </div>
+                </div>
+
+                <!-- 聯絡與社群按鈕 -->
+                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                  ${s.phone && s.phone !== "-" ? `
+                    <a href="tel:${s.phone}" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition">
+                      <i class="fa-solid fa-phone text-blue-600"></i>
+                      <span>通話</span>
+                    </a>
+                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無電話</div>'}
+
+                  ${s.line && s.line !== "-" ? `
+                    <a href="https://line.me/R/ti/p/~${s.line}" target="_blank" class="py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1.5 transition">
+                      <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
+                      <span class="truncate">${s.line}</span>
+                    </a>
+                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無 Line</div>'}
+                </div>
+
+                <!-- 參與過的課程時段清單與修改按鈕 -->
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
+                  <div class="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span><i class="fa-solid fa-clock-rotate-left mr-1 text-slate-400"></i>曾參與之課程歷史</span>
+                    <span class="text-[11px] text-slate-400 font-normal">點擊可直接修改</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    ${s.courses.map(c => `
+                      <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/70 text-xs">
+                        <div class="min-w-0 pr-2">
+                          <p class="font-bold text-slate-800 truncate">${c.courseTitle}</p>
+                          <p class="text-[10px] text-slate-400 font-mono mt-0.5">${c.date || ""}</p>
+                        </div>
+                        ${c.bookingId ? `
+                          <button type="button" onclick="openEditBookingModal('${c.bookingId}')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-pen text-blue-600 text-[10px]"></i>
+                            <span>修改</span>
+                          </button>
+                        ` : ''}
+                      </div>
+                    `).join("")}
+                  </div>
+                </div>
+              </div>
+            `;
           });
-          tbodyStudents.innerHTML = html;
+
+          if (tbodyStudents) tbodyStudents.innerHTML = tHtml;
+          if (mContainer) mContainer.innerHTML = mHtml;
         }
       } else {
-        // 渲染完整歷史預約清單
+        // 模式 B: 完整過往報名明細
         const tbodyRecords = document.getElementById("historyRecordsTableBody");
+        const mRecordsContainer = document.getElementById("historyRecordsMobileContainer");
+
         const filteredRecords = adminBookings.filter(b => 
           (b["學員姓名"] || "").toLowerCase().includes(query) ||
           (b["聯絡電話"] || "").includes(query) ||
           (b["課程名稱"] || "").toLowerCase().includes(query) ||
           (b["預約編號"] || "").toLowerCase().includes(query) ||
-          (b["備註需求"] || "").toLowerCase().includes(query)
+          (b["備註需求"] || "").toLowerCase().includes(query) ||
+          (b["管理備註"] || "").toLowerCase().includes(query)
         );
 
         if (filteredRecords.length === 0) {
-          tbodyRecords.innerHTML = "";
+          if (tbodyRecords) tbodyRecords.innerHTML = "";
+          if (mRecordsContainer) mRecordsContainer.innerHTML = "";
           noHistoryRow.classList.remove("hidden");
         } else {
           noHistoryRow.classList.add("hidden");
-          let html = "";
+          let tHtml = "";
+          let mHtml = "";
+
           filteredRecords.forEach(b => {
             const payCode = b["匯款五碼"] || "-";
             let payBadge = `<span class="text-slate-300">-</span>`;
@@ -3156,20 +3260,86 @@
               payBadge = `<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded text-[11px] font-mono font-black border border-blue-200 tracking-wider">${payCode}</span>`;
             }
 
-            html += `
+            // 電腦版 Table Row
+            tHtml += `
               <tr class="hover:bg-slate-50 transition">
-                <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
-                <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"]})</span></td>
-                <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
-                <td class="px-4 py-3 font-mono text-slate-600">${b["聯絡電話"]}</td>
-                <td class="px-4 py-3 text-slate-500 font-mono">${b["Line ID"] || "-"}</td>
-                <td class="px-4 py-3 text-center whitespace-nowrap">${payBadge}</td>
-                <td class="px-4 py-3 text-slate-600 max-w-xs break-words" title="${b["備註需求"] || ""}">${b["備註需求"] || "-"}</td>
-                <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span></td>
+                <td class="px-3.5 py-2.5 whitespace-nowrap font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
+                <td class="px-3.5 py-2.5 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"] || ""})</span></td>
+                <td class="px-3.5 py-2.5 font-bold text-slate-800">${b["學員姓名"]}</td>
+                <td class="px-3.5 py-2.5 font-mono text-slate-600">${b["聯絡電話"]}</td>
+                <td class="px-3.5 py-2.5 text-slate-500 font-mono">${b["Line ID"] || "-"}</td>
+                <td class="px-3.5 py-2.5 text-center whitespace-nowrap">${payBadge}</td>
+                <td class="px-3.5 py-2.5 text-slate-600 max-w-[130px] truncate" title="${b["備註需求"] || ""}">${b["備註需求"] || "-"}</td>
+                <td class="px-3.5 py-2.5 text-amber-800 bg-amber-50/40 max-w-[130px] truncate font-medium" title="${b["管理備註"] || ""}">${b["管理備註"] ? `<i class="fa-solid fa-lock text-[10px] text-amber-600 mr-1"></i>${b["管理備註"]}` : "-"}</td>
+                <td class="px-3.5 py-2.5 text-center"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span></td>
+                <td class="px-3.5 py-2.5 text-center sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">
+                  <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="修改此筆資料">
+                    <i class="fa-solid fa-pen text-blue-600"></i> 修改
+                  </button>
+                </td>
               </tr>
             `;
+
+            // 手機版專屬明細卡片 (Mobile UI)
+            mHtml += `
+              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <h4 class="font-black text-slate-900 text-base">${b["學員姓名"]}</h4>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-800 leading-snug">${b["課程名稱"]}</p>
+                    <p class="text-[11px] font-mono text-slate-400 mt-0.5">${b["報名時間"] || ""}</p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    ${payBadge}
+                  </div>
+                </div>
+
+                <!-- 聯絡電話與 Line ID -->
+                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                  ${b["聯絡電話"] ? `
+                    <a href="tel:${b["聯絡電話"]}" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition">
+                      <i class="fa-solid fa-phone text-blue-600"></i>
+                      <span>${b["聯絡電話"]}</span>
+                    </a>
+                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無電話</div>'}
+
+                  ${b["Line ID"] ? `
+                    <a href="https://line.me/R/ti/p/~${b["Line ID"]}" target="_blank" class="py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1.5 transition">
+                      <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
+                      <span class="truncate">${b["Line ID"]}</span>
+                    </a>
+                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無 Line</div>'}
+                </div>
+
+                <!-- 備註需求與管理備註 -->
+                ${b["備註需求"] ? `
+                  <div class="text-xs bg-slate-50 rounded-xl p-2.5 text-slate-600 border border-slate-100">
+                    <span class="font-bold text-slate-700"><i class="fa-solid fa-comment-dots text-slate-400 mr-1"></i>備註需求：</span>${b["備註需求"]}
+                  </div>
+                ` : ''}
+
+                ${b["管理備註"] ? `
+                  <div class="text-xs bg-amber-50/80 rounded-xl p-2.5 text-amber-900 border border-amber-200/80">
+                    <span class="font-bold text-amber-800"><i class="fa-solid fa-lock text-amber-600 mr-1"></i>管理備註：</span>${b["管理備註"]}
+                  </div>
+                ` : ''}
+
+                <!-- 手機修改按鈕 -->
+                <div class="pt-2 border-t border-slate-100 flex justify-end">
+                  <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="w-full py-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-pen text-blue-600"></i>
+                    <span>修改這筆過往預約記錄</span>
+                  </button>
+                </div>
+              </div>
+            `;
           });
-          tbodyRecords.innerHTML = html;
+
+          if (tbodyRecords) tbodyRecords.innerHTML = tHtml;
+          if (mRecordsContainer) mRecordsContainer.innerHTML = mHtml;
         }
       }
     }
