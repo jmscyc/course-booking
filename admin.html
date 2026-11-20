@@ -87,9 +87,9 @@
       <div class="flex items-center gap-2">
 
         <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-xs">
-          <button type="button" onclick="setAppFontSize('normal')" id="fontBtnNormal" class="px-2 py-1 rounded text-slate-300 font-bold hover:text-white transition" title="標準 18px">18</button>
-          <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="放大 20px">20</button>
-          <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="特大 22px">22</button>
+          <button type="button" onclick="setAppFontSize('normal')" id="fontBtnNormal" class="px-2 py-1 rounded text-slate-300 font-bold hover:text-white transition" title="標準字級">A</button>
+          <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="放大字級">A+</button>
+          <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition" title="特大字級">A++</button>
         </div>
         <button onclick="loadFullAdminData()" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
           <i class="fa-solid fa-rotate-right" id="adminRefreshIcon"></i>
@@ -450,15 +450,15 @@
                 <div class="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/70">
                   <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">標準</span>
-                    <span class="text-xs font-black">18px</span>
+                    <span class="text-xs font-black">A</span>
                   </button>
                   <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
                     <span class="text-[10px] opacity-85">放大</span>
-                    <span class="text-xs font-black">20px</span>
+                    <span class="text-xs font-black">A+</span>
                   </button>
                   <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">特大</span>
-                    <span class="text-xs font-black">22px</span>
+                    <span class="text-xs font-black">A++</span>
                   </button>
                 </div>
               </div>
@@ -480,15 +480,15 @@
                   <input type="hidden" id="settingDefaultFontSize" value="normal">
                   <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">標準</span>
-                    <span class="text-xs font-black">18px</span>
+                    <span class="text-xs font-black">A</span>
                   </button>
                   <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
                     <span class="text-[10px] opacity-85">放大</span>
-                    <span class="text-xs font-black">20px</span>
+                    <span class="text-xs font-black">A+</span>
                   </button>
                   <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
                     <span class="text-[10px] opacity-75">特大</span>
-                    <span class="text-xs font-black">22px</span>
+                    <span class="text-xs font-black">A++</span>
                   </button>
                 </div>
               </div>

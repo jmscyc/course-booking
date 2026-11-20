@@ -93,9 +93,9 @@
       <!-- 導航列右側：字級調整 + 查詢按鈕 + 重新整理 -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <div class="flex items-center bg-slate-100/90 rounded-lg p-0.5 border border-slate-200 text-xs">
-          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-2 py-0.5 rounded text-slate-600 font-bold hover:text-blue-600 transition" title="標準字級 18px">18</button>
-          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="放大字級 20px">20</button>
-          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="特大字級 22px">22</button>
+          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-2 py-0.5 rounded text-slate-600 font-bold hover:text-blue-600 transition" title="標準字級">A</button>
+          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="放大字級">A+</button>
+          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="特大字級">A++</button>
         </div>
         <button onclick="openMyBookingsModal()" class="px-2 sm:px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer whitespace-nowrap" title="查詢預約進度">
           <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
@@ -637,8 +637,48 @@
       }
     }
 
+    // 同步計算每門課程之報名人數與剩餘名額 (確保剩餘名額精確抓取，不出現 undefined)
+    function syncRemainingCounts() {
+      if (!Array.isArray(allCourses)) return;
+
+      // 取得共享預約資料
+      let bookings = [];
+      try {
+        const cachedBookings = localStorage.getItem("appsheet_shared_bookings");
+        if (cachedBookings) bookings = JSON.parse(cachedBookings);
+      } catch(e) {}
+
+      // 依課程統計有效預約數 (排除已取消)
+      const bookingCounts = {};
+      if (Array.isArray(bookings)) {
+        bookings.forEach(b => {
+          if (b["簽到狀態"] !== "已取消") {
+            const cid = String(b["課程編號"] || "");
+            if (cid) bookingCounts[cid] = (bookingCounts[cid] || 0) + 1;
+          }
+        });
+      }
+
+      allCourses.forEach(c => {
+        const capacity = Number(c.capacity) || 1;
+        const realCount = bookingCounts[String(c.id)] || 0;
+        const vCount = Number(c.virtualCount) || 0;
+        
+        // 若物件內原本已有 bookedCount 且無預約名冊紀錄，保留其數值，否則以實際名冊為準
+        let booked = realCount + vCount;
+        if (booked === 0 && typeof c.bookedCount === "number") {
+          booked = c.bookedCount;
+        }
+        
+        c.bookedCount = booked;
+        c.remaining = Math.max(0, capacity - booked);
+        c.isFull = c.remaining <= 0;
+      });
+    }
+
     // 渲染所有 UI 元素
     function renderUI() {
+      syncRemainingCounts();
       document.getElementById("loadingSkeleton").classList.add("hidden");
       
       // 產生日期頁籤
