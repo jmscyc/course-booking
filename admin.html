@@ -147,7 +147,7 @@
                 <th class="px-4 py-3">授課教練</th>
                 <th class="px-4 py-3">開課日期時間</th>
                 <th class="px-4 py-3">教室/地點</th>
-                <th class="px-4 py-3 text-center">人數上限 / 已報名</th>
+                <th class="px-4 py-3 text-center">已報名 / 人數上限</th>
                 <th class="px-4 py-3 text-center">狀態</th>
                 <th class="px-4 py-3 text-right">維護操作</th>
               </tr>
@@ -712,6 +712,33 @@
       try {
         customClassrooms = JSON.parse(savedClassrooms);
       } catch(e) {}
+    }
+
+    // 常用課程名稱範本（預設已完整匯入您現有所有真實課程類型）
+    let customCourseTitles = [
+      "❷ 學習：頌缽入門",
+      "❷ 學習：初進階整日班",
+      "❸ 學習：頌缽進階",
+      "❹ 團體頌缽音樂療癒"
+    ];
+    const savedTitles = localStorage.getItem("appsheet_course_titles");
+    if (savedTitles) {
+      try { customCourseTitles = JSON.parse(savedTitles); } catch(e) {}
+    }
+
+    // 常用課程說明 / 價位範本（預設已完整匯入您現有所有真實課程說明與定價）
+    let customCourseNotes = [
+      "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)",
+      "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)",
+      "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)",
+      "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $10000)",
+      "想學頌缽，照顧自己，幫助他人 (早鳥價 $9000 / 定價 $12000)",
+      "團體放鬆療癒體驗 (早鳥價 $800 / 定價 $1000)",
+      "私人專屬包班教學"
+    ];
+    const savedNotes = localStorage.getItem("appsheet_course_notes");
+    if (savedNotes) {
+      try { customCourseNotes = JSON.parse(savedNotes); } catch(e) {}
     }
 
     // 預設示範課程資料（已同步 AppSheet 真實課程清單）
@@ -1456,6 +1483,17 @@
       const savedAdminFont = localStorage.getItem("admin_app_font_size") || "large";
       setAppFontSize(savedAdminFont, false);
       document.getElementById("apiInput").value = API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" ? API_URL : "";
+      
+      // 將現有完整範本回填至系統設定畫面
+      if (document.getElementById("settingCourseTitles")) {
+        document.getElementById("settingCourseTitles").value = customCourseTitles.join("\n");
+      }
+      if (document.getElementById("settingCourseNotes")) {
+        document.getElementById("settingCourseNotes").value = customCourseNotes.join("\n");
+      }
+      if (document.getElementById("settingClassrooms")) {
+        document.getElementById("settingClassrooms").value = customClassrooms.join("\n");
+      }
       document.getElementById("adminPassInput").value = ADMIN_PASS;
       
       const tomorrow = new Date();
@@ -1828,9 +1866,43 @@
       tbody.innerHTML = html;
     }
 
+    // 渲染開課 Modal 中的「快速範本」下拉選單
+    function renderPresetOptions() {
+      const titleSelect = document.getElementById("formTitlePresetSelect");
+      if (titleSelect) {
+        let tHtml = `<option value="">-- 常用課程快速帶入 --</option>`;
+        customCourseTitles.forEach(t => {
+          tHtml += `<option value="${t}">${t}</option>`;
+        });
+        titleSelect.innerHTML = tHtml;
+      }
+
+      const notesSelect = document.getElementById("formNotesPresetSelect");
+      if (notesSelect) {
+        let nHtml = `<option value="">-- 常用說明快速帶入 --</option>`;
+        customCourseNotes.forEach(n => {
+          nHtml += `<option value="${n}">${n}</option>`;
+        });
+        notesSelect.innerHTML = nHtml;
+      }
+    }
+
+    function applyTitlePreset(val) {
+      if (val) {
+        document.getElementById("formTitle").value = val;
+      }
+    }
+
+    function applyNotesPreset(val) {
+      if (val) {
+        document.getElementById("formNotes").value = val;
+      }
+    }
+
     // 開啟課程 Modal (支援新增與編輯)
     function openCourseModal(courseId) {
       const modal = document.getElementById("courseModal");
+      renderPresetOptions();
       const titleEl = document.getElementById("courseModalTitle");
 
       if (courseId) {
