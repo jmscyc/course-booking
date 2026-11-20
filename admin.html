@@ -891,9 +891,9 @@
             "location": "台南安南醫院",
             "capacity": 1,
             "instructor": "霖霖",
-            "notes": "想學頌缽，照顧自己",
-            "earlyBirdPrice": "4000",
-            "regularPrice": "5000",
+            "notes": "想學頌缽，照顧自己，幫助他人",
+            "earlyBirdPrice": "9000",
+            "regularPrice": "12000",
             "status": "開啟報名"
       },
       {
@@ -905,7 +905,9 @@
             "location": "台北場地",
             "capacity": 8,
             "instructor": "霖霖",
-            "notes": "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)",
+            "notes": "想進階技能，運用頌缽",
+            "earlyBirdPrice": "4000",
+            "regularPrice": "5000",
             "status": "開啟報名"
       },
       {
@@ -917,7 +919,9 @@
             "location": "高雄-近高美館",
             "capacity": 8,
             "instructor": "霖霖",
-            "notes": "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)",
+            "notes": "學習整套頌缽使用方式",
+            "earlyBirdPrice": "8000",
+            "regularPrice": "12000",
             "status": "開啟報名"
       },
       {
@@ -929,7 +933,9 @@
             "location": "高雄-近高美館",
             "capacity": 8,
             "instructor": "霖霖",
-            "notes": "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $10000)",
+            "notes": "學習整套頌缽使用方式",
+            "earlyBirdPrice": "8000",
+            "regularPrice": "10000",
             "status": "開啟報名"
       },
       {
@@ -941,7 +947,9 @@
             "location": "高雄-近高美館",
             "capacity": 7,
             "instructor": "霖霖",
-            "notes": "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)",
+            "notes": "想進階技能，運用頌缽",
+            "earlyBirdPrice": "4000",
+            "regularPrice": "5000",
             "status": "開啟報名"
       },
       {
@@ -953,10 +961,12 @@
             "location": "台北場地",
             "capacity": 5,
             "instructor": "霖霖",
-            "notes": "想學頌缽，照顧自己 (早鳥價 $8000 / 定價 $12000)",
+            "notes": "想學頌缽，照顧自己",
+            "earlyBirdPrice": "8000",
+            "regularPrice": "12000",
             "status": "開啟報名"
       },
-      {
+{
             "id": "260420",
             "title": "❷ 學習：頌缽入門",
             "date": "2026-10-18",
@@ -1664,14 +1674,42 @@
       }
 ];
 
+    
+      // 自動清洗修復快取資料庫：若舊資料中價格混在 notes 裡，自動提取至 earlyBirdPrice / regularPrice
+      function normalizeCoursePrices(courseList) {
+        if (!Array.isArray(courseList)) return courseList;
+        return courseList.map(c => {
+          let notes = c.notes || "";
+          let eb = c.earlyBirdPrice || "";
+          let rg = c.regularPrice || "";
+          // 匹配類似 (早鳥價 $4000 / 定價 $5000) 或 （早鳥價 $8,000 / 定價 $12,000）
+          const match = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
+          if (match) {
+            if (!eb) eb = match[1].replace(/,/g, "");
+            if (!rg) rg = match[2].replace(/,/g, "");
+            notes = notes.replace(match[0], "").trim();
+          }
+          return {
+            ...c,
+            notes: notes,
+            earlyBirdPrice: eb,
+            regularPrice: rg
+          };
+        });
+      }
+
     document.addEventListener("DOMContentLoaded", () => {
       // 讀取共用資料庫中的課程與預約紀錄
       try {
         const sharedCourses = localStorage.getItem("appsheet_shared_courses");
         if (sharedCourses) {
           const parsedC = JSON.parse(sharedCourses);
-          if (Array.isArray(parsedC) && parsedC.length > 0) adminCourses = parsedC;
+          if (Array.isArray(parsedC) && parsedC.length > 0) {
+            adminCourses = normalizeCoursePrices(parsedC);
+            localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
+          }
         } else {
+          adminCourses = normalizeCoursePrices(adminCourses);
           localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
         }
 
