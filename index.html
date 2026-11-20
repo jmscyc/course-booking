@@ -73,33 +73,26 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 頂部導航列 (AppSheet 風格) -->
-  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-4 sm:px-6 py-3.5 transition-all">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-          <i class="fa-solid fa-calendar-check text-lg"></i>
+  <!-- 頂部導航列 (精簡大方、絕不擁擠折行) -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-4 sm:px-6 py-3 transition-all">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+          <i class="fa-solid fa-calendar-check text-base"></i>
         </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">霖霖的頌缽課程預約</h1>
-          <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-            <span>即時線上登記系統</span>
-            <span class="hidden sm:inline text-slate-300">•</span>
-            <span class="hidden sm:inline text-slate-400">早鳥優惠登記中</span>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight truncate">霖霖的頌缽課程預約</h1>
+          <p class="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0"></span>
+            <span class="truncate">即時線上登記系統</span>
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- 學員自主查預約按鈕 (頂部右側快捷) -->
-        <button type="button" onclick="openMyBookingsModal()" class="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1.5 border border-blue-200 shadow-sm whitespace-nowrap shrink-0">
-          <i class="fa-solid fa-receipt text-blue-600"></i>
-          <span>查詢我的預約</span>
-        </button>
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <!-- 字體縮放按鈕 -->
         <div class="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-xs">
           <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-2 py-1 rounded-lg text-slate-600 font-bold hover:text-blue-600 transition" title="標準字體">A</button>
-          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-1 rounded-lg text-slate-400 font-bold hover:text-blue-600 transition text-sm" title="大字體 (推薦)">A+</button>
+          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-1 rounded-lg text-slate-400 font-bold hover:text-blue-600 transition text-sm" title="大字體">A+</button>
           <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-1 rounded-lg text-slate-400 font-bold hover:text-blue-600 transition text-base" title="特大字體">A++</button>
         </div>
         <button onclick="loadCourses()" title="重新整理" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition">
@@ -113,19 +106,19 @@
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
 
     <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 -->
-    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-4 sm:p-4.5 text-white shadow-lg shadow-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md shadow-blue-500/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center text-white text-lg shrink-0 border border-white/20">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-lg shrink-0">
           <i class="fa-solid fa-ticket"></i>
         </div>
-        <div>
-          <h2 class="text-sm sm:text-base font-bold leading-tight">已報名課程？隨時查詢對帳與確認狀態</h2>
-          <p class="text-xs text-blue-100 mt-0.5">輸入手機號碼即可查看您的報名狀態（待確認 / 報名成功 / 已簽到）</p>
+        <div class="min-w-0">
+          <h2 class="text-sm sm:text-base font-bold leading-snug">已報名課程？隨時查詢對帳進度</h2>
+          <p class="text-[11px] sm:text-xs text-blue-100 mt-0.5">輸入手機號碼即可查看您的報名狀態與上課資訊</p>
         </div>
       </div>
-      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-xl text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 shrink-0 cursor-pointer">
         <i class="fa-solid fa-magnifying-glass text-blue-600"></i>
-        <span>立即查詢我的預約</span>
+        <span>查詢我的預約進度</span>
       </button>
     </div>
 
@@ -655,18 +648,21 @@
         cardsHtml += `
           <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${isFull ? 'opacity-80 bg-slate-50/50' : ''}">
             <div>
-              <!-- 頂部教練與名額徽章 -->
-              <div class="flex items-start justify-between gap-2 mb-3">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                  <i class="fa-solid fa-chalkboard-user text-[11px]"></i>
-                  ${c.instructor || '霖霖教練'}
-                </span>
+              <!-- 頂部標籤列：編號、教練、名額 -->
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">#${c.id}</span>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                    <i class="fa-solid fa-chalkboard-user text-[10px]"></i>
+                    ${c.instructor || '霖霖老師'}
+                  </span>
+                </div>
                 <div>
                   ${isFull 
-                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/80 flex items-center gap-1">
+                    ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 flex items-center gap-1">
                         <i class="fa-solid fa-lock text-[10px]"></i> 已額滿
                       </span>`
-                    : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center gap-1">
+                    : `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                         <i class="fa-solid fa-user-check text-[10px]"></i> 剩餘 ${c.remaining} 名
                       </span>`
                   }
@@ -674,39 +670,39 @@
               </div>
 
               <!-- 課程標題 -->
-              <h3 class="text-base sm:text-lg font-black text-slate-900 leading-snug mb-2.5 hover:text-blue-600 transition-colors">${c.title}</h3>
+              <h3 class="text-base sm:text-lg font-black text-slate-900 leading-snug mb-2 hover:text-blue-600 transition-colors">${c.title}</h3>
 
-              <!-- 時間、地點與價格 -->
-              <div class="space-y-1.5 mb-4 text-xs text-slate-600">
+              <!-- 價格標籤 (醒目置頂) -->
+              ${(c.earlyBirdPrice || c.regularPrice) ? `
+                <div class="flex items-center gap-2 flex-wrap mb-2.5">
+                  ${c.earlyBirdPrice ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <i class="fa-solid fa-tag text-[10px]"></i> 早鳥 NT$ ${Number(c.earlyBirdPrice).toLocaleString()}
+                    </span>
+                  ` : ''}
+                  ${c.regularPrice ? `
+                    <span class="text-xs text-slate-400 line-through font-medium">
+                      定價 NT$ ${Number(c.regularPrice).toLocaleString()}
+                    </span>
+                  ` : ''}
+                </div>
+              ` : ''}
+
+              <!-- 時間、地點與說明 (灰底容器統一風格) -->
+              <div class="bg-slate-50 rounded-xl p-3 space-y-1.5 mb-3.5 text-xs text-slate-600 border border-slate-100">
                 <div class="flex items-center gap-2">
-                  <i class="fa-regular fa-calendar-days text-blue-500 w-4 text-center"></i>
+                  <i class="fa-regular fa-calendar-days text-blue-500 w-4 text-center shrink-0"></i>
                   <span class="font-bold text-slate-800">${c.date} (${getWeekDay(c.date)})</span>
                   <span class="text-slate-300">•</span>
-                  <span class="font-semibold text-slate-700 font-mono">${c.startTime} - ${c.endTime}</span>
+                  <span class="font-bold text-slate-700 font-mono">${c.startTime} - ${c.endTime}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <i class="fa-solid fa-location-dot text-rose-500 w-4 text-center"></i>
+                  <i class="fa-solid fa-location-dot text-rose-500 w-4 text-center shrink-0"></i>
                   <span class="font-medium text-slate-700">${c.location || '待定教室'}</span>
                 </div>
-
-                ${(c.earlyBirdPrice || c.regularPrice) ? `
-                  <div class="flex items-center gap-2 pt-1.5 flex-wrap">
-                    ${c.earlyBirdPrice ? `
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <i class="fa-solid fa-tag text-[10px]"></i> 早鳥 NT$ ${Number(c.earlyBirdPrice).toLocaleString()}
-                      </span>
-                    ` : ''}
-                    ${c.regularPrice ? `
-                      <span class="text-xs text-slate-400 line-through font-medium">
-                        定價 NT$ ${Number(c.regularPrice).toLocaleString()}
-                      </span>
-                    ` : ''}
-                  </div>
-                ` : ''}
-
                 ${c.notes ? `
-                  <div class="flex items-start gap-2 pt-1 text-slate-500">
-                    <i class="fa-regular fa-note-sticky text-slate-400 w-4 text-center mt-0.5"></i>
+                  <div class="flex items-start gap-2 pt-1 text-slate-500 border-t border-slate-200/60 mt-1">
+                    <i class="fa-regular fa-note-sticky text-slate-400 w-4 text-center mt-0.5 shrink-0"></i>
                     <span class="line-clamp-2 text-[11px] leading-relaxed">${c.notes}</span>
                   </div>
                 ` : ''}
