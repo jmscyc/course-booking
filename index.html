@@ -828,7 +828,7 @@
     // 付款方式選擇 (bank / line / cash)
     let currentPayMethod = "bank";
 
-    function selectPayMethod(method) {
+    function selectPayMethod(method, autoFocus = true) {
       currentPayMethod = method;
       const btnBank = document.getElementById("payMethodBank");
       const btnLine = document.getElementById("payMethodLine");
@@ -855,7 +855,9 @@
         if (bankBox) bankBox.classList.remove("hidden");
         if (codeInput) {
           codeInput.required = true;
-          setTimeout(() => codeInput.focus(), 50);
+          if (autoFocus) {
+            setTimeout(() => codeInput.focus(), 50);
+          }
         }
       } else if (method === "line") {
         btnLine.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 text-emerald-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
@@ -880,15 +882,33 @@
       document.getElementById("modalLocation").innerText = `地點：${course.location || '待定'}`;
 
       // 重設表單
-      document.getElementById("studentName").value = localStorage.getItem("saved_name") || "";
+      const savedName = localStorage.getItem("saved_name") || "";
+      const nameInput = document.getElementById("studentName");
+      nameInput.value = savedName;
       document.getElementById("studentPhone").value = localStorage.getItem("saved_phone") || "";
       document.getElementById("studentLine").value = localStorage.getItem("saved_line") || "";
       document.getElementById("studentNotes").value = "";
+      
+      // 預設選擇銀行匯款，但不自動將畫面焦點跳至五碼，確保視角維持在頂部
       if (typeof selectPayMethod === "function") {
-        selectPayMethod("bank");
+        selectPayMethod("bank", false);
       }
 
-      document.getElementById("bookingModal").classList.remove("hidden");
+      const modal = document.getElementById("bookingModal");
+      modal.classList.remove("hidden");
+
+      // 確保手機版彈窗滾動條置頂，並從最上面的姓名開始聚焦
+      const modalInner = modal.querySelector(".max-h-\\[92vh\\]") || modal;
+      modalInner.scrollTop = 0;
+      modal.scrollTop = 0;
+
+      setTimeout(() => {
+        modalInner.scrollTop = 0;
+        modal.scrollTop = 0;
+        if (nameInput) {
+          nameInput.focus();
+        }
+      }, 50);
     }
 
     function closeModal() {
