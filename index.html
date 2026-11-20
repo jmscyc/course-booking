@@ -323,7 +323,8 @@
      * 後端 API 連線設定
      * 預設提供內建模擬模式（Demo Mode），部署後端 API 即可全自動連線！
      */
-    let API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
+    let API_URL = "";
+    localStorage.removeItem("appsheet_gas_api"); 
 
     // 本地暫存課程資料
     let allCourses = [];
@@ -528,10 +529,10 @@
       const urlParams = new URLSearchParams(window.location.search);
       const queryApi = urlParams.get("api");
       if (queryApi) {
-        localStorage.setItem("appsheet_gas_api", queryApi);
+        // localStorage.setItem("appsheet_gas_api", queryApi);
         API_URL = queryApi;
       } else {
-        const savedApi = localStorage.getItem("appsheet_gas_api");
+        const savedApi = null;
         if (savedApi) API_URL = savedApi;
       }
 
