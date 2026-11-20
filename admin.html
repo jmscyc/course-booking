@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --app-font-size: 16px;
+      --app-font-size: 20px; /* 基礎字體直接放大三號 (預設大字 20px，特大可達 24px) */
     }
     html {
       font-size: var(--app-font-size) !important;
@@ -18,20 +18,33 @@
     body {
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
     }
+    /* 覆蓋 Tailwind 絕對小像素，強制使用 rem 相對比例，保證字級放大三號真實全面生效 */
+    .text-\[9px\] { font-size: 0.75rem !important; }
+    .text-\[10px\] { font-size: 0.8rem !important; }
+    .text-\[11px\] { font-size: 0.85rem !important; }
+    .text-xs { font-size: 0.95rem !important; }
+    .text-sm { font-size: 1.05rem !important; }
+    .text-base { font-size: 1.2rem !important; }
+    .text-lg { font-size: 1.35rem !important; }
+    .text-xl { font-size: 1.5rem !important; }
+    .text-2xl { font-size: 1.8rem !important; }
+
     .tab-active {
-      border-bottom: 2px solid #2563eb;
+      border-bottom: 3px solid #2563eb;
       color: #2563eb;
-      font-weight: 700;
+      font-weight: 800;
     }
   </style>
   <script>
     // 立即生效防閃爍：在頁面渲染前讀取永久保存的管理後台字級
     (function() {
-      var saved = localStorage.getItem("admin_app_font_size") || "large"; // 預設大字體
-      var fs = "18px";
-      if (saved === "xlarge") fs = "21px";
-      else if (saved === "normal") fs = "16px";
+      var saved = localStorage.getItem("admin_app_font_size") || "large"; // 預設放大三號
+      var fs = "20px";
+      if (saved === "xlarge") fs = "24px"; // 特大超清晰
+      else if (saved === "normal") fs = "18px";
       document.documentElement.style.setProperty("--app-font-size", fs);
     })();
   </script>
@@ -192,7 +205,8 @@
                 <th class="px-4 py-3">學員姓名</th>
                 <th class="px-4 py-3">聯絡電話</th>
                 <th class="px-4 py-3">Line ID</th>
-                <th class="px-4 py-3">特殊需求/備註</th>
+                <th class="px-4 py-3 text-center">匯款五碼 / 付款</th>
+                <th class="px-4 py-3">備註需求</th>
                 <th class="px-4 py-3 text-center">簽到狀態</th>
                 <th class="px-4 py-3 text-right">管理</th>
               </tr>
@@ -386,9 +400,9 @@
                   <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button type="button" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 font-bold">標準</button>
-                  <button type="button" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-bold">大 A+</button>
-                  <button type="button" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700">特大 A++</button>
+                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">標準 18px</button>
+                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">大 20px (推薦)</button>
+                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">特大 24px</button>
                 </div>
               </div>
 
@@ -668,31 +682,57 @@
   <script>
     let API_URL = localStorage.getItem("appsheet_gas_api") || "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
 
-    // 管理後台永久字級設定
+    // 管理後台永久字級設定 (全面放大三號，頂部與設定頁同步聯動)
     function setAppFontSize(size, save = true) {
-      const bNormal = document.getElementById("fontBtnNormal");
-      const bLarge = document.getElementById("fontBtnLarge");
-      const bXLarge = document.getElementById("fontBtnXLarge");
-
-      [bNormal, bLarge, bXLarge].forEach(b => {
-        if (b) b.className = "px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition";
-      });
-
-      let fs = "18px";
-      if (size === "xlarge") {
-        fs = "21px";
-        if (bXLarge) bXLarge.className = "px-2 py-1 rounded bg-blue-600 text-white font-bold transition text-base";
-      } else if (size === "normal") {
-        fs = "16px";
-        if (bNormal) bNormal.className = "px-2 py-1 rounded bg-blue-600 text-white font-bold transition";
-      } else {
+      if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
         size = "large";
+      }
+
+      let fs = "20px";
+      if (size === "xlarge") {
+        fs = "24px";
+      } else if (size === "normal") {
         fs = "18px";
-        if (bLarge) bLarge.className = "px-2 py-1 rounded bg-blue-600 text-white font-bold transition text-sm";
+      } else {
+        fs = "20px";
       }
 
       document.documentElement.style.setProperty("--app-font-size", fs);
       document.documentElement.style.fontSize = fs;
+
+      // 1. 同步頂部按鈕狀態
+      const topBtns = {
+        normal: document.getElementById("fontBtnNormal"),
+        large: document.getElementById("fontBtnLarge"),
+        xlarge: document.getElementById("fontBtnXLarge")
+      };
+      Object.keys(topBtns).forEach(k => {
+        const btn = topBtns[k];
+        if (btn) {
+          if (k === size) {
+            btn.className = "px-2.5 py-1 rounded bg-blue-600 text-white font-bold transition shadow-sm";
+          } else {
+            btn.className = "px-2.5 py-1 rounded text-slate-400 font-bold hover:text-white transition";
+          }
+        }
+      });
+
+      // 2. 同步設定頁按鈕狀態
+      const setBtns = {
+        normal: document.getElementById("setBtnNormal"),
+        large: document.getElementById("setBtnLarge"),
+        xlarge: document.getElementById("setBtnXLarge")
+      };
+      Object.keys(setBtns).forEach(k => {
+        const btn = setBtns[k];
+        if (btn) {
+          if (k === size) {
+            btn.className = "px-3 py-1.5 text-xs rounded-xl bg-blue-600 text-white font-black shadow-sm transition";
+          } else {
+            btn.className = "px-3 py-1.5 text-xs rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition";
+          }
+        }
+      });
 
       if (save) {
         localStorage.setItem("admin_app_font_size", size);

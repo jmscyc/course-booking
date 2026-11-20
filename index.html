@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --client-font-size: 18px;
+      --client-font-size: 20px; /* 前台預設直接放大三號 */
     }
     html {
       font-size: var(--client-font-size) !important;
@@ -19,7 +19,20 @@
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-tap-highlight-color: transparent;
+      font-size: 1rem;
+      line-height: 1.5;
     }
+    /* 覆蓋 Tailwind 像素死值，全站等比放大三號 */
+    .text-\[9px\] { font-size: 0.75rem !important; }
+    .text-\[10px\] { font-size: 0.8rem !important; }
+    .text-\[11px\] { font-size: 0.85rem !important; }
+    .text-xs { font-size: 0.95rem !important; }
+    .text-sm { font-size: 1.05rem !important; }
+    .text-base { font-size: 1.2rem !important; }
+    .text-lg { font-size: 1.35rem !important; }
+    .text-xl { font-size: 1.5rem !important; }
+    .text-2xl { font-size: 1.8rem !important; }
+
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -32,12 +45,11 @@
   <script>
     // 立即生效防閃爍：在頁面渲染前讀取永久保存的學員前台字級
     (function() {
-      // 優先序：訪客個人自選設定 > 管理者統一設定的預設值 > 系統預設大字體 (large)
       var adminDef = localStorage.getItem("appsheet_default_fontsize") || "large";
       var saved = localStorage.getItem("client_user_font_size") || adminDef;
-      var fs = "18px";
-      if (saved === "xlarge") fs = "21px";
-      else if (saved === "normal") fs = "16px";
+      var fs = "20px";
+      if (saved === "xlarge") fs = "24px";
+      else if (saved === "normal") fs = "18px";
       document.documentElement.style.setProperty("--client-font-size", fs);
     })();
   </script>
