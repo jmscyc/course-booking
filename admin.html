@@ -730,6 +730,32 @@
         localStorage.setItem("admin_app_font_size", size);
       }
     }
+        // 前台訪客預設字級按鈕切換（與管理者字級風格 100% 統一）
+    function setClientDefaultFont(size) {
+      if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
+        size = "large";
+      }
+      const hiddenInput = document.getElementById("settingDefaultFontSize");
+      if (hiddenInput) hiddenInput.value = size;
+
+      const btns = {
+        normal: document.getElementById("setClientBtnNormal"),
+        large: document.getElementById("setClientBtnLarge"),
+        xlarge: document.getElementById("setClientBtnXLarge")
+      };
+      Object.keys(btns).forEach(k => {
+        const btn = btns[k];
+        if (btn) {
+          if (k === size) {
+            btn.className = "flex-1 py-1.5 text-xs rounded-xl bg-emerald-600 text-white font-black shadow-sm transition text-center border-transparent";
+          } else {
+            btn.className = "flex-1 py-1.5 text-xs rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold transition text-center border border-slate-200";
+          }
+        }
+      });
+      localStorage.setItem("appsheet_default_fontsize", size);
+    }
+
     let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
 
     // 常用教室設定（支援管理者動態維護）
@@ -1514,9 +1540,11 @@
 ];
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 永久讀取管理後台字級（預設 large）
+      // 永久讀取管理後台字級與前台預設字級
       const savedAdminFont = localStorage.getItem("admin_app_font_size") || "large";
       setAppFontSize(savedAdminFont, false);
+      const savedClientDefFont = localStorage.getItem("appsheet_default_fontsize") || "large";
+      setClientDefaultFont(savedClientDefFont);
       document.getElementById("apiInput").value = API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" ? API_URL : "";
       
       // 初始渲染一對一範本編輯清單
@@ -1857,7 +1885,7 @@
                 return `<span class="text-slate-300">-</span>`;
               })()}
             </td>
-            <td class="px-4 py-3 max-w-[130px] truncate text-slate-500" title="${b["備註需求"] || ''}">
+            <td class="px-4 py-3 max-w-[200px] break-words text-slate-600" title="${b["備註需求"] || ''}">
               ${b["備註需求"] || '-'}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
