@@ -630,6 +630,50 @@
       renderUI();
     }
 
+
+    // 付款方式選擇 (bank / line / cash)
+    let currentPayMethod = "bank";
+
+    function selectPayMethod(method) {
+      currentPayMethod = method;
+      const btnBank = document.getElementById("payMethodBank");
+      const btnLine = document.getElementById("payMethodLine");
+      const btnCash = document.getElementById("payMethodCash");
+      const bankBox = document.getElementById("bankCodeContainer");
+      const lineBox = document.getElementById("linePayContainer");
+      const cashBox = document.getElementById("cashPayContainer");
+      const codeInput = document.getElementById("studentPaymentCode");
+
+      if (!btnBank || !btnLine || !btnCash) return;
+
+      // 重設所有按鈕樣式
+      btnBank.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-blue-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+      btnLine.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+      btnCash.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-amber-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+
+      if (bankBox) bankBox.classList.add("hidden");
+      if (lineBox) lineBox.classList.add("hidden");
+      if (cashBox) cashBox.classList.add("hidden");
+      if (codeInput) codeInput.required = false;
+
+      if (method === "bank") {
+        btnBank.className = "py-2.5 px-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
+        if (bankBox) bankBox.classList.remove("hidden");
+        if (codeInput) {
+          codeInput.required = true;
+          setTimeout(() => codeInput.focus(), 50);
+        }
+      } else if (method === "line") {
+        btnLine.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 text-emerald-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
+        if (lineBox) lineBox.classList.remove("hidden");
+        if (codeInput) codeInput.value = "";
+      } else if (method === "cash") {
+        btnCash.className = "py-2.5 px-2 rounded-xl border-2 border-amber-500 bg-amber-50/80 text-amber-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
+        if (cashBox) cashBox.classList.remove("hidden");
+        if (codeInput) codeInput.value = "";
+      }
+    }
+
     // 開啟預約 Modal
     function openBookingModal(courseId) {
       const course = allCourses.find(c => c.id === courseId);
@@ -646,6 +690,9 @@
       document.getElementById("studentPhone").value = localStorage.getItem("saved_phone") || "";
       document.getElementById("studentLine").value = localStorage.getItem("saved_line") || "";
       document.getElementById("studentNotes").value = "";
+      if (typeof selectPayMethod === "function") {
+        selectPayMethod("bank");
+      }
 
       document.getElementById("bookingModal").classList.remove("hidden");
     }
@@ -657,15 +704,36 @@
     // 表單送出處理
     async function handleBookingSubmit(e) {
       e.preventDefault();
-      const submitBtn = document.getElementById("submitBtn");
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 預約送出中...`;
 
       const courseId = document.getElementById("modalCourseId").value;
       const name = document.getElementById("studentName").value.trim();
       const phone = document.getElementById("studentPhone").value.trim();
       const lineId = document.getElementById("studentLine").value.trim();
       const notes = document.getElementById("studentNotes").value.trim();
+      const rawCode = (document.getElementById("studentPaymentCode")?.value || "").trim();
+
+      let finalPaymentCode = "";
+      if (currentPayMethod === "bank") {
+        if (!/^[0-9]{5}$/.test(rawCode)) {
+          alert("【銀行匯款】請務必填寫剛好 5 碼純數字之帳號後五碼！");
+          document.getElementById("studentPaymentCode")?.focus();
+          return;
+        }
+        finalPaymentCode = rawCode;
+      } else if (currentPayMethod === "line") {
+        finalPaymentCode = "LINE轉帳";
+        if (!lineId) {
+          alert("【LINE 轉帳】請務必填寫您的 Line ID，以利我們透過 LINE 與您對帳！");
+          document.getElementById("studentLine")?.focus();
+          return;
+        }
+      } else if (currentPayMethod === "cash") {
+        finalPaymentCode = "現場付現";
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 預約送出中...`;
 
       // 記憶使用者資訊，下次免重填
       localStorage.setItem("saved_name", name);
@@ -698,6 +766,7 @@
           name: name,
           phone: phone,
           lineId: lineId,
+          paymentCode: finalPaymentCode,
           notes: notes
         };
 
