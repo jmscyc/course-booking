@@ -73,40 +73,60 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 頂部導航列 (精簡大方、絕不擁擠折行) -->
-  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-4 sm:px-6 py-3 transition-all">
+  <!-- 頂部精簡導航列 (吸頂黏性導航，只放精煉品牌Logo與系統工具，絕不擠壓) -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-3.5 sm:px-6 py-2 transition-all">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-          <i class="fa-solid fa-calendar-check text-base"></i>
+      <!-- 導航列左側：品牌徽章標籤 (確保 whitespace-nowrap 不折行) -->
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
+          <i class="fa-solid fa-spa text-sm"></i>
         </div>
-        <div class="min-w-0">
-          <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight truncate">霖霖的頌缽課程預約</h1>
-          <p class="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0"></span>
-            <span class="truncate">即時線上登記系統</span>
-          </p>
-        </div>
+        <span class="font-extrabold text-xs sm:text-sm text-slate-800 tracking-tight whitespace-nowrap">霖霖頌缽教學</span>
       </div>
+
+      <!-- 導航列右側：字級調整 + 查詢按鈕 + 重新整理 -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <!-- 字體縮放按鈕 -->
-        <div class="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-xs">
-          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-2 py-1 rounded-lg text-slate-600 font-bold hover:text-blue-600 transition" title="標準字體">A</button>
-          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-1 rounded-lg text-slate-400 font-bold hover:text-blue-600 transition text-sm" title="大字體">A+</button>
-          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-1 rounded-lg text-slate-400 font-bold hover:text-blue-600 transition text-base" title="特大字體">A++</button>
+        <div class="flex items-center bg-slate-100/90 rounded-lg p-0.5 border border-slate-200 text-xs">
+          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-600 font-bold hover:text-blue-600 transition" title="標準字體">A</button>
+          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition text-sm" title="大字體">A+</button>
+          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition text-base" title="特大字體">A++</button>
         </div>
-        <button onclick="loadCourses()" title="重新整理" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition">
-          <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+        <button onclick="openMyBookingsModal()" class="px-2 sm:px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer whitespace-nowrap" title="查詢預約進度">
+          <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
+          <span class="hidden xs:inline sm:inline">查詢</span><span class="hidden sm:inline">預約</span>
+        </button>
+        <button onclick="loadCourses()" title="重新整理" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
+          <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
         </button>
       </div>
     </div>
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-4 sm:space-y-5">
+
+    <!-- 🌟 專屬大器主標題區 (Hero Title Section)：完整展示，絕不擁擠，氣勢大方 -->
+    <div class="pt-1 pb-1">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> 即時線上登記
+            </span>
+            <span class="text-xs text-slate-400 font-medium">官方即時更新</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+            霖霖的頌缽課程預約
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            專業頌缽聲音療癒入門、進階與師資培訓課程，選擇時段即刻為自己保留名額。
+          </p>
+        </div>
+      </div>
+    </div>
 
     <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md shadow-blue-500/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-4 text-white shadow-md shadow-blue-500/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-lg shrink-0">
           <i class="fa-solid fa-ticket"></i>
