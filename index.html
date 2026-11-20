@@ -91,11 +91,10 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- 學員自主查預約按鈕 -->
-        <button type="button" onclick="openMyBookingsModal()" class="px-2.5 sm:px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1 border border-blue-200/60 shadow-sm whitespace-nowrap shrink-0">
-          <i class="fa-solid fa-ticket text-blue-500 text-xs"></i>
-          <span class="hidden xs:inline sm:inline">查詢預約</span>
-          <span class="xs:hidden sm:hidden">查預約</span>
+        <!-- 學員自主查預約按鈕 (頂部右側快捷) -->
+        <button type="button" onclick="openMyBookingsModal()" class="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1.5 border border-blue-200 shadow-sm whitespace-nowrap shrink-0">
+          <i class="fa-solid fa-receipt text-blue-600"></i>
+          <span>查詢我的預約</span>
         </button>
         <!-- 字體縮放按鈕 -->
         <div class="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-xs">
@@ -111,9 +110,24 @@
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
 
-
+    <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 -->
+    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-4 sm:p-4.5 text-white shadow-lg shadow-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center text-white text-lg shrink-0 border border-white/20">
+          <i class="fa-solid fa-ticket"></i>
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-bold leading-tight">已報名課程？隨時查詢對帳與確認狀態</h2>
+          <p class="text-xs text-blue-100 mt-0.5">輸入手機號碼即可查看您的報名狀態（待確認 / 報名成功 / 已簽到）</p>
+        </div>
+      </div>
+      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+        <i class="fa-solid fa-magnifying-glass text-blue-600"></i>
+        <span>立即查詢我的預約</span>
+      </button>
+    </div>
 
     <!-- 日期篩選 Tab -->
     <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3" id="dateFilterTabs">
@@ -952,6 +966,137 @@
       }
       return dateStr;
     }
+
+    // 開啟學員查詢預約 Modal
+    function openMyBookingsModal() {
+      const modal = document.getElementById("myBookingsModal");
+      if (!modal) return;
+      modal.classList.remove("hidden");
+      const phoneInput = document.getElementById("queryPhoneInput");
+      const savedPhone = localStorage.getItem("saved_phone") || "";
+      if (phoneInput) {
+        phoneInput.value = savedPhone;
+        setTimeout(() => phoneInput.focus(), 100);
+      }
+      if (savedPhone) {
+        queryMyBookings();
+      }
+    }
+
+    function closeMyBookingsModal() {
+      const modal = document.getElementById("myBookingsModal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    // 執行查詢預約
+    async function queryMyBookings() {
+      const phoneInput = document.getElementById("queryPhoneInput");
+      const listContainer = document.getElementById("myBookingsList");
+      if (!phoneInput || !listContainer) return;
+
+      const phone = phoneInput.value.trim();
+      if (!phone) {
+        listContainer.innerHTML = `<div class="text-center py-6 text-rose-500 text-xs font-bold">請先輸入報名時填寫的手機號碼！</div>`;
+        return;
+      }
+
+      listContainer.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 正在連線查詢預約紀錄...</div>`;
+
+      let bookings = [];
+
+      // A. 若有串接真實 GAS API，嘗試遠端取得
+      if (API_URL && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          const resp = await fetch(`${API_URL}?action=getBookings&phone=${encodeURIComponent(phone)}`);
+          const json = await resp.json();
+          if (json.success && json.bookings) {
+            bookings = json.bookings;
+          }
+        } catch(err) {
+          console.warn("GAS 查詢失敗，切換讀取本地共享紀錄：", err);
+        }
+      }
+
+      // B. 本地共享資料庫讀取（包含前台即時報名與管理員後台確認的最新狀態）
+      if (bookings.length === 0) {
+        try {
+          const sharedStr = localStorage.getItem("appsheet_shared_bookings");
+          if (sharedStr) {
+            const allShared = JSON.parse(sharedStr);
+            bookings = allShared.filter(b => (b["聯絡電話"] || "").trim() === phone);
+          }
+        } catch(e) {
+          console.error("讀取本地預約失敗", e);
+        }
+      }
+
+      if (bookings.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-8 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
+            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-lg">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-700">查無此手機號碼之預約紀錄</p>
+            <p class="text-[11px] text-slate-400">請確認號碼是否與報名時一致，或聯絡助教確認！</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      bookings.forEach(b => {
+        const st = (b["簽到狀態"] || "待確認").trim();
+        let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+        let icon = "fa-hourglass-half";
+        let statusTitle = "待確認入帳";
+        let statusDesc = "已收到您的預約登記，助教正核對款項中，確認無誤後將更新為報名成功！";
+
+        if (st === "報名成功" || st === "已收訖" || st === "已完成") {
+          badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+          icon = "fa-circle-check";
+          statusTitle = "報名成功 (已收訖)";
+          statusDesc = "款項已確認入帳，您的名額已保留完成，課堂當天抵達教室簽到即可！";
+        } else if (st === "已簽到") {
+          badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+          icon = "fa-check-double";
+          statusTitle = "已簽到出席";
+          statusDesc = "您已於課堂現場完成報到簽到！";
+        } else if (st === "已取消") {
+          badgeClass = "bg-slate-100 text-slate-400 border-slate-200 line-through";
+          icon = "fa-ban";
+          statusTitle = "已取消";
+          statusDesc = "此預約已取消或名額已釋出。";
+        }
+
+        html += `
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+                  <i class="fa-solid ${icon}"></i>
+                  <span>${statusTitle}</span>
+                </span>
+                <h4 class="font-bold text-slate-900 text-sm mt-1.5 leading-snug">${b["課程名稱"]}</h4>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-xs font-bold text-slate-800">${b["學員姓名"]}</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-2.5 text-xs text-slate-600 space-y-1">
+              <div class="flex items-center justify-between text-[11px] text-slate-500">
+                <span>報名時間：${b["報名時間"] || "-"}</span>
+                <span>付款：<b>${b["匯款五碼"] || "未備註"}</b></span>
+              </div>
+              <p class="text-[11px] leading-relaxed pt-1 text-slate-600 border-t border-slate-200/60">${statusDesc}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      listContainer.innerHTML = html;
+    }
+
   </script>
 
   <!-- 學員自主查詢預約 Modal -->
