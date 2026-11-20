@@ -796,6 +796,12 @@ function setupSheets() {
     configSheet.appendRow(["管理員密碼", "admin888"]);
     configSheet.appendRow(["預約提醒事項", "課程開始前 2 小時前取消不扣堂數，如額滿可隨時關注名額釋出。"]);
     configSheet.appendRow(["常用教室清單", "高雄-近高美館,台南安南醫院,台北場地"]);
+    configSheet.appendRow(["通知總開關", "開啟"]);
+    configSheet.appendRow(["學員LINE通知開關", "開啟"]);
+    configSheet.appendRow(["TelegramBotToken", ""]);
+    configSheet.appendRow(["TelegramChatId", ""]);
+    configSheet.appendRow(["LineChannelAccessToken", ""]);
+    configSheet.appendRow(["LineNotifyToken", ""]);
     configSheet.getRange(1, 1, 1, 2).setBackground("#475569").setFontColor("#ffffff").setFontWeight("bold");
   }
 
@@ -956,15 +962,34 @@ function doPost(e) {
         studentPhone,
         lineId,
         notes,
-        "已預約"
+        "待確認"
       ]);
 
       updateCourseCount(courseSheet, courseId, currentBooked + 1);
 
+      // 觸發管理者即時通知 (Telegram / LINE)
+      const config = getConfigMap(ss);
+      if (String(config["通知總開關"] || "開啟") === "開啟") {
+        const adminMsg = "🔔【收到新學員課程報名】\n" +
+          "────────────\n" +
+          "• 課程：" + targetCourse["課程名稱"] + "\n" +
+          "• 日期：" + formatDate(targetCourse["日期"]) + " " + targetCourse["開始時間"] + "\n" +
+          "• 學員：" + studentName + "\n" +
+          "• 電話：" + studentPhone + "\n" +
+          "• LINE ID：" + (lineId || "無") + "\n" +
+          "• 備註/匯款：" + (notes || "無") + "\n" +
+          "• 預約編號：" + bookingId + "\n" +
+          "────────────\n" +
+          "請至管理後台核對匯款後，點擊「確認入帳 (報名成功)」！";
+        
+        sendAdminNotification(config, adminMsg);
+      }
+
       return jsonResponse({
         success: true,
-        message: "預約成功！",
+        message: "預約已送出！請稍候管理員核對匯款款項，核對無誤後將更新為「報名成功」並發送通知！",
         bookingId: bookingId,
+        status: "待確認",
         courseTitle: targetCourse["課程名稱"],
         dateTime: formatDate(targetCourse["日期"]) + " " + targetCourse["開始時間"]
       });
@@ -1040,6 +1065,94 @@ function doPost(e) {
       return jsonResponse({ success: false, message: "找不到該課程編號" });
     }
 
+    // 管理端：確認匯款收到 -> 變更為「報名成功」，並可發送 LINE 通知
+    if (action === "confirmPayment") {
+      const bookingSheet = ss.getSheetByName(SHEET_BOOKINGS);
+      const bookingRows = bookingSheet.getDataRange().getValues();
+      const bookingId = data.bookingId;
+      const sendStudentLine = data.sendStudentLine !== false; // 預設依前端設定
+      
+      let foundRow = -1;
+      let targetBooking = null;
+
+      for (let r = 1; r < bookingRows.length; r++) {
+        if (String(bookingRows[r][0]) === bookingId) {
+          foundRow = r + 1;
+          targetBooking = {
+            id: bookingRows[r][0],
+            time: bookingRows[r][1],
+            courseId: bookingRows[r][2],
+            courseTitle: bookingRows[r][3],
+            name: bookingRows[r][4],
+            phone: bookingRows[r][5],
+            lineId: bookingRows[r][6],
+            notes: bookingRows[r][7],
+            status: bookingRows[r][8]
+          };
+          break;
+        }
+      }
+
+      if (foundRow === -1) {
+        return jsonResponse({ success: false, message: "找不到該預約記錄" });
+      }
+
+      bookingSheet.getRange(foundRow, 9).setValue("報名成功");
+
+      // 檢查是否發送通知至學員 LINE
+      let notificationResult = "未發送";
+      const config = getConfigMap(ss);
+      const isStudentLineNotifyEnabled = String(config["學員LINE通知開關"] || "開啟") === "開啟";
+
+      if (sendStudentLine && isStudentLineNotifyEnabled && targetBooking.lineId) {
+        const studentMsg = "🎉【" + (config["系統名稱"] || "課程預約系統") + "】報名成功通知\n" +
+          "────────────\n" +
+          targetBooking.name + " 您好，已收到您的款項！\n" +
+          "• 課程名稱：" + targetBooking.courseTitle + "\n" +
+          "• 預約編號：" + targetBooking.id + "\n" +
+          "• 報名狀態：【報名成功】\n" +
+          "期待在課堂上與您相遇，請準時出席！";
+        
+        // 若有設定 LINE Channel Access Token，嘗試以 LINE Messaging API 發送 (若 lineId 為 UserId)
+        if (config["LineChannelAccessToken"]) {
+          try {
+            sendLinePushMessage(config["LineChannelAccessToken"], targetBooking.lineId, studentMsg);
+            notificationResult = "已透過 LINE API 發送";
+          } catch(e) {
+            notificationResult = "LINE API 發送失敗: " + e.toString();
+          }
+        } else {
+          notificationResult = "可使用後台一鍵喚起 LINE 快速傳送";
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        message: "已確認匯款入帳！狀態已更新為「報名成功」！",
+        bookingId: bookingId,
+        newStatus: "報名成功",
+        notificationResult: notificationResult
+      });
+    }
+
+    // 管理端：發送測試通知 (Telegram 或 LINE)
+    if (action === "testNotification") {
+      const type = data.type; // "telegram" 或 "line"
+      const testMsg = "🚀【" + (config["系統名稱"] || "課程預約系統") + "】通知測試成功！\n當有新學員報名或報名成功時，您將會即時收到通知！";
+      let result = "";
+      if (type === "telegram") {
+        const tgToken = data.token || config["TelegramBotToken"];
+        const tgChat = data.chatId || config["TelegramChatId"];
+        if (!tgToken || !tgChat) return jsonResponse({ success: false, message: "請先填寫 Telegram Bot Token 與 Chat ID！" });
+        result = sendTelegramMessage(tgToken, tgChat, testMsg);
+      } else if (type === "line") {
+        const lineToken = data.token || config["LineNotifyToken"];
+        if (!lineToken) return jsonResponse({ success: false, message: "請先填寫 LINE Token！" });
+        result = sendLineNotify(lineToken, testMsg);
+      }
+      return jsonResponse({ success: true, message: "測試通知已發出！", result: result });
+    }
+
     // 管理端：更新預約簽到狀態
     if (action === "updateBookingStatus") {
       const bookingSheet = ss.getSheetByName(SHEET_BOOKINGS);
@@ -1065,20 +1178,34 @@ function doPost(e) {
       const newNotice = data.notice;
       const newPass = data.newPassword;
       const newClassrooms = data.classrooms;
+      const notifyEnabled = data.notifyEnabled;
+      const studentLineNotify = data.studentLineNotify;
+      const tgBotToken = data.tgBotToken;
+      const tgChatId = data.tgChatId;
+      const lineChannelAccessToken = data.lineChannelAccessToken;
+      const lineNotifyToken = data.lineNotifyToken;
 
-      const keysPresent = {};
-      for (let r = 1; r < rows.length; r++) {
-        const key = String(rows[r][0]).trim();
-        keysPresent[key] = r + 1;
-        if (key === "系統名稱" && newSysName) configSheet.getRange(r + 1, 2).setValue(newSysName);
-        if (key === "預約提醒事項" && newNotice) configSheet.getRange(r + 1, 2).setValue(newNotice);
-        if (key === "管理員密碼" && newPass) configSheet.getRange(r + 1, 2).setValue(newPass);
-        if (key === "常用教室清單" && newClassrooms) configSheet.getRange(r + 1, 2).setValue(newClassrooms);
-      }
+      const updateOrAddConfig = (k, v) => {
+        if (v === undefined || v === null) return;
+        for (let r = 1; r < rows.length; r++) {
+          if (String(rows[r][0]).trim() === k) {
+            configSheet.getRange(r + 1, 2).setValue(String(v));
+            return;
+          }
+        }
+        configSheet.appendRow([k, String(v)]);
+      };
 
-      if (newClassrooms && !keysPresent["常用教室清單"]) {
-        configSheet.appendRow(["常用教室清單", newClassrooms]);
-      }
+      if (newSysName) updateOrAddConfig("系統名稱", newSysName);
+      if (newNotice) updateOrAddConfig("預約提醒事項", newNotice);
+      if (newPass) updateOrAddConfig("管理員密碼", newPass);
+      if (newClassrooms) updateOrAddConfig("常用教室清單", newClassrooms);
+      if (notifyEnabled) updateOrAddConfig("通知總開關", notifyEnabled);
+      if (studentLineNotify) updateOrAddConfig("學員LINE通知開關", studentLineNotify);
+      if (tgBotToken !== undefined) updateOrAddConfig("TelegramBotToken", tgBotToken);
+      if (tgChatId !== undefined) updateOrAddConfig("TelegramChatId", tgChatId);
+      if (lineChannelAccessToken !== undefined) updateOrAddConfig("LineChannelAccessToken", lineChannelAccessToken);
+      if (lineNotifyToken !== undefined) updateOrAddConfig("LineNotifyToken", lineNotifyToken);
 
       return jsonResponse({ success: true, message: "系統設定已更新！" });
     }
@@ -1142,4 +1269,70 @@ function formatDate(val) {
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── 通知輔助函式 ───────────────────────────────────────────────────
+
+function sendAdminNotification(config, messageText) {
+  // 1. 若有設定 Telegram
+  if (config["TelegramBotToken"] && config["TelegramChatId"]) {
+    try {
+      sendTelegramMessage(config["TelegramBotToken"], config["TelegramChatId"], messageText);
+    } catch(err) {
+      console.warn("Telegram 通知發送失敗：", err);
+    }
+  }
+
+  // 2. 若有設定 LINE Notify
+  if (config["LineNotifyToken"]) {
+    try {
+      sendLineNotify(config["LineNotifyToken"], messageText);
+    } catch(err) {
+      console.warn("LINE Notify 發送失敗：", err);
+    }
+  }
+}
+
+function sendTelegramMessage(token, chatId, text) {
+  const url = "https://api.telegram.org/bot" + token + "/sendMessage";
+  const payload = {
+    chat_id: chatId,
+    text: text
+  };
+  const response = UrlFetchApp.fetch(url, {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+  return response.getContentText();
+}
+
+function sendLineNotify(token, message) {
+  const url = "https://notify-api.line.me/api/notify";
+  const response = UrlFetchApp.fetch(url, {
+    method: "post",
+    headers: { "Authorization": "Bearer " + token },
+    payload: { message: "\n" + message },
+    muteHttpExceptions: true
+  });
+  return response.getContentText();
+}
+
+function sendLinePushMessage(channelAccessToken, toUserId, text) {
+  const url = "https://api.line.me/v2/bot/message/push";
+  const payload = {
+    to: toUserId,
+    messages: [{ type: "text", text: text }]
+  };
+  const response = UrlFetchApp.fetch(url, {
+    method: "post",
+    headers: {
+      "Authorization": "Bearer " + channelAccessToken,
+      "Content-Type": "application/json"
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+  return response.getContentText();
 }
