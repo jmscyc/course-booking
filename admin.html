@@ -196,6 +196,17 @@
           </div>
 
           <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單設定 <span class="text-slate-400 font-normal">(每行一個教室或用逗號分開)</span></label>
+            <textarea id="settingClassrooms" rows="4" placeholder="例如：
+A教室 (瑜珈/皮拉提斯)
+B教室 (多功能有氧)
+重訓區 (槓鈴/機械器材)
+VIP私人教室
+戶外場地" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+            <p class="text-[11px] text-slate-400 mt-1">在此處自訂的教室名稱，會即時成為開立課程時的「下拉選單」選項。</p>
+          </div>
+
+          <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">前台公告與提醒事項</label>
             <textarea id="settingNotice" rows="3" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</textarea>
           </div>
@@ -335,6 +346,22 @@
     let API_URL = localStorage.getItem("appsheet_gas_api") || "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
     let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
 
+    // 常用教室設定（支援管理者動態維護）
+    let customClassrooms = [
+      "A教室 (瑜珈/皮拉提斯)",
+      "B教室 (多功能有氧)",
+      "重訓區 (槓鈴/機械器材)",
+      "VIP私人教室",
+      "戶外場地"
+    ];
+
+    const savedClassrooms = localStorage.getItem("appsheet_classrooms");
+    if (savedClassrooms) {
+      try {
+        customClassrooms = JSON.parse(savedClassrooms);
+      } catch(e) {}
+    }
+
     // 預設示範課程資料
     let adminCourses = [
       {
@@ -458,6 +485,13 @@
             if (json.config) {
               if (json.config["系統名稱"]) document.getElementById("settingSysName").value = json.config["系統名稱"];
               if (json.config["預約提醒事項"]) document.getElementById("settingNotice").value = json.config["預約提醒事項"];
+              if (json.config["常用教室清單"]) {
+                const list = json.config["常用教室清單"].split(",").map(s => s.trim()).filter(Boolean);
+                if (list.length > 0) {
+                  customClassrooms = list;
+                  localStorage.setItem("appsheet_classrooms", JSON.stringify(list));
+                }
+              }
             }
           }
         } catch (err) {
@@ -465,9 +499,28 @@
         }
       }
 
+      // 初始化設定頁面的教室輸入框
+      const settingClassroomsEl = document.getElementById("settingClassrooms");
+      if (settingClassroomsEl) {
+        settingClassroomsEl.value = customClassrooms.join("\n");
+      }
+
       calculateCourseBookedCounts();
       renderAll();
       if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+    }
+
+    // 重新建立教室下拉選單的 Option
+    function buildLocationSelectOptions(selectedVal) {
+      const selectEl = document.getElementById("formLocationSelect");
+      if (!selectEl) return;
+      let html = "";
+      customClassrooms.forEach(c => {
+        html += `<option value="${c}">${c}</option>`;
+      });
+      html += `<option value="custom">✏️ 自訂其他地點...</option>`;
+      selectEl.innerHTML = html;
+      if (selectedVal) selectEl.value = selectedVal;
     }
 
     // 計算每堂課目前的有效預約數
@@ -649,12 +702,12 @@
         document.getElementById("formDate").value = c.date;
         document.getElementById("formStartTime").value = c.startTime;
         document.getElementById("formEndTime").value = c.endTime;
-        // 設定教室下拉選單
-        const loc = c.location || "A教室";
+        // 動態產生並設定教室下拉選單
+        const loc = c.location || (customClassrooms[0] || "A教室");
+        buildLocationSelectOptions(loc);
         const locSelect = document.getElementById("formLocationSelect");
         const locCustom = document.getElementById("formLocationCustom");
-        const knownOptions = ["A教室", "B教室", "重訓區", "VIP私人教室", "戶外場地"];
-        if (knownOptions.includes(loc)) {
+        if (customClassrooms.includes(loc)) {
           locSelect.value = loc;
           locCustom.classList.add("hidden");
           locCustom.value = "";
@@ -676,10 +729,12 @@
         document.getElementById("formStartTime").value = "19:00";
         document.getElementById("formEndTime").value = "20:00";
         
-        document.getElementById("formLocationSelect").value = "A教室";
+        const defaultLoc = customClassrooms[0] || "A教室";
+        buildLocationSelectOptions(defaultLoc);
+        document.getElementById("formLocationSelect").value = defaultLoc;
         document.getElementById("formLocationCustom").classList.add("hidden");
         document.getElementById("formLocationCustom").value = "";
-        document.getElementById("formLocation").value = "A教室";
+        document.getElementById("formLocation").value = defaultLoc;
 
         document.getElementById("formStatus").value = "開啟報名";
         document.getElementById("formNotes").value = "";
@@ -836,6 +891,18 @@
       const sysName = document.getElementById("settingSysName").value.trim();
       const notice = document.getElementById("settingNotice").value.trim();
       const newPass = document.getElementById("settingPassword").value.trim();
+      const rawClassrooms = document.getElementById("settingClassrooms").value;
+
+      // 解析常用教室清單（支援換行或逗號分隔）
+      const parsedClassrooms = rawClassrooms
+        .split(/[\n,]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (parsedClassrooms.length > 0) {
+        customClassrooms = parsedClassrooms;
+        localStorage.setItem("appsheet_classrooms", JSON.stringify(customClassrooms));
+      }
 
       if (newPass) {
         ADMIN_PASS = newPass;
@@ -852,7 +919,8 @@
               password: ADMIN_PASS,
               systemName: sysName,
               notice: notice,
-              newPassword: newPass
+              newPassword: newPass,
+              classrooms: customClassrooms.join(",")
             })
           });
         } catch (err) {

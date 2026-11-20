@@ -51,6 +51,7 @@ function setupSheets() {
     configSheet.appendRow(["系統名稱", "霖霖的課程預約系統"]);
     configSheet.appendRow(["管理員密碼", "admin888"]);
     configSheet.appendRow(["預約提醒事項", "課程開始前 2 小時前取消不扣堂數，如額滿可隨時關注名額釋出。"]);
+    configSheet.appendRow(["常用教室清單", "A教室 (瑜珈/皮拉提斯),B教室 (多功能有氧),重訓區 (槓鈴/機械器材),VIP私人教室,戶外場地"]);
     configSheet.getRange(1, 1, 1, 2).setBackground("#475569").setFontColor("#ffffff").setFontWeight("bold");
   }
 
@@ -319,13 +320,22 @@ function doPost(e) {
       const newSysName = data.systemName;
       const newNotice = data.notice;
       const newPass = data.newPassword;
+      const newClassrooms = data.classrooms;
 
+      const keysPresent = {};
       for (let r = 1; r < rows.length; r++) {
         const key = String(rows[r][0]).trim();
+        keysPresent[key] = r + 1;
         if (key === "系統名稱" && newSysName) configSheet.getRange(r + 1, 2).setValue(newSysName);
         if (key === "預約提醒事項" && newNotice) configSheet.getRange(r + 1, 2).setValue(newNotice);
         if (key === "管理員密碼" && newPass) configSheet.getRange(r + 1, 2).setValue(newPass);
+        if (key === "常用教室清單" && newClassrooms) configSheet.getRange(r + 1, 2).setValue(newClassrooms);
       }
+
+      if (newClassrooms && !keysPresent["常用教室清單"]) {
+        configSheet.appendRow(["常用教室清單", newClassrooms]);
+      }
+
       return jsonResponse({ success: true, message: "系統設定已更新！" });
     }
 
