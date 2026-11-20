@@ -249,57 +249,57 @@
 
     <!-- 頁籤 2.5: 過往報名紀錄與學員報名次數統計 -->
     <div id="viewHistory" class="hidden space-y-5">
-      <!-- 頂部資訊與統計概覽 -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-4 shadow-sm">
-          <div class="flex items-center justify-between">
+      <!-- 頂部資訊與統計概覽 (手機端採 3 欄緊湊並排，迅速看到下方內容與編輯按鈕) -->
+      <div class="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
+        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-sm flex flex-col justify-between">
+          <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs font-semibold text-indigo-700">總累積獨立學員</p>
-              <p class="text-2xl font-black text-indigo-950 mt-1" id="statHistoryStudentTotal">0</p>
+              <p class="text-[10px] sm:text-xs font-bold text-indigo-700 leading-tight">獨立學員</p>
+              <p class="text-lg sm:text-2xl font-black text-indigo-950 mt-0.5 sm:mt-1" id="statHistoryStudentTotal">0</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/20">
+            <div class="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs sm:text-lg shadow-sm">
               <i class="fa-solid fa-users"></i>
             </div>
           </div>
-          <p class="text-[11px] text-indigo-600/80 mt-2">已清除測試假資料，精確統計真實學員</p>
+          <p class="hidden sm:block text-[11px] text-indigo-600/80 mt-2">真實學員人數</p>
         </div>
 
-        <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-2xl p-4 shadow-sm">
-          <div class="flex items-center justify-between">
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-sm flex flex-col justify-between">
+          <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs font-semibold text-purple-700">總報名累積人次</p>
-              <p class="text-2xl font-black text-purple-950 mt-1" id="statHistoryBookingTotal">0</p>
+              <p class="text-[10px] sm:text-xs font-bold text-purple-700 leading-tight">累積人次</p>
+              <p class="text-lg sm:text-2xl font-black text-purple-950 mt-0.5 sm:mt-1" id="statHistoryBookingTotal">0</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg shadow-md shadow-purple-500/20">
+            <div class="w-6 h-6 sm:w-10 sm:h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xs sm:text-lg shadow-sm">
               <i class="fa-solid fa-receipt"></i>
             </div>
           </div>
-          <p class="text-[11px] text-purple-600/80 mt-2">涵蓋所有開班與私人包班歷史記錄</p>
+          <p class="hidden sm:block text-[11px] text-purple-600/80 mt-2">涵蓋所有開班記錄</p>
         </div>
 
-        <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-2xl p-4 shadow-sm">
-          <div class="flex items-center justify-between">
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-sm flex flex-col justify-between">
+          <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs font-semibold text-amber-700">回購/忠實學員 (報名 ≥ 2次)</p>
-              <p class="text-2xl font-black text-amber-950 mt-1" id="statHistoryRepeatTotal">0</p>
+              <p class="text-[10px] sm:text-xs font-bold text-amber-700 leading-tight">回流學員</p>
+              <p class="text-lg sm:text-2xl font-black text-amber-950 mt-0.5 sm:mt-1" id="statHistoryRepeatTotal">0</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg shadow-md shadow-amber-500/20">
+            <div class="w-6 h-6 sm:w-10 sm:h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center text-xs sm:text-lg shadow-sm">
               <i class="fa-solid fa-heart"></i>
             </div>
           </div>
-          <p class="text-[11px] text-amber-600/80 mt-2">持續回流參與入門與進階班學員</p>
+          <p class="hidden sm:block text-[11px] text-amber-600/80 mt-2">報名 ≥ 2次之忠實學員</p>
         </div>
       </div>
 
       <!-- 子頁籤或模式切換：依學員統計 (誰報名了幾次) vs 完整歷史預約明細 -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-          <div class="flex items-center gap-2">
-            <button onclick="setHistorySubMode('students')" id="subModeStudentsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition">
-              <i class="fa-solid fa-user-check mr-1"></i> 學員報名次數統計 (誰報名了幾次)
+          <div class="grid grid-cols-2 sm:flex sm:items-center gap-2">
+            <button onclick="setHistorySubMode('students')" id="subModeStudentsBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition text-center flex items-center justify-center gap-1">
+              <i class="fa-solid fa-user-check"></i> <span>學員統計</span>
             </button>
-            <button onclick="setHistorySubMode('records')" id="subModeRecordsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
-              <i class="fa-solid fa-list-ul mr-1"></i> 完整過往報名明細
+            <button onclick="setHistorySubMode('records')" id="subModeRecordsBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1">
+              <i class="fa-solid fa-list-ul"></i> <span>過往明細</span>
             </button>
           </div>
 
@@ -3039,13 +3039,13 @@
       const conRecords = document.getElementById("historyRecordsContainer");
 
       if (mode === "students") {
-        btnStudents.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition";
-        btnRecords.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        btnStudents.className = "px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition text-center flex items-center justify-center gap-1";
+        btnRecords.className = "px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1";
         conStudents.classList.remove("hidden");
         conRecords.classList.add("hidden");
       } else {
-        btnRecords.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition";
-        btnStudents.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        btnRecords.className = "px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition text-center flex items-center justify-center gap-1";
+        btnStudents.className = "px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1";
         conRecords.classList.remove("hidden");
         conStudents.classList.add("hidden");
       }
@@ -3179,21 +3179,28 @@
                   </div>
                 </div>
 
-                <!-- 聯絡與社群按鈕 -->
-                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                <!-- 聯絡與社群按鈕 + 醒目修改按鈕 -->
+                <div class="grid grid-cols-3 gap-2 text-xs pt-1">
                   ${s.phone && s.phone !== "-" ? `
-                    <a href="tel:${s.phone}" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition">
+                    <a href="tel:${s.phone}" class="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1 transition">
                       <i class="fa-solid fa-phone text-blue-600"></i>
-                      <span>通話</span>
+                      <span>撥打</span>
                     </a>
-                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無電話</div>'}
+                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl">無電話</div>'}
 
                   ${s.line && s.line !== "-" ? `
-                    <a href="https://line.me/R/ti/p/~${s.line}" target="_blank" class="py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1.5 transition">
+                    <a href="https://line.me/R/ti/p/~${s.line}" target="_blank" class="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1 transition">
                       <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
-                      <span class="truncate">${s.line}</span>
+                      <span class="truncate">LINE</span>
                     </a>
-                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無 Line</div>'}
+                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl">無Line</div>'}
+
+                  ${s.courses[0] && s.courses[0].bookingId ? `
+                    <button type="button" onclick="openEditBookingModal('${s.courses[0].bookingId}')" class="py-2 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold flex items-center justify-center gap-1 transition border border-blue-200">
+                      <i class="fa-solid fa-pen text-blue-600"></i>
+                      <span>修改資料</span>
+                    </button>
+                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl">-</div>'}
                 </div>
 
                 <!-- 參與過的課程時段清單與修改按鈕 -->
