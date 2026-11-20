@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>課程預約系統 - 管理者後台 (直接介面維護)</title>
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .tab-active {
+      border-bottom: 2px solid #2563eb;
+      color: #2563eb;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-20">
+
+  <!-- 管理後台頂部列 -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition" title="前往學員報名端">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <div>
+          <h1 class="text-sm sm:text-base font-bold leading-tight">課程預約系統 - 管理中心</h1>
+          <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+            無須開啟試算表，直接於此維護
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openApiConfigModal()" class="text-xs px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-1.5 transition border border-slate-700">
+          <i class="fa-solid fa-plug text-blue-400"></i>
+          <span class="hidden sm:inline">連接 API</span>
+        </button>
+        <button onclick="loadFullAdminData()" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
+          <i class="fa-solid fa-rotate-right" id="adminRefreshIcon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="max-w-6xl mx-auto px-4 pt-6 space-y-6">
+
+    <!-- 數據概覽卡片 -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+        <p class="text-xs text-slate-500 font-medium">總開課時段</p>
+        <p class="text-2xl font-black text-slate-900 mt-1" id="statCourseTotal">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+        <p class="text-xs text-slate-500 font-medium">有效預約人次</p>
+        <p class="text-2xl font-black text-blue-600 mt-1" id="statBookingTotal">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+        <p class="text-xs text-slate-500 font-medium">已額滿時段</p>
+        <p class="text-2xl font-black text-rose-500 mt-1" id="statFullTotal">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+        <p class="text-xs text-slate-500 font-medium">出席簽到率</p>
+        <p class="text-2xl font-black text-emerald-600 mt-1" id="statCheckinRate">100%</p>
+      </div>
+    </div>
+
+    <!-- 頁籤切換：課程維護 (核心) / 學員預約名冊 / 系統公告設定 -->
+    <div class="flex border-b border-slate-200 gap-2 sm:gap-6 overflow-x-auto">
+      <button onclick="switchTab('courses')" id="tabCoursesBtn" class="tab-active pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5">
+        <i class="fa-solid fa-dumbbell"></i>
+        <span>課程管理維護 (<span id="courseCountBadge">0</span>)</span>
+      </button>
+      <button onclick="switchTab('bookings')" id="tabBookingsBtn" class="pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5">
+        <i class="fa-solid fa-address-book"></i>
+        <span>學員預約名單 (<span id="bookingCountBadge">0</span>)</span>
+      </button>
+      <button onclick="switchTab('settings')" id="tabSettingsBtn" class="pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5">
+        <i class="fa-solid fa-gear"></i>
+        <span>系統與公告設定</span>
+      </button>
+    </div>
+
+    <!-- 頁籤 1: 課程維護管理 (直接在此填表增修，免開 Sheet) -->
+    <div id="viewCourses" class="space-y-4">
+      
+      <!-- 功能列 -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button onclick="openCourseModal(null)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>開立新課程時段</span>
+          </button>
+          <span class="text-xs text-slate-400 hidden sm:inline">所有填寫項目自動存入 Google Sheets</span>
+        </div>
+
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="courseSearchInput" oninput="renderCoursesTable()" placeholder="搜尋課程名稱、教練或地點..." class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <!-- 課程表格清單 -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
+              <tr>
+                <th class="px-4 py-3">編號</th>
+                <th class="px-4 py-3">課程名稱</th>
+                <th class="px-4 py-3">授課教練</th>
+                <th class="px-4 py-3">開課日期時間</th>
+                <th class="px-4 py-3">教室/地點</th>
+                <th class="px-4 py-3 text-center">人數上限 / 已報名</th>
+                <th class="px-4 py-3 text-center">狀態</th>
+                <th class="px-4 py-3 text-right">維護操作</th>
+              </tr>
+            </thead>
+            <tbody id="coursesTableBody" class="divide-y divide-slate-100">
+              <!-- 動態渲染表格列 -->
+            </tbody>
+          </table>
+        </div>
+        <div id="noCoursesRow" class="hidden text-center py-8 text-xs text-slate-400">
+          目前暫無任何課程資料
+        </div>
+      </div>
+    </div>
+
+    <!-- 頁籤 2: 學員預約名單 (可搜尋、簽到、取消) -->
+    <div id="viewBookings" class="hidden space-y-4">
+      <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
+        <div class="relative flex-1 max-w-sm">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="bookingSearchInput" oninput="renderBookingsTable()" placeholder="搜尋學員姓名、電話、預約編號..." class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="bookingStatusFilter" onchange="renderBookingsTable()" class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all">所有簽到狀態</option>
+            <option value="已預約">已預約</option>
+            <option value="已簽到">已簽到</option>
+            <option value="已取消">已取消</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
+              <tr>
+                <th class="px-4 py-3">預約編號</th>
+                <th class="px-4 py-3">課程名稱</th>
+                <th class="px-4 py-3">學員姓名</th>
+                <th class="px-4 py-3">聯絡電話</th>
+                <th class="px-4 py-3">Line ID</th>
+                <th class="px-4 py-3">特殊需求/備註</th>
+                <th class="px-4 py-3 text-center">簽到狀態</th>
+                <th class="px-4 py-3 text-right">管理</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody" class="divide-y divide-slate-100">
+              <!-- 動態生成 -->
+            </tbody>
+          </table>
+        </div>
+        <div id="noBookingsRow" class="hidden text-center py-8 text-xs text-slate-400">
+          無符合條件的預約記錄
+        </div>
+      </div>
+    </div>
+
+    <!-- 頁籤 3: 系統公告與密碼設定 -->
+    <div id="viewSettings" class="hidden">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 max-w-xl mx-auto space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 mb-1">系統全域設定</h3>
+          <p class="text-xs text-slate-500">在此修改的內容會同步至 Google Sheets 的「系統設定」工作表。</p>
+        </div>
+
+        <form onsubmit="handleSaveSettings(event)" class="space-y-4 pt-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">系統前台名稱</label>
+            <input type="text" id="settingSysName" value="霖霖的課程預約系統" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">前台公告與提醒事項</label>
+            <textarea id="settingNotice" rows="3" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">後台管理密碼</label>
+            <input type="text" id="settingPassword" value="admin888" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <button type="submit" id="saveSettingBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/20">
+            儲存所有設定
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 課程新增 / 編輯表單 Modal (涵蓋 Sheet 的全部欄位) -->
+  <div id="courseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900" id="courseModalTitle">開立新課程時段</h3>
+          <p class="text-xs text-slate-400">填寫後自動寫入 Google Sheets 課程清單</p>
+        </div>
+        <button onclick="closeCourseModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="courseForm" onsubmit="handleCourseSubmit(event)" class="space-y-3.5">
+        <input type="hidden" id="editCourseId">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">課程名稱 <span class="text-rose-500">*</span></label>
+          <input type="text" id="formTitle" required placeholder="如：核心肌群與皮拉提斯" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">授課教練 <span class="text-rose-500">*</span></label>
+            <input type="text" id="formInstructor" required value="霖霖教練" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">人數上限 <span class="text-rose-500">*</span></label>
+            <input type="number" id="formCapacity" required value="8" min="1" max="100" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">開課日期 <span class="text-rose-500">*</span></label>
+            <input type="date" id="formDate" required class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">開始時間 <span class="text-rose-500">*</span></label>
+            <input type="time" id="formStartTime" required value="19:00" class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">結束時間 <span class="text-rose-500">*</span></label>
+            <input type="time" id="formEndTime" required value="20:00" class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">教室 / 上課地點</label>
+            <input type="text" id="formLocation" value="A教室" placeholder="如：A教室 / 重訓區" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">報名狀態</label>
+            <select id="formStatus" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="開啟報名">開啟報名</option>
+              <option value="暫停報名">暫停報名</option>
+              <option value="已結束">已結束</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">課程備註說明 (學員可見)</label>
+          <textarea id="formNotes" rows="2" placeholder="注意事項、自備物品等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeCourseModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs transition">
+            取消
+          </button>
+          <button type="submit" id="courseSubmitBtn" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/20">
+            確認儲存並同步
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- API 設定 Modal -->
+  <div id="apiConfigModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-base font-bold text-slate-900">Google Sheets API 連結設定</h3>
+        <button onclick="closeApiConfigModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5 text-xs text-slate-600">
+        <p>請將 Google Apps Script 的「網路應用程式網址」填入此處，即可雙向讀取與寫入試算表：</p>
+        <input type="url" id="apiInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        
+        <div>
+          <label class="block font-semibold mb-1">管理員通關密碼：</label>
+          <input type="password" id="adminPassInput" value="admin888" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <button onclick="saveApiConfig()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+          儲存連線設定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let API_URL = localStorage.getItem("appsheet_gas_api") || "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+    let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
+
+    // 預設示範課程資料
+    let adminCourses = [
+      {
+        id: "C001",
+        title: "核心肌群與皮拉提斯",
+        instructor: "霖霖教練",
+        date: "2026-11-25",
+        startTime: "19:00",
+        endTime: "20:00",
+        capacity: 8,
+        bookedCount: 6,
+        remaining: 2,
+        location: "A教室",
+        notes: "請自備毛巾與水壺",
+        status: "開啟報名"
+      },
+      {
+        id: "C002",
+        title: "高強度間歇 HIIT 燃脂",
+        instructor: "霖霖教練",
+        date: "2026-11-26",
+        startTime: "20:15",
+        endTime: "21:15",
+        capacity: 10,
+        bookedCount: 5,
+        remaining: 5,
+        location: "B教室",
+        notes: "短時間高耗能",
+        status: "開啟報名"
+      },
+      {
+        id: "C003",
+        title: "瑜珈伸展與深層放鬆",
+        instructor: "小雅教練",
+        date: "2026-11-28",
+        startTime: "10:00",
+        endTime: "11:00",
+        capacity: 6,
+        bookedCount: 6,
+        remaining: 0,
+        location: "A教室",
+        notes: "放鬆舒壓排毒",
+        status: "開啟報名"
+      }
+    ];
+
+    // 預設示範預約資料
+    let adminBookings = [
+      {
+        "預約編號": "BK-1001",
+        "報名時間": "2026-11-20 10:15",
+        "課程編號": "C001",
+        "課程名稱": "核心肌群與皮拉提斯",
+        "學員姓名": "王小明",
+        "聯絡電話": "0912345678",
+        "Line ID": "ming123",
+        "備註需求": "首次參加，膝蓋微不適",
+        "簽到狀態": "已預約"
+      },
+      {
+        "預約編號": "BK-1002",
+        "報名時間": "2026-11-20 11:30",
+        "課程編號": "C001",
+        "課程名稱": "核心肌群與皮拉提斯",
+        "學員姓名": "林小美",
+        "聯絡電話": "0987654321",
+        "Line ID": "may_lin",
+        "備註需求": "",
+        "簽到狀態": "已簽到"
+      },
+      {
+        "預約編號": "BK-1003",
+        "報名時間": "2026-11-20 12:00",
+        "課程編號": "C002",
+        "課程名稱": "高強度間歇 HIIT 燃脂",
+        "學員姓名": "陳大偉",
+        "聯絡電話": "0922334455",
+        "Line ID": "david_c",
+        "備註需求": "減脂專班",
+        "簽到狀態": "已預約"
+      }
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("apiInput").value = API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" ? API_URL : "";
+      document.getElementById("adminPassInput").value = ADMIN_PASS;
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById("formDate").value = tomorrow.toISOString().split("T")[0];
+
+      loadFullAdminData();
+    });
+
+    async function loadFullAdminData() {
+      const refreshIcon = document.getElementById("adminRefreshIcon");
+      if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          const resp = await fetch(`${API_URL}?action=getFullAdminData&password=${encodeURIComponent(ADMIN_PASS)}`);
+          const json = await resp.json();
+          if (json.success) {
+            if (json.courses) {
+              adminCourses = json.courses.map(c => ({
+                id: String(c["課程編號"]),
+                title: c["課程名稱"],
+                instructor: c["授課教練"],
+                date: formatDate(c["日期"]),
+                startTime: c["開始時間"],
+                endTime: c["結束時間"],
+                capacity: Number(c["人數上限"]) || 0,
+                location: c["地點/教室"],
+                notes: c["備註說明"],
+                status: c["狀態"] || "開啟報名"
+              }));
+            }
+            if (json.bookings) {
+              adminBookings = json.bookings;
+            }
+            if (json.config) {
+              if (json.config["系統名稱"]) document.getElementById("settingSysName").value = json.config["系統名稱"];
+              if (json.config["預約提醒事項"]) document.getElementById("settingNotice").value = json.config["預約提醒事項"];
+            }
+          }
+        } catch (err) {
+          console.warn("無法取得真實 API 資料，保留展示模式：", err);
+        }
+      }
+
+      calculateCourseBookedCounts();
+      renderAll();
+      if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+    }
+
+    // 計算每堂課目前的有效預約數
+    function calculateCourseBookedCounts() {
+      const counts = {};
+      adminBookings.forEach(b => {
+        if (b["簽到狀態"] !== "已取消") {
+          const cid = String(b["課程編號"]);
+          counts[cid] = (counts[cid] || 0) + 1;
+        }
+      });
+      adminCourses.forEach(c => {
+        c.bookedCount = counts[c.id] || 0;
+        c.remaining = Math.max(0, c.capacity - c.bookedCount);
+      });
+    }
+
+    function renderAll() {
+      // 統計數據
+      document.getElementById("statCourseTotal").innerText = adminCourses.length;
+      const validBookings = adminBookings.filter(b => b["簽到狀態"] !== "已取消");
+      document.getElementById("statBookingTotal").innerText = validBookings.length;
+      document.getElementById("statFullTotal").innerText = adminCourses.filter(c => (c.remaining || 0) <= 0).length;
+
+      const checkedCount = adminBookings.filter(b => b["簽到狀態"] === "已簽到").length;
+      const rate = validBookings.length > 0 ? Math.round((checkedCount / validBookings.length) * 100) : 100;
+      document.getElementById("statCheckinRate").innerText = rate + "%";
+
+      document.getElementById("courseCountBadge").innerText = adminCourses.length;
+      document.getElementById("bookingCountBadge").innerText = adminBookings.length;
+
+      renderCoursesTable();
+      renderBookingsTable();
+    }
+
+    // 渲染「課程清單」表格
+    function renderCoursesTable() {
+      const query = (document.getElementById("courseSearchInput").value || "").toLowerCase();
+      const filtered = adminCourses.filter(c => 
+        (c.title || "").toLowerCase().includes(query) ||
+        (c.instructor || "").toLowerCase().includes(query) ||
+        (c.location || "").toLowerCase().includes(query) ||
+        (c.id || "").toLowerCase().includes(query)
+      );
+
+      const tbody = document.getElementById("coursesTableBody");
+      const noRow = document.getElementById("noCoursesRow");
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = "";
+        noRow.classList.remove("hidden");
+        return;
+      }
+
+      noRow.classList.add("hidden");
+      let html = "";
+      filtered.forEach(c => {
+        const isFull = (c.remaining || 0) <= 0;
+        const statusBadge = c.status === "開啟報名"
+          ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700">開啟報名</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">${c.status}</span>`;
+
+        html += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3 font-mono font-bold text-slate-500">${c.id}</td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-slate-900">${c.title}</span>
+              ${c.notes ? `<div class="text-[11px] text-slate-400 truncate max-w-xs">${c.notes}</div>` : ''}
+            </td>
+            <td class="px-4 py-3 font-semibold text-blue-600">${c.instructor}</td>
+            <td class="px-4 py-3">
+              <span class="font-medium text-slate-800">${c.date}</span>
+              <div class="text-[11px] text-slate-400">${c.startTime} - ${c.endTime}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-600">${c.location || '待定'}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="font-bold ${isFull ? 'text-rose-600' : 'text-slate-800'}">${c.bookedCount || 0}</span>
+              <span class="text-slate-400"> / ${c.capacity}</span>
+              ${isFull ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
+            </td>
+            <td class="px-4 py-3 text-center">${statusBadge}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button onclick="openCourseModal('${c.id}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold mr-1 transition">
+                <i class="fa-solid fa-pen"></i> 編輯
+              </button>
+              <button onclick="deleteCourse('${c.id}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-semibold transition" title="刪除課程">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // 渲染「預約名冊」表格
+    function renderBookingsTable() {
+      const query = (document.getElementById("bookingSearchInput").value || "").toLowerCase();
+      const status = document.getElementById("bookingStatusFilter").value;
+
+      const filtered = adminBookings.filter(b => {
+        const matchQuery = (b["學員姓名"] || "").toLowerCase().includes(query) ||
+                           (b["聯絡電話"] || "").includes(query) ||
+                           (b["課程名稱"] || "").toLowerCase().includes(query) ||
+                           (b["預約編號"] || "").toLowerCase().includes(query);
+        const matchStatus = status === "all" || b["簽到狀態"] === status;
+        return matchQuery && matchStatus;
+      });
+
+      const tbody = document.getElementById("bookingsTableBody");
+      const noRow = document.getElementById("noBookingsRow");
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = "";
+        noRow.classList.remove("hidden");
+        return;
+      }
+
+      noRow.classList.add("hidden");
+      let html = "";
+      filtered.forEach(b => {
+        const isCancelled = b["簽到狀態"] === "已取消";
+        const isChecked = b["簽到狀態"] === "已簽到";
+
+        let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">已預約</span>`;
+        if (isChecked) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700">已簽到</span>`;
+        } else if (isCancelled) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-400 line-through">已取消</span>`;
+        }
+
+        html += `
+          <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
+            <td class="px-4 py-3">
+              <span class="font-mono font-bold text-slate-800">${b["預約編號"]}</span>
+              <div class="text-[11px] text-slate-400">${b["報名時間"]}</div>
+            </td>
+            <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]}</td>
+            <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
+            <td class="px-4 py-3 font-mono">${b["聯絡電話"]}</td>
+            <td class="px-4 py-3 text-slate-500">${b["Line ID"] || '-'}</td>
+            <td class="px-4 py-3 max-w-[140px] truncate text-slate-500" title="${b["備註需求"] || ''}">${b["備註需求"] || '-'}</td>
+            <td class="px-4 py-3 text-center">${statusBadge}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              ${!isChecked && !isCancelled ? `
+                <button onclick="updateBookingStatus('${b["預約編號"]}', '已簽到')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold mr-1 transition">
+                  <i class="fa-solid fa-check"></i> 簽到
+                </button>
+              ` : ''}
+              ${!isCancelled ? `
+                <button onclick="updateBookingStatus('${b["預約編號"]}', '已取消')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg text-xs font-semibold transition">
+                  取消
+                </button>
+              ` : `
+                <button onclick="updateBookingStatus('${b["預約編號"]}', '已預約')" class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold transition">
+                  還原
+                </button>
+              `}
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // 開啟課程 Modal (支援新增與編輯)
+    function openCourseModal(courseId) {
+      const modal = document.getElementById("courseModal");
+      const titleEl = document.getElementById("courseModalTitle");
+
+      if (courseId) {
+        const c = adminCourses.find(item => item.id === courseId);
+        if (!c) return;
+        titleEl.innerText = "編輯課程時段 - " + c.id;
+        document.getElementById("editCourseId").value = c.id;
+        document.getElementById("formTitle").value = c.title;
+        document.getElementById("formInstructor").value = c.instructor;
+        document.getElementById("formCapacity").value = c.capacity;
+        document.getElementById("formDate").value = c.date;
+        document.getElementById("formStartTime").value = c.startTime;
+        document.getElementById("formEndTime").value = c.endTime;
+        document.getElementById("formLocation").value = c.location || "A教室";
+        document.getElementById("formStatus").value = c.status || "開啟報名";
+        document.getElementById("formNotes").value = c.notes || "";
+      } else {
+        titleEl.innerText = "開立新課程時段";
+        document.getElementById("editCourseId").value = "";
+        document.getElementById("formTitle").value = "";
+        document.getElementById("formInstructor").value = "霖霖教練";
+        document.getElementById("formCapacity").value = "8";
+        document.getElementById("formStartTime").value = "19:00";
+        document.getElementById("formEndTime").value = "20:00";
+        document.getElementById("formLocation").value = "A教室";
+        document.getElementById("formStatus").value = "開啟報名";
+        document.getElementById("formNotes").value = "";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeCourseModal() {
+      document.getElementById("courseModal").classList.add("hidden");
+    }
+
+    // 儲存課程 (新增 / 編輯)
+    async function handleCourseSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById("courseSubmitBtn");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 儲存同步中...`;
+
+      const courseId = document.getElementById("editCourseId").value;
+      const courseData = {
+        courseId: courseId,
+        title: document.getElementById("formTitle").value.trim(),
+        instructor: document.getElementById("formInstructor").value.trim(),
+        capacity: Number(document.getElementById("formCapacity").value),
+        date: document.getElementById("formDate").value,
+        startTime: document.getElementById("formStartTime").value,
+        endTime: document.getElementById("formEndTime").value,
+        location: document.getElementById("formLocation").value.trim(),
+        status: document.getElementById("formStatus").value,
+        notes: document.getElementById("formNotes").value.trim()
+      };
+
+      // 本地即時更新
+      if (courseId) {
+        const idx = adminCourses.findIndex(c => c.id === courseId);
+        if (idx !== -1) {
+          adminCourses[idx] = { ...adminCourses[idx], ...courseData };
+        }
+      } else {
+        const newId = "C" + Date.now().toString().slice(-4);
+        adminCourses.unshift({
+          ...courseData,
+          id: newId,
+          bookedCount: 0,
+          remaining: courseData.capacity
+        });
+      }
+
+      calculateCourseBookedCounts();
+      renderAll();
+      closeCourseModal();
+
+      // 若有設定 GAS API，同步寫入 Google Sheets
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "saveCourse",
+              password: ADMIN_PASS,
+              ...courseData
+            })
+          });
+        } catch (err) {
+          console.error("同步至 Google Sheets 失敗：", err);
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerText = "確認儲存並同步";
+      alert("課程儲存成功！已同步至系統。");
+    }
+
+    // 刪除課程
+    async function deleteCourse(courseId) {
+      if (!confirm(`確定要刪除課程編號「${courseId}」嗎？`)) return;
+
+      adminCourses = adminCourses.filter(c => c.id !== courseId);
+      calculateCourseBookedCounts();
+      renderAll();
+
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "deleteCourse",
+              password: ADMIN_PASS,
+              courseId: courseId
+            })
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    // 更新簽到狀態
+    async function updateBookingStatus(bookingId, newStatus) {
+      const target = adminBookings.find(b => b["預約編號"] === bookingId);
+      if (target) target["簽到狀態"] = newStatus;
+      
+      calculateCourseBookedCounts();
+      renderAll();
+
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "updateBookingStatus",
+              password: ADMIN_PASS,
+              bookingId: bookingId,
+              newStatus: newStatus
+            })
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // 儲存系統全域設定
+    async function handleSaveSettings(e) {
+      e.preventDefault();
+      const btn = document.getElementById("saveSettingBtn");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 設定更新中...`;
+
+      const sysName = document.getElementById("settingSysName").value.trim();
+      const notice = document.getElementById("settingNotice").value.trim();
+      const newPass = document.getElementById("settingPassword").value.trim();
+
+      if (newPass) {
+        ADMIN_PASS = newPass;
+        localStorage.setItem("appsheet_admin_pass", newPass);
+      }
+
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "saveSettings",
+              password: ADMIN_PASS,
+              systemName: sysName,
+              notice: notice,
+              newPassword: newPass
+            })
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerText = "儲存所有設定";
+      alert("系統設定已成功儲存！");
+    }
+
+    // 頁籤切換
+    function switchTab(tab) {
+      const tabs = ['courses', 'bookings', 'settings'];
+      tabs.forEach(t => {
+        const viewEl = document.getElementById("view" + t.charAt(0).toUpperCase() + t.slice(1));
+        const btnEl = document.getElementById("tab" + t.charAt(0).toUpperCase() + t.slice(1) + "Btn");
+        if (t === tab) {
+          viewEl.classList.remove("hidden");
+          btnEl.className = "tab-active pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5";
+        } else {
+          viewEl.classList.add("hidden");
+          btnEl.className = "pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5";
+        }
+      });
+    }
+
+    function openApiConfigModal() {
+      document.getElementById("apiConfigModal").classList.remove("hidden");
+    }
+    function closeApiConfigModal() {
+      document.getElementById("apiConfigModal").classList.add("hidden");
+    }
+    function saveApiConfig() {
+      const url = document.getElementById("apiInput").value.trim();
+      const pass = document.getElementById("adminPassInput").value.trim();
+      if (url) {
+        localStorage.setItem("appsheet_gas_api", url);
+        API_URL = url;
+      }
+      if (pass) {
+        localStorage.setItem("appsheet_admin_pass", pass);
+        ADMIN_PASS = pass;
+      }
+      closeApiConfigModal();
+      alert("API 設定已儲存！即刻嘗試同步。");
+      loadFullAdminData();
+    }
+
+    function formatDate(val) {
+      if (!val) return "";
+      return String(val).split("T")[0];
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>霖霖的課程預約系統</title>
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-20">
+
+  <!-- 頂部導航列 (AppSheet 風格) -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-4 py-3.5 transition-all">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid fa-calendar-check text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">霖霖的課程預約</h1>
+          <p class="text-xs text-slate-500 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            即時線上報名
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="loadCourses()" title="重新整理" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+        </button>
+        <a href="admin.html" title="管理員後台" class="text-xs font-medium px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center gap-1 transition">
+          <i class="fa-solid fa-shield-halved"></i> 管理端
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="max-w-md mx-auto px-4 pt-4">
+
+    <!-- 頂部公告橫幅 -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/80 rounded-2xl p-3.5 mb-4 flex items-start gap-3 shadow-sm">
+      <div class="text-blue-600 text-lg mt-0.5">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      <div class="text-xs text-blue-900 leading-relaxed">
+        <p class="font-bold mb-0.5">預約須知：</p>
+        <p id="announcementText">選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</p>
+      </div>
+    </div>
+
+    <!-- 日期篩選 Tab -->
+    <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3" id="dateFilterTabs">
+      <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-600 text-white shadow-sm transition" data-date="all">
+        全部時段
+      </button>
+      <!-- 動態載入日期標籤 -->
+    </div>
+
+    <!-- 課程清單區域 (Deck Card View) -->
+    <div class="flex items-center justify-between mb-2.5 px-0.5">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">開放報名課程 (<span id="courseCount">0</span>)</span>
+      <span class="text-xs text-slate-400">點擊卡片即可預約</span>
+    </div>
+
+    <!-- 載入中骨架屏 -->
+    <div id="loadingSkeleton" class="space-y-3">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/70 shadow-sm animate-pulse space-y-3">
+        <div class="h-4 bg-slate-200 rounded w-2/3"></div>
+        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+        <div class="h-8 bg-slate-100 rounded-xl"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/70 shadow-sm animate-pulse space-y-3">
+        <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+        <div class="h-3 bg-slate-100 rounded w-1/3"></div>
+        <div class="h-8 bg-slate-100 rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- 課程卡片容器 -->
+    <div id="courseContainer" class="space-y-3.5 hidden">
+      <!-- 課程卡片由 JavaScript 動態生成 -->
+    </div>
+
+    <!-- 無課程提示 -->
+    <div id="noCoursesState" class="hidden text-center py-12 px-4">
+      <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-3">
+        <i class="fa-regular fa-calendar-xmark text-2xl"></i>
+      </div>
+      <p class="text-sm font-bold text-slate-600">目前暫無開放預約的課程</p>
+      <p class="text-xs text-slate-400 mt-1">請稍後再回來查看最新排程</p>
+    </div>
+
+  </main>
+
+  <!-- 報名表單彈出視窗 (Modal) -->
+  <div id="bookingModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl transform transition-transform border border-slate-100">
+      
+      <!-- Modal 標題列 -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <span class="text-[11px] font-bold tracking-wider text-blue-600 uppercase">COURSE BOOKING</span>
+          <h2 class="text-lg font-bold text-slate-900 leading-tight" id="modalCourseTitle">預約課程</h2>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 課程摘要資訊 -->
+      <div class="bg-slate-50 rounded-xl p-3.5 mb-4 text-xs text-slate-600 space-y-1.5 border border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-regular fa-clock text-blue-500 w-4 text-center"></i>
+          <span id="modalDateTime" class="font-semibold text-slate-800"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chalkboard-user text-blue-500 w-4 text-center"></i>
+          <span id="modalInstructor"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-location-dot text-blue-500 w-4 text-center"></i>
+          <span id="modalLocation"></span>
+        </div>
+      </div>
+
+      <!-- 填寫資料表單 -->
+      <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="space-y-3.5">
+        <input type="hidden" id="modalCourseId" name="courseId">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">學員姓名 <span class="text-rose-500">*</span></label>
+          <input type="text" id="studentName" required placeholder="請輸入姓名" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">聯絡電話 <span class="text-rose-500">*</span></label>
+          <input type="tel" id="studentPhone" required placeholder="例如：0912345678" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Line ID <span class="text-slate-400 font-normal">(方便提醒)</span></label>
+          <input type="text" id="studentLine" placeholder="您的 Line ID" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">備註需求</label>
+          <textarea id="studentNotes" rows="2" placeholder="是否有舊傷或特殊注意事項..." class="w-full text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition mt-2">
+          <span>確認預約報名</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 預約成功彈跳通知 -->
+  <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">預約成功！</h3>
+      <p class="text-xs text-slate-500 mb-4" id="successMessageDetail">我們已為您保留名額。</p>
+      
+      <div class="bg-slate-50 rounded-xl p-3 text-left text-xs text-slate-600 mb-5 space-y-1 border border-slate-100">
+        <p><span class="text-slate-400">預約編號：</span><span id="succBookingId" class="font-mono font-bold text-slate-800"></span></p>
+        <p><span class="text-slate-400">課程名稱：</span><span id="succCourseTitle" class="font-bold text-slate-800"></span></p>
+        <p><span class="text-slate-400">時段地點：</span><span id="succDateTime" class="text-slate-800"></span></p>
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition">
+        完成
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 後端 API 連線設定
+     * 預設提供內建模擬模式（Demo Mode），只要部署好 Google Apps Script，將產生的 Web App URL 替換此變數即可直接連上真實 Google Sheets！
+     */
+    let API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
+
+    // 本地暫存課程資料
+    let allCourses = [];
+    let selectedDate = "all";
+
+    // 內建示範資料（當尚未設定 API_URL 或本機離線時自動生效，確保一打開就能體驗）
+    const DEMO_COURSES = [
+      {
+        id: "C001",
+        title: "核心肌群與皮拉提斯",
+        instructor: "霖霖教練",
+        date: "2026-11-25",
+        startTime: "19:00",
+        endTime: "20:00",
+        capacity: 8,
+        bookedCount: 6,
+        remaining: 2,
+        location: "A教室 (瑜珈墊自備)",
+        notes: "強化深層核心，改善體態姿勢與腹部線條。",
+        status: "開啟報名",
+        isFull: false
+      },
+      {
+        id: "C002",
+        title: "高強度間歇 HIIT 燃脂",
+        instructor: "霖霖教練",
+        date: "2026-11-26",
+        startTime: "20:15",
+        endTime: "21:15",
+        capacity: 10,
+        bookedCount: 5,
+        remaining: 5,
+        location: "B教室",
+        notes: "短時間高耗能全身燃脂，建議穿著避震運動鞋。",
+        status: "開啟報名",
+        isFull: false
+      },
+      {
+        id: "C003",
+        title: "瑜珈伸展與深層放鬆",
+        instructor: "小雅教練",
+        date: "2026-11-28",
+        startTime: "10:00",
+        endTime: "11:00",
+        capacity: 6,
+        bookedCount: 6,
+        remaining: 0,
+        location: "A教室",
+        notes: "此時段目前已額滿，可關注名額釋出。",
+        status: "開啟報名",
+        isFull: true
+      },
+      {
+        id: "C004",
+        title: "重量訓練基礎與槓鈴動作",
+        instructor: "霖霖教練",
+        date: "2026-11-29",
+        startTime: "14:00",
+        endTime: "15:30",
+        capacity: 6,
+        bookedCount: 3,
+        remaining: 3,
+        location: "重訓區",
+        notes: "深蹲、硬舉、臥推精準發力教學，小班制指導。",
+        status: "開啟報名",
+        isFull: false
+      }
+    ];
+
+    // 初始化頁面
+    document.addEventListener("DOMContentLoaded", () => {
+      // 支援從 localStorage 或 URL 參數讀取自訂 API 網址
+      const savedApi = localStorage.getItem("appsheet_gas_api");
+      if (savedApi) API_URL = savedApi;
+
+      loadCourses();
+    });
+
+    // 載入課程資料
+    async function loadCourses() {
+      const refreshIcon = document.getElementById("refreshIcon");
+      if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
+      document.getElementById("loadingSkeleton").classList.remove("hidden");
+      document.getElementById("courseContainer").classList.add("hidden");
+      document.getElementById("noCoursesState").classList.add("hidden");
+
+      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
+        // 使用示範資料
+        setTimeout(() => {
+          allCourses = DEMO_COURSES;
+          renderUI();
+          if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+        }, 400);
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${API_URL}?action=getCourses`);
+        const json = await resp.json();
+        if (json.success && json.courses) {
+          allCourses = json.courses;
+        } else {
+          allCourses = DEMO_COURSES;
+        }
+      } catch (err) {
+        console.warn("無法自 GAS 載入，切換示範模式：", err);
+        allCourses = DEMO_COURSES;
+      } finally {
+        renderUI();
+        if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+      }
+    }
+
+    // 渲染所有 UI 元素
+    function renderUI() {
+      document.getElementById("loadingSkeleton").classList.add("hidden");
+      
+      // 產生日期頁籤
+      const dates = Array.from(new Set(allCourses.map(c => c.date))).filter(Boolean).sort();
+      const tabsContainer = document.getElementById("dateFilterTabs");
+      
+      let tabsHtml = `
+        <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${selectedDate === 'all' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" data-date="all">
+          全部時段
+        </button>
+      `;
+
+      dates.forEach(d => {
+        const isSelected = selectedDate === d;
+        tabsHtml += `
+          <button onclick="filterByDate('${d}')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${isSelected ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" data-date="${d}">
+            ${formatTabDate(d)}
+          </button>
+        `;
+      });
+      tabsContainer.innerHTML = tabsHtml;
+
+      // 篩選過濾
+      const filtered = selectedDate === 'all' 
+        ? allCourses 
+        : allCourses.filter(c => c.date === selectedDate);
+
+      document.getElementById("courseCount").innerText = filtered.length;
+
+      const container = document.getElementById("courseContainer");
+      if (filtered.length === 0) {
+        container.classList.add("hidden");
+        document.getElementById("noCoursesState").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("noCoursesState").classList.add("hidden");
+      container.classList.remove("hidden");
+
+      // 產生卡片列表 (AppSheet Deck/Card View)
+      let cardsHtml = "";
+      filtered.forEach(c => {
+        const isFull = c.isFull || c.remaining <= 0;
+        const remainingPercent = Math.min(100, Math.round((c.bookedCount / c.capacity) * 100));
+
+        cardsHtml += `
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition-all relative overflow-hidden ${isFull ? 'opacity-75' : ''}">
+            <!-- 額滿標籤 / 狀態標籤 -->
+            <div class="flex items-start justify-between gap-3 mb-2.5">
+              <div>
+                <span class="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 mb-1.5">
+                  ${c.instructor || '專業教練'}
+                </span>
+                <h3 class="text-base font-bold text-slate-900 leading-snug">${c.title}</h3>
+              </div>
+              <div>
+                ${isFull 
+                  ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/60 flex items-center gap-1">
+                      <i class="fa-solid fa-lock text-[10px]"></i> 已額滿
+                    </span>`
+                  : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1">
+                      <i class="fa-solid fa-fire-flame-curved text-[10px]"></i> 剩餘 ${c.remaining} 名
+                    </span>`
+                }
+              </div>
+            </div>
+
+            <!-- 時間與地點 -->
+            <div class="space-y-1 mb-3 text-xs text-slate-500">
+              <div class="flex items-center gap-2">
+                <i class="fa-regular fa-calendar text-slate-400 w-3.5"></i>
+                <span class="font-medium text-slate-700">${c.date} (${getWeekDay(c.date)})</span>
+                <span class="text-slate-300">•</span>
+                <span class="font-medium text-slate-700">${c.startTime} - ${c.endTime}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-slate-400 w-3.5"></i>
+                <span>${c.location || '教室地點'}</span>
+              </div>
+              ${c.notes ? `
+                <div class="flex items-start gap-2 pt-0.5 text-slate-400">
+                  <i class="fa-regular fa-note-sticky text-slate-400 w-3.5 mt-0.5"></i>
+                  <span class="line-clamp-2">${c.notes}</span>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- 名額進度條 -->
+            <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3 overflow-hidden">
+              <div class="h-1.5 rounded-full ${isFull ? 'bg-rose-500' : 'bg-blue-600'}" style="width: ${remainingPercent}%"></div>
+            </div>
+
+            <!-- 動作按鈕 -->
+            <div>
+              ${isFull 
+                ? `<button disabled class="w-full py-2.5 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed">
+                    此時段名額已滿
+                  </button>`
+                : `<button onclick="openBookingModal('${c.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm active:scale-[0.99]">
+                    <i class="fa-regular fa-pen-to-square"></i>
+                    立即預約登記
+                  </button>`
+              }
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = cardsHtml;
+    }
+
+    // 點選日期篩選
+    function filterByDate(dateStr) {
+      selectedDate = dateStr;
+      renderUI();
+    }
+
+    // 開啟預約 Modal
+    function openBookingModal(courseId) {
+      const course = allCourses.find(c => c.id === courseId);
+      if (!course) return;
+
+      document.getElementById("modalCourseId").value = course.id;
+      document.getElementById("modalCourseTitle").innerText = course.title;
+      document.getElementById("modalDateTime").innerText = `${course.date} (${getWeekDay(course.date)}) ${course.startTime} - ${course.endTime}`;
+      document.getElementById("modalInstructor").innerText = `授課教練：${course.instructor}`;
+      document.getElementById("modalLocation").innerText = `地點：${course.location || '待定'}`;
+
+      // 重設表單
+      document.getElementById("studentName").value = localStorage.getItem("saved_name") || "";
+      document.getElementById("studentPhone").value = localStorage.getItem("saved_phone") || "";
+      document.getElementById("studentLine").value = localStorage.getItem("saved_line") || "";
+      document.getElementById("studentNotes").value = "";
+
+      document.getElementById("bookingModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("bookingModal").classList.add("hidden");
+    }
+
+    // 表單送出處理
+    async function handleBookingSubmit(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 預約送出中...`;
+
+      const courseId = document.getElementById("modalCourseId").value;
+      const name = document.getElementById("studentName").value.trim();
+      const phone = document.getElementById("studentPhone").value.trim();
+      const lineId = document.getElementById("studentLine").value.trim();
+      const notes = document.getElementById("studentNotes").value.trim();
+
+      // 記憶使用者資訊，下次免重填
+      localStorage.setItem("saved_name", name);
+      localStorage.setItem("saved_phone", phone);
+      localStorage.setItem("saved_line", lineId);
+
+      // 如果尚未串接真實 GAS API，進入模擬成功流程
+      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
+        setTimeout(() => {
+          const course = allCourses.find(c => c.id === courseId);
+          if (course) {
+            course.bookedCount += 1;
+            course.remaining -= 1;
+            if (course.remaining <= 0) course.isFull = true;
+          }
+          closeModal();
+          showSuccessModal("BK-" + Date.now().toString().slice(-6), course.title, `${course.date} ${course.startTime}`);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>確認預約報名</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+          renderUI();
+        }, 600);
+        return;
+      }
+
+      // 真實 POST 到 Google Apps Script
+      try {
+        const payload = {
+          action: "bookCourse",
+          courseId: courseId,
+          name: name,
+          phone: phone,
+          lineId: lineId,
+          notes: notes
+        };
+
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const res = await resp.json();
+        if (res.success) {
+          closeModal();
+          showSuccessModal(res.bookingId, res.courseTitle, res.dateTime);
+          loadCourses(); // 重新整理名額
+        } else {
+          alert(res.message || "預約失敗，請重試！");
+        }
+      } catch (err) {
+        console.error("預約錯誤：", err);
+        alert("網路連線逾時或異常，請稍後再試！");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>確認預約報名</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+      }
+    }
+
+    function showSuccessModal(bkId, courseTitle, dateTime) {
+      document.getElementById("succBookingId").innerText = bkId;
+      document.getElementById("succCourseTitle").innerText = courseTitle;
+      document.getElementById("succDateTime").innerText = dateTime;
+      document.getElementById("successModal").classList.remove("hidden");
+    }
+
+    function closeSuccessModal() {
+      document.getElementById("successModal").classList.add("hidden");
+    }
+
+    // 輔助工具：取得星期幾
+    function getWeekDay(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+      return days[d.getDay()] || "";
+    }
+
+    // 輔助工具：日期標籤格式化
+    function formatTabDate(dateStr) {
+      if (!dateStr) return "";
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        return `${Number(parts[1])}/${Number(parts[2])} ${getWeekDay(dateStr)}`;
+      }
+      return dateStr;
+    }
+  </script>
+</body>
+</html>
