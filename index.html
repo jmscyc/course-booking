@@ -465,12 +465,21 @@
       document.getElementById("noCoursesState").classList.add("hidden");
 
       if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
-        // 使用示範資料
+        // 優先讀取跨頁快取之課程資料庫，若無則使用預設 DEMO_COURSES
         setTimeout(() => {
-          allCourses = DEMO_COURSES;
+          const cachedCourses = localStorage.getItem("appsheet_shared_courses");
+          if (cachedCourses) {
+            try {
+              allCourses = JSON.parse(cachedCourses);
+            } catch(e) {
+              allCourses = DEMO_COURSES;
+            }
+          } else {
+            allCourses = DEMO_COURSES;
+          }
           renderUI();
           if (refreshIcon) refreshIcon.classList.remove("fa-spin");
-        }, 400);
+        }, 300);
         return;
       }
 
@@ -753,21 +762,48 @@
       localStorage.setItem("saved_phone", phone);
       localStorage.setItem("saved_line", lineId);
 
-      // 如果尚未串接真實 GAS API，進入模擬成功流程
+      // 如果尚未串接真實 GAS API，進入本機資料庫即時儲存流程
       if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
         setTimeout(() => {
           const course = allCourses.find(c => c.id === courseId);
           if (course) {
-            course.bookedCount += 1;
-            course.remaining -= 1;
+            course.bookedCount = (course.bookedCount || 0) + 1;
+            course.remaining = Math.max(0, (course.remaining || course.capacity) - 1);
             if (course.remaining <= 0) course.isFull = true;
+            // 同步保存更新後的課程狀態
+            localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
           }
+
+          // 產生報名紀錄並寫入共用資料庫 appsheet_shared_bookings
+          const newBookingId = "b_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+          const nowStr = new Date().toISOString().replace("T", " ").substr(0, 19);
+          const newRecord = {
+            "預約編號": newBookingId,
+            "報名時間": nowStr,
+            "課程編號": courseId,
+            "課程名稱": course ? course.title : "精選課程",
+            "學員姓名": name,
+            "聯絡電話": phone,
+            "Line ID": lineId,
+            "備註需求": notes,
+            "簽到狀態": "待確認",
+            "匯款五碼": finalPaymentCode
+          };
+
+          let sharedBookings = [];
+          try {
+            const savedB = localStorage.getItem("appsheet_shared_bookings");
+            if (savedB) sharedBookings = JSON.parse(savedB);
+          } catch(e) {}
+          sharedBookings.unshift(newRecord);
+          localStorage.setItem("appsheet_shared_bookings", JSON.stringify(sharedBookings));
+
           closeModal();
-          showSuccessModal("BK-" + Date.now().toString().slice(-6), course.title, `${course.date} ${course.startTime}`);
+          showSuccessModal(nowStr, course ? course.title : "精選課程", `${course ? course.date : ""} ${course ? course.startTime : ""}`);
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span>確認預約報名</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
           renderUI();
-        }, 600);
+        }, 400);
         return;
       }
 

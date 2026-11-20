@@ -1626,6 +1626,27 @@
 ];
 
     document.addEventListener("DOMContentLoaded", () => {
+      // 讀取共用資料庫中的課程與預約紀錄
+      try {
+        const sharedCourses = localStorage.getItem("appsheet_shared_courses");
+        if (sharedCourses) {
+          const parsedC = JSON.parse(sharedCourses);
+          if (Array.isArray(parsedC) && parsedC.length > 0) adminCourses = parsedC;
+        } else {
+          localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
+        }
+
+        const sharedBookings = localStorage.getItem("appsheet_shared_bookings");
+        if (sharedBookings) {
+          const parsedB = JSON.parse(sharedBookings);
+          if (Array.isArray(parsedB) && parsedB.length > 0) adminBookings = parsedB;
+        } else {
+          localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
+        }
+      } catch(e) {
+        console.error("載入本地快取資料庫失敗：", e);
+      }
+
       // 永久讀取管理後台字級與前台預設字級
       const savedAdminFont = localStorage.getItem("admin_app_font_size") || "large";
       setAppFontSize(savedAdminFont, false);
@@ -2233,6 +2254,7 @@
       }
 
       calculateCourseBookedCounts();
+      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
       closeCourseModal();
 
@@ -2264,6 +2286,7 @@
 
       adminCourses = adminCourses.filter(c => c.id !== courseId);
       calculateCourseBookedCounts();
+      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
       if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
@@ -2289,6 +2312,7 @@
       if (target) target["簽到狀態"] = newStatus;
       
       calculateCourseBookedCounts();
+      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
       if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
@@ -2323,6 +2347,7 @@
 
       target["簽到狀態"] = "報名成功";
       calculateCourseBookedCounts();
+      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
       if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
