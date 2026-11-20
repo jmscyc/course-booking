@@ -46,6 +46,11 @@
           <i class="fa-solid fa-plug text-blue-400"></i>
           <span class="hidden sm:inline">連接 API</span>
         </button>
+        <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-xs">
+          <button type="button" onclick="setAppFontSize('normal')" id="fontBtnNormal" class="px-2 py-1 rounded text-slate-300 font-bold hover:text-white transition" title="標準字體">A</button>
+          <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition text-sm" title="大字體">A+</button>
+          <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-1 rounded text-slate-400 font-bold hover:text-white transition text-base" title="特大字體">A++</button>
+        </div>
         <button onclick="loadFullAdminData()" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
           <i class="fa-solid fa-rotate-right" id="adminRefreshIcon"></i>
         </button>
@@ -309,15 +314,57 @@
             <input type="text" id="settingSysName" value="霖霖的課程預約系統" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單設定 <span class="text-slate-400 font-normal">(每行一個教室或用逗號分開)</span></label>
-            <textarea id="settingClassrooms" rows="4" placeholder="例如：
-A教室 (瑜珈/皮拉提斯)
-B教室 (多功能有氧)
-重訓區 (槓鈴/機械器材)
-VIP私人教室
-戶外場地" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
-            <p class="text-[11px] text-slate-400 mt-1">在此處自訂的教室名稱，會即時成為開立課程時的「下拉選單」選項。</p>
+          <!-- 課程範本快速下拉選單整併設定 -->
+          <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3.5">
+            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
+              <span>開課範本快速選單設定 (免去每次手打重複文字)</span>
+            </h4>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">常用課程名稱選單 <span class="text-slate-400 font-normal">(每行一門課程)</span></label>
+              <textarea id="settingCourseTitles" rows="3" placeholder="例如：
+❷ 學習：頌缽入門
+❸ 學習：頌缽進階
+❷ 學習：初進階整日班
+❹ 團體頌缽音樂療癒" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+              <p class="text-[11px] text-slate-400 mt-0.5">開課時可在「課程名稱」直接下拉選取，亦可手動修改。</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">常用課程說明 / 價位說明範本 <span class="text-slate-400 font-normal">(每行一筆常用範本)</span></label>
+              <textarea id="settingCourseNotes" rows="3" placeholder="例如：
+想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)
+想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)
+學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)
+音頻深層放鬆，舒緩身心壓力 (早鳥價 $800 / 定價 $1000)" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+              <p class="text-[11px] text-slate-400 mt-0.5">開課時可一鍵帶入備註說明，不用每次重複輸入價格與課堂須知。</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單設定 <span class="text-slate-400 font-normal">(每行一個教室或用逗號分開)</span></label>
+              <textarea id="settingClassrooms" rows="3" placeholder="例如：
+高雄-近高美館
+台南安南醫院
+台北場地
+台中私人包班" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+            </div>
+          </div>
+
+          <!-- UI 視覺與字體大小預設 -->
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                <i class="fa-solid fa-text-height text-indigo-600"></i>
+                <span>訪客前台預設字體大小</span>
+              </p>
+              <p class="text-[11px] text-indigo-700/80">管理者可決定訪客開啟預約頁面時的預設字級大小</p>
+            </div>
+            <select id="settingDefaultFontSize" class="text-xs px-3 py-1.5 rounded-lg border border-indigo-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="normal">標準字體 (100%)</option>
+              <option value="large">大字體 (115% 舒適護眼)</option>
+              <option value="xlarge">特大字體 (130% 長輩友善)</option>
+            </select>
           </div>
 
           <div>
@@ -439,18 +486,34 @@ VIP私人教室
         <input type="hidden" id="editCourseId">
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">課程名稱 <span class="text-rose-500">*</span></label>
-          <input type="text" id="formTitle" required placeholder="如：核心肌群與皮拉提斯" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-700">課程名稱 <span class="text-rose-500">*</span></label>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400">快速範本：</span>
+              <select id="formTitlePresetSelect" onchange="applyTitlePreset(this.value)" class="text-[11px] px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none">
+                <option value="">-- 常用課程快速帶入 --</option>
+              </select>
+            </div>
+          </div>
+          <input type="text" id="formTitle" required placeholder="如：❷ 學習：頌缽入門" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-2.5">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">授課教練 <span class="text-rose-500">*</span></label>
-            <input type="text" id="formInstructor" required value="霖霖教練" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="formInstructor" required value="霖霖" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">人數上限 <span class="text-rose-500">*</span></label>
-            <input type="number" id="formCapacity" required value="8" min="1" max="100" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="number" id="formCapacity" required value="8" min="1" max="100" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold">
+          </div>
+          <div class="bg-amber-50/70 p-1.5 rounded-xl border border-amber-200/80">
+            <label class="block text-[11px] font-bold text-amber-900 mb-0.5 flex items-center justify-between" title="前台顯示時會加上此人數，營造熱絡氣氛">
+              <span>虛擬報名</span>
+              <i class="fa-solid fa-ghost text-amber-500 text-[10px]"></i>
+            </label>
+            <input type="number" id="formVirtualCount" value="0" min="0" max="50" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-amber-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-amber-800" placeholder="如：2">
+            <p class="text-[9px] text-amber-700 mt-0.5 leading-tight">訪客將看到增加此前置人數</p>
           </div>
         </div>
 
@@ -496,8 +559,16 @@ VIP私人教室
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">課程備註說明 (學員可見)</label>
-          <textarea id="formNotes" rows="2" placeholder="注意事項、自備物品等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-700">課程備註說明 (學員可見)</label>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400">快速範本：</span>
+              <select id="formNotesPresetSelect" onchange="applyNotesPreset(this.value)" class="text-[11px] px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none">
+                <option value="">-- 常用說明快速帶入 --</option>
+              </select>
+            </div>
+          </div>
+          <textarea id="formNotes" rows="2" placeholder="注意事項、價位說明、自備物品等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
         </div>
 
         <div class="flex items-center gap-2 pt-2">
@@ -1352,8 +1423,30 @@ VIP私人教室
                 if (list.length > 0) {
                   customClassrooms = list;
                   localStorage.setItem("appsheet_classrooms", JSON.stringify(list));
+                  document.getElementById("settingClassrooms").value = customClassrooms.join("\n");
                 }
               }
+              if (json.config["常用課程名稱選單"] && document.getElementById("settingCourseTitles")) {
+                const titles = json.config["常用課程名稱選單"].split("\n").map(s => s.trim()).filter(Boolean);
+                if (titles.length > 0) {
+                  customCourseTitles = titles;
+                  localStorage.setItem("appsheet_course_titles", JSON.stringify(titles));
+                  document.getElementById("settingCourseTitles").value = customCourseTitles.join("\n");
+                }
+              }
+              if (json.config["常用課程說明選單"] && document.getElementById("settingCourseNotes")) {
+                const notes = json.config["常用課程說明選單"].split("\n").map(s => s.trim()).filter(Boolean);
+                if (notes.length > 0) {
+                  customCourseNotes = notes;
+                  localStorage.setItem("appsheet_course_notes", JSON.stringify(notes));
+                  document.getElementById("settingCourseNotes").value = customCourseNotes.join("\n");
+                }
+              }
+              if (json.config["前台預設字體大小"] && document.getElementById("settingDefaultFontSize")) {
+                document.getElementById("settingDefaultFontSize").value = json.config["前台預設字體大小"];
+                localStorage.setItem("appsheet_default_fontsize", json.config["前台預設字體大小"]);
+              }
+              populatePresetsDropdowns();
               if (json.config["通知總開關"] && document.getElementById("settingNotifyEnabled")) {
                 document.getElementById("settingNotifyEnabled").checked = json.config["通知總開關"] === "開啟";
               }
@@ -1413,7 +1506,11 @@ VIP私人教室
         }
       });
       adminCourses.forEach(c => {
-        c.bookedCount = counts[c.id] || 0;
+        const realCount = counts[c.id] || 0;
+        const vCount = Number(c.virtualCount) || 0;
+        c.realBookedCount = realCount;
+        c.virtualCount = vCount;
+        c.bookedCount = realCount + vCount; // 訪客看到的人數
         c.remaining = Math.max(0, c.capacity - c.bookedCount);
       });
     }
@@ -1478,8 +1575,15 @@ VIP私人教室
             </td>
             <td class="px-4 py-3 text-slate-600">${c.location || '待定'}</td>
             <td class="px-4 py-3 text-center">
-              <span class="font-bold ${isFull ? 'text-rose-600' : 'text-slate-800'}">${c.bookedCount || 0}</span>
-              <span class="text-slate-400"> / ${c.capacity}</span>
+              <div class="inline-flex items-baseline gap-1">
+                <span class="font-bold ${isFull ? 'text-rose-600' : 'text-slate-800'}">${c.bookedCount || 0}</span>
+                <span class="text-slate-400">/ ${c.capacity}</span>
+              </div>
+              ${c.virtualCount ? `
+                <div class="text-[10px] text-amber-600 font-medium" title="真實報名 ${c.realBookedCount || 0} 人 + 虛擬膨脹 ${c.virtualCount} 人">
+                  (實${c.realBookedCount || 0}+虛${c.virtualCount})
+                </div>
+              ` : ''}
               ${isFull ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
@@ -1913,17 +2017,33 @@ VIP私人教室
       const notice = document.getElementById("settingNotice").value.trim();
       const newPass = document.getElementById("settingPassword").value.trim();
       const rawClassrooms = document.getElementById("settingClassrooms").value;
+      const rawTitles = document.getElementById("settingCourseTitles").value;
+      const rawNotes = document.getElementById("settingCourseNotes").value;
+      const defaultFontSize = document.getElementById("settingDefaultFontSize").value;
 
-      // 解析常用教室清單（支援換行或逗號分隔）
-      const parsedClassrooms = rawClassrooms
-        .split(/[\n,]/)
-        .map(s => s.trim())
-        .filter(Boolean);
-
+      // 解析常用教室清單
+      const parsedClassrooms = rawClassrooms.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
       if (parsedClassrooms.length > 0) {
         customClassrooms = parsedClassrooms;
         localStorage.setItem("appsheet_classrooms", JSON.stringify(customClassrooms));
       }
+
+      // 解析常用課程名稱
+      const parsedTitles = rawTitles.split(/\n/).map(s => s.trim()).filter(Boolean);
+      if (parsedTitles.length > 0) {
+        customCourseTitles = parsedTitles;
+        localStorage.setItem("appsheet_course_titles", JSON.stringify(customCourseTitles));
+      }
+
+      // 解析常用課程說明
+      const parsedNotes = rawNotes.split(/\n/).map(s => s.trim()).filter(Boolean);
+      if (parsedNotes.length > 0) {
+        customCourseNotes = parsedNotes;
+        localStorage.setItem("appsheet_course_notes", JSON.stringify(customCourseNotes));
+      }
+
+      localStorage.setItem("appsheet_default_fontsize", defaultFontSize);
+      populatePresetsDropdowns();
 
       if (newPass) {
         ADMIN_PASS = newPass;
@@ -1957,6 +2077,9 @@ VIP私人教室
               notice: notice,
               newPassword: newPass,
               classrooms: customClassrooms.join(","),
+              courseTitles: customCourseTitles.join("\n"),
+              courseNotes: customCourseNotes.join("\n"),
+              defaultFontSize: defaultFontSize,
               notifyEnabled: notifyEnabled,
               studentLineNotify: studentLineNotify,
               tgBotToken: tgBotToken,

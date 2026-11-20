@@ -24,8 +24,8 @@ function setupSheets() {
   let courseSheet = ss.getSheetByName(SHEET_COURSES);
   if (!courseSheet) {
     courseSheet = ss.insertSheet(SHEET_COURSES);
-    courseSheet.appendRow(["課程編號", "課程名稱", "授課教練", "日期", "開始時間", "結束時間", "人數上限", "目前報名數", "地點/教室", "備註說明", "狀態"]);
-    courseSheet.getRange(1, 1, 1, 11).setBackground("#2563eb").setFontColor("#ffffff").setFontWeight("bold");
+    courseSheet.appendRow(["課程編號", "課程名稱", "授課教練", "日期", "開始時間", "結束時間", "人數上限", "目前報名數", "地點/教室", "備註說明", "狀態", "虛擬報名數"]);
+    courseSheet.getRange(1, 1, 1, 12).setBackground("#2563eb").setFontColor("#ffffff").setFontWeight("bold");
     
     const realCourses = [
       [
@@ -802,6 +802,9 @@ function setupSheets() {
     configSheet.appendRow(["TelegramChatId", ""]);
     configSheet.appendRow(["LineChannelAccessToken", ""]);
     configSheet.appendRow(["LineNotifyToken", ""]);
+    configSheet.appendRow(["常用課程名稱選單", "❷ 學習：頌缽入門\n❸ 學習：頌缽進階\n❷ 學習：初進階整日班\n❹ 團體頌缽音樂療癒"]);
+    configSheet.appendRow(["常用課程說明選單", "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)\n想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)\n學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)\n音頻深層放鬆，舒緩身心壓力 (早鳥價 $800 / 定價 $1000)"]);
+    configSheet.appendRow(["前台預設字體大小", "normal"]);
     configSheet.getRange(1, 1, 1, 2).setBackground("#475569").setFontColor("#ffffff").setFontWeight("bold");
   }
 
@@ -839,9 +842,11 @@ function doGet(e) {
       const resultCourses = courses.map(c => {
         const cId = String(c["課程編號"]);
         const maxCap = Number(c["人數上限"]) || 0;
-        const currentCount = bookingCounts[cId] || 0;
-        const isFull = currentCount >= maxCap;
-        const remaining = Math.max(0, maxCap - currentCount);
+        const realCount = bookingCounts[cId] || 0;
+        const virtualCount = Number(c["虛擬報名數"]) || 0;
+        const totalDisplayBooked = realCount + virtualCount;
+        const isFull = totalDisplayBooked >= maxCap;
+        const remaining = Math.max(0, maxCap - totalDisplayBooked);
 
         return {
           id: cId,
@@ -851,7 +856,9 @@ function doGet(e) {
           startTime: c["開始時間"],
           endTime: c["結束時間"],
           capacity: maxCap,
-          bookedCount: currentCount,
+          bookedCount: totalDisplayBooked,
+          realBookedCount: realCount,
+          virtualCount: virtualCount,
           remaining: remaining,
           location: c["地點/教室"],
           notes: c["備註說明"],
@@ -947,8 +954,9 @@ function doPost(e) {
       if (isAlreadyBooked) return jsonResponse({ success: false, message: "您已經預約過這堂課程囉！" });
 
       const currentBooked = bookings.filter(b => String(b["課程編號"]) === courseId && b["簽到狀態"] !== "已取消").length;
+      const virtualCount = Number(targetCourse["虛擬報名數"]) || 0;
       const maxCap = Number(targetCourse["人數上限"]) || 0;
-      if (currentBooked >= maxCap) return jsonResponse({ success: false, message: "該課程已額滿！" });
+      if ((currentBooked + virtualCount) >= maxCap) return jsonResponse({ success: false, message: "該課程已額滿！" });
 
       const bookingId = "BK-" + Utilities.formatDate(new Date(), "GMT+8", "yyyyMMddHHmmss") + "-" + Math.floor(Math.random() * 899 + 100);
       const nowStr = Utilities.formatDate(new Date(), "GMT+8", "yyyy-MM-dd HH:mm:ss");
@@ -1027,6 +1035,7 @@ function doPost(e) {
           courseSheet.getRange(rowIdx, 9).setValue(data.location);
           courseSheet.getRange(rowIdx, 10).setValue(data.notes || "");
           courseSheet.getRange(rowIdx, 11).setValue(data.status || "開啟報名");
+          courseSheet.getRange(rowIdx, 12).setValue(Number(data.virtualCount) || 0);
           return jsonResponse({ success: true, message: "課程更新成功！" });
         }
       }
@@ -1044,7 +1053,8 @@ function doPost(e) {
         0,
         data.location || "活動教室",
         data.notes || "",
-        data.status || "開啟報名"
+        data.status || "開啟報名",
+        Number(data.virtualCount) || 0
       ]);
 
       return jsonResponse({ success: true, message: "新課程已成功上架！", courseId: newId });
@@ -1206,6 +1216,9 @@ function doPost(e) {
       if (tgChatId !== undefined) updateOrAddConfig("TelegramChatId", tgChatId);
       if (lineChannelAccessToken !== undefined) updateOrAddConfig("LineChannelAccessToken", lineChannelAccessToken);
       if (lineNotifyToken !== undefined) updateOrAddConfig("LineNotifyToken", lineNotifyToken);
+      if (data.courseTitles !== undefined) updateOrAddConfig("常用課程名稱選單", data.courseTitles);
+      if (data.courseNotes !== undefined) updateOrAddConfig("常用課程說明選單", data.courseNotes);
+      if (data.defaultFontSize !== undefined) updateOrAddConfig("前台預設字體大小", data.defaultFontSize);
 
       return jsonResponse({ success: true, message: "系統設定已更新！" });
     }
