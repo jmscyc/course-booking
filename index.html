@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --client-font-size: 23px; /* 前台預設直接放大三號 (標準 20px / 大 23px / 特大 27px) */
+      --client-font-size: 22px; /* 預設大字體 22px */
     }
     html {
       font-size: var(--client-font-size) !important;
@@ -22,16 +22,16 @@
       font-size: 1rem;
       line-height: 1.55;
     }
-    /* 徹底覆蓋 Tailwind 死值，讓所有文字全面顯著放大 */
-    .text-\[9px\] { font-size: 0.85rem !important; }
-    .text-\[10px\] { font-size: 0.9rem !important; }
-    .text-\[11px\] { font-size: 0.95rem !important; }
+    /* 覆蓋 Tailwind 死值，讓 A/A+/A++ 縮放等比放大有感 */
+    .text-\[9px\] { font-size: 0.8rem !important; }
+    .text-\[10px\] { font-size: 0.85rem !important; }
+    .text-\[11px\] { font-size: 0.9rem !important; }
     .text-xs { font-size: 1rem !important; }
-    .text-sm { font-size: 1.15rem !important; }
-    .text-base { font-size: 1.3rem !important; }
+    .text-sm { font-size: 1.12rem !important; }
+    .text-base { font-size: 1.25rem !important; }
     .text-lg { font-size: 1.45rem !important; }
     .text-xl { font-size: 1.65rem !important; }
-    .text-2xl { font-size: 2.0rem !important; }
+    .text-2xl { font-size: 1.95rem !important; }
 
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
@@ -47,10 +47,11 @@
     (function() {
       var adminDef = localStorage.getItem("appsheet_default_fontsize") || "large";
       var saved = localStorage.getItem("client_user_font_size") || adminDef;
-      var fs = "23px";
-      if (saved === "xlarge") fs = "27px";
-      else if (saved === "normal") fs = "20px";
+      var fs = "22px";
+      if (saved === "xlarge") fs = "27px"; // A++ 特大超巨大字體
+      else if (saved === "normal") fs = "18px";
       document.documentElement.style.setProperty("--client-font-size", fs);
+      document.documentElement.style.fontSize = fs;
     })();
   </script>
 </head>
@@ -81,9 +82,7 @@
         <button onclick="loadCourses()" title="重新整理" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
           <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
         </button>
-        <a href="admin.html" title="管理員後台" class="text-xs font-medium px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center gap-1 transition">
-          <i class="fa-solid fa-shield-halved"></i> 管理端
-        </a>
+
       </div>
     </div>
   </header>
@@ -196,26 +195,30 @@
           <input type="text" id="studentLine" placeholder="請輸入您的 Line ID" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
-        <!-- 付款方式選擇 (匯款 或 LINE轉帳) -->
+        <!-- 付款方式選擇 (銀行匯款 / LINE轉帳 / 現場付現 三選一) -->
         <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-3">
           <div>
             <label class="block text-xs font-bold text-slate-800 mb-1.5">
               <span>付款方式</span>
               <span class="text-rose-500">*</span>
             </label>
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
-                <i class="fa-solid fa-building-columns text-blue-600"></i>
-                <span>銀行/ATM 匯款</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm">
+                <i class="fa-solid fa-building-columns text-blue-600 text-sm"></i>
+                <span class="whitespace-nowrap">銀行匯款</span>
               </button>
-              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-3 rounded-xl border-2 border-transparent bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition border-slate-200">
+              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition">
                 <i class="fa-brands fa-line text-emerald-500 text-base"></i>
-                <span>LINE 轉帳</span>
+                <span class="whitespace-nowrap">LINE 轉帳</span>
+              </button>
+              <button type="button" id="payMethodCash" onclick="selectPayMethod('cash')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-amber-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-hand-holding-dollar text-amber-500 text-base"></i>
+                <span class="whitespace-nowrap">現場付現</span>
               </button>
             </div>
           </div>
 
-          <!-- 匯款專用：五碼輸入框 (僅限輸入剛好5碼純數字) -->
+          <!-- 1. 銀行匯款專用：五碼輸入框 (僅限輸入剛好5碼純數字) -->
           <div id="bankCodeContainer" class="space-y-1 pt-1">
             <div class="flex items-center justify-between">
               <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -223,19 +226,28 @@
                 <span>匯款帳號後五碼</span>
                 <span class="text-rose-500">*</span>
               </label>
-              <span class="text-[11px] text-slate-400">必須為 5 碼數字</span>
+              <span class="text-[11px] text-slate-400">必須剛好 5 碼數字</span>
             </div>
             <input type="text" id="studentPaymentCode" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="請輸入 5 碼純數字 (例如：42919)" class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
             <p class="text-[11px] text-slate-500">管理者將以此 5 位數核對您的銀行入帳</p>
           </div>
 
-          <!-- LINE 轉帳提示 -->
+          <!-- 2. LINE 轉帳提示 -->
           <div id="linePayContainer" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
             <p class="font-bold flex items-center gap-1.5 text-emerald-900">
-              <i class="fa-solid fa-circle-info"></i>
+              <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
               <span>已選擇 LINE 轉帳付款</span>
             </p>
             <p class="text-[11px] leading-relaxed">請確認上方已填寫正確的 <b>Line ID</b>，送出後我們將透過 LINE 與您核對款項並發送報名成功通知！</p>
+          </div>
+
+          <!-- 3. 現場付現提示 -->
+          <div id="cashPayContainer" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
+            <p class="font-bold flex items-center gap-1.5 text-amber-900">
+              <i class="fa-solid fa-circle-check text-amber-600"></i>
+              <span>已選擇上課現場付現</span>
+            </p>
+            <p class="text-[11px] leading-relaxed">請於上課當日提早 10 分鐘抵達教室並向現場助教完成繳費報到即可！</p>
           </div>
         </div>
 
@@ -286,25 +298,27 @@
 
     // 字體大小縮放控制（訪客自選，並支援讀取管理者設定之預設值）
     function changeFontSize(size, save = true) {
+      if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
+        size = "large";
+      }
       const bNormal = document.getElementById("clientFontNormal");
       const bLarge = document.getElementById("clientFontLarge");
       const bXLarge = document.getElementById("clientFontXLarge");
 
       [bNormal, bLarge, bXLarge].forEach(b => {
-        if (b) b.className = "px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition";
+        if (b) b.className = "px-2.5 py-1 rounded-md text-slate-400 font-bold hover:text-blue-600 transition";
       });
 
-      let fs = "18px";
+      let fs = "22px";
       if (size === "xlarge") {
-        fs = "21px";
-        if (bXLarge) bXLarge.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-lg shadow-sm";
+        fs = "27px"; // A++ 明顯巨大，極度清晰！
+        if (bXLarge) bXLarge.className = "px-2.5 py-1 rounded-md bg-blue-600 text-white font-black transition shadow-sm text-sm";
       } else if (size === "normal") {
-        fs = "16px";
-        if (bNormal) bNormal.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-sm shadow-sm";
-      } else {
-        size = "large";
         fs = "18px";
-        if (bLarge) bLarge.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-bold transition text-base shadow-sm";
+        if (bNormal) bNormal.className = "px-2.5 py-1 rounded-md bg-blue-600 text-white font-black transition shadow-sm text-xs";
+      } else {
+        fs = "22px";
+        if (bLarge) bLarge.className = "px-2.5 py-1 rounded-md bg-blue-600 text-white font-black transition shadow-sm text-xs";
       }
 
       document.documentElement.style.setProperty("--client-font-size", fs);
