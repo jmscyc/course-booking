@@ -67,7 +67,7 @@
 
   <!-- 管理後台頂部列 -->
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <a href="index.html" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition shrink-0" title="前往學員報名端">
           <i class="fa-solid fa-arrow-left"></i>
@@ -99,7 +99,7 @@
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-6xl mx-auto px-4 pt-6 space-y-6">
+  <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
 
     <!-- 數據概覽卡片 -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
@@ -223,15 +223,15 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
               <tr>
-                <th class="px-3.5 py-3 whitespace-nowrap">報名日期時間</th>
-                <th class="px-3.5 py-3 whitespace-nowrap min-w-[140px]">課程名稱</th>
-                <th class="px-3.5 py-3 whitespace-nowrap">學員姓名</th>
-                <th class="px-3.5 py-3 whitespace-nowrap">聯絡電話</th>
-                <th class="px-3.5 py-3 whitespace-nowrap">Line ID</th>
-                <th class="px-3.5 py-3 text-center whitespace-nowrap">匯款五碼 / 付款</th>
-                <th class="px-3.5 py-3 whitespace-nowrap min-w-[120px]">備註需求</th>
-                <th class="px-3.5 py-3 text-center whitespace-nowrap">簽到狀態</th>
-                <th class="px-3.5 py-3 text-right whitespace-nowrap">管理操作</th>
+                <th class="px-3 py-3 whitespace-nowrap">報名日期時間</th>
+                <th class="px-3 py-3 whitespace-nowrap">課程名稱</th>
+                <th class="px-3 py-3 whitespace-nowrap">學員姓名</th>
+                <th class="px-3 py-3 whitespace-nowrap">聯絡電話</th>
+                <th class="px-3 py-3 whitespace-nowrap">Line ID</th>
+                <th class="px-3 py-3 text-center whitespace-nowrap">付款方式 / 五碼</th>
+                <th class="px-3 py-3 whitespace-nowrap max-w-[150px]">備註需求</th>
+                <th class="px-3 py-3 text-center whitespace-nowrap">狀態</th>
+                <th class="px-3 py-3 text-center whitespace-nowrap min-w-[160px] sticky right-0 bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">確認與簽到管理操作</th>
               </tr>
             </thead>
             <tbody id="bookingsTableBody" class="divide-y divide-slate-100">
@@ -355,8 +355,8 @@
     </div>
 
     <!-- 頁籤 3: 系統公告與密碼設定 -->
-    <div id="viewSettings" class="hidden">
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 max-w-xl mx-auto space-y-4">
+    <div id="viewSettings" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
         <div>
           <h3 class="text-base font-bold text-slate-900 mb-1">系統全域設定</h3>
           <p class="text-xs text-slate-500">在此修改的設定會即時儲存並在全系統生效。</p>
@@ -2092,12 +2092,16 @@
       let html = "";
       let mHtml = "";
       filtered.forEach(b => {
-        const st = b["簽到狀態"] || "待確認";
+        const rawSt = (b["簽到狀態"] || "待確認").trim();
+        // 統一正規化狀態
+        let st = rawSt;
+        if (st === "已預約") st = "待確認"; // 將舊系統 AppSheet 的「已預約」自動對齊為「待確認」
+
         const isCancelled = st === "已取消";
         const isChecked = st === "已簽到";
         const isCompleted = st === "已完成";
         const isSuccess = st === "報名成功";
-        const isPending = st === "待確認" || st === "已預約";
+        const isPending = st === "待確認" || !st;
 
         let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap inline-flex items-center gap-1"><i class="fa-solid fa-hourglass-half"></i>待確認</span>`;
         if (isSuccess) {
@@ -2154,44 +2158,44 @@
               ${b["備註需求"] || '<span class="text-slate-300">-</span>'}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
-            <td class="px-3.5 py-2.5 text-right whitespace-nowrap">
-              <div class="inline-flex items-center gap-1.5 justify-end">
+            <td class="px-3 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">
+              <div class="inline-flex items-center gap-1.5 justify-center">
                 ${isPending ? `
-                  <button type="button" onclick="confirmPaymentAction('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1">
+                  <button type="button" onclick="confirmPaymentAction('${b["預約編號"]}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1">
                     <i class="fa-solid fa-circle-check"></i> 確認入帳 (報名成功)
                   </button>
                 ` : ''}
 
                 ${isSuccess ? `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '已簽到')" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '已簽到')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1">
                     <i class="fa-solid fa-clipboard-check"></i> 現場簽到
                   </button>
                 ` : ''}
 
                 ${isChecked ? `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '報名成功')" class="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition inline-flex items-center gap-1" title="退回報名成功狀態">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '報名成功')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="退回報名成功狀態">
                     <i class="fa-solid fa-rotate-left"></i> 取消簽到
                   </button>
                 ` : ''}
 
                 ${isCompleted ? `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '報名成功')" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="標記為報名成功">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '報名成功')" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="標記為報名成功">
                     <i class="fa-solid fa-circle-check"></i> 標記為報名成功
                   </button>
                 ` : ''}
 
                 ${b["Line ID"] ? `
-                  <button type="button" onclick="openLineNoticePrompt('${b["預約編號"]}', '${b["學員姓名"]}', '${b["Line ID"]}', '${b["課程名稱"]}')" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition" title="發送 LINE 通知給學員">
+                  <button type="button" onclick="openLineNoticePrompt('${b["預約編號"]}', '${b["學員姓名"]}', '${b["Line ID"]}', '${b["課程名稱"]}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition" title="發送 LINE 通知給學員">
                     <i class="fa-brands fa-line text-sm"></i>
                   </button>
                 ` : ''}
 
                 ${!isCancelled ? `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '已取消')" class="px-2 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg text-xs font-medium transition" title="取消報名">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '已取消')" class="px-2 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-medium transition" title="取消報名">
                     取消
                   </button>
                 ` : `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">
                     還原
                   </button>
                 `}
