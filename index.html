@@ -196,21 +196,47 @@
           <input type="text" id="studentLine" placeholder="請輸入您的 Line ID" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
-        <!-- 獨立匯款帳號後五碼欄位 -->
-        <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-amber-950 flex items-center gap-1">
-              <i class="fa-solid fa-money-bill-transfer text-amber-600"></i>
-              <span>匯款帳號末五碼</span>
+        <!-- 付款方式選擇 (匯款 或 LINE轉帳) -->
+        <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1.5">
+              <span>付款方式</span>
               <span class="text-rose-500">*</span>
             </label>
-            <div class="flex items-center gap-1 text-[11px]">
-              <button type="button" onclick="setQuickPayment('LINE Pay')" class="px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium transition">LINE Pay</button>
-              <button type="button" onclick="setQuickPayment('現場付現')" class="px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium transition">現場付現</button>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i class="fa-solid fa-building-columns text-blue-600"></i>
+                <span>銀行/ATM 匯款</span>
+              </button>
+              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-3 rounded-xl border-2 border-transparent bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition border-slate-200">
+                <i class="fa-brands fa-line text-emerald-500 text-base"></i>
+                <span>LINE 轉帳</span>
+              </button>
             </div>
           </div>
-          <input type="text" id="studentPaymentCode" required placeholder="例如：42919 (若已匯款請填寫後五碼)" maxlength="20" class="w-full text-sm px-3.5 py-2 rounded-lg border border-amber-200 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition">
-          <p class="text-[11px] text-amber-800/80">管理者核對此末五碼入帳後，會立即變更為【報名成功】！</p>
+
+          <!-- 匯款專用：五碼輸入框 (僅限輸入剛好5碼純數字) -->
+          <div id="bankCodeContainer" class="space-y-1 pt-1">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                <i class="fa-solid fa-hashtag text-blue-600"></i>
+                <span>匯款帳號後五碼</span>
+                <span class="text-rose-500">*</span>
+              </label>
+              <span class="text-[11px] text-slate-400">必須為 5 碼數字</span>
+            </div>
+            <input type="text" id="studentPaymentCode" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="請輸入 5 碼純數字 (例如：42919)" class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
+            <p class="text-[11px] text-slate-500">管理者將以此 5 位數核對您的銀行入帳</p>
+          </div>
+
+          <!-- LINE 轉帳提示 -->
+          <div id="linePayContainer" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
+            <p class="font-bold flex items-center gap-1.5 text-emerald-900">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>已選擇 LINE 轉帳付款</span>
+            </p>
+            <p class="text-[11px] leading-relaxed">請確認上方已填寫正確的 <b>Line ID</b>，送出後我們將透過 LINE 與您核對款項並發送報名成功通知！</p>
+          </div>
         </div>
 
         <div>
