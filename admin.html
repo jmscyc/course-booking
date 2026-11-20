@@ -378,41 +378,80 @@
             </div>
           </div>
 
-          <!-- UI 介面視覺與字體大小設定專區 -->
-          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                  <i class="fa-solid fa-text-height text-indigo-600 text-sm"></i>
-                  <span>介面字體大小設定</span>
-                </h4>
-                <p class="text-[11px] text-indigo-800/80">可隨時自由調整後台與前台的文字大小，告別吃力小字</p>
+          <!-- UI 介面視覺與字體大小設定專區 (重新精緻化排版) -->
+          <div class="bg-gradient-to-br from-slate-50 to-indigo-50/40 border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-200/70">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/20">
+                  <i class="fa-solid fa-font text-xs"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-extrabold text-slate-900 tracking-tight">介面顯示與字級排版</h4>
+                  <p class="text-[11px] text-slate-500">獨立設定管理者後台與學員前台的字體尺寸，設定立即持久生效</p>
+                </div>
               </div>
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full self-start sm:self-auto border border-indigo-100">
+                <i class="fa-solid fa-circle-check text-[10px]"></i> 雙向持久化記憶
+              </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-bold text-slate-800">管理者後台字級</p>
-                  <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- 管理端字級設定卡片 -->
+              <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm hover:border-indigo-300 transition-colors flex flex-col justify-between gap-3">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <span class="inline-block text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md mb-1">內部管理畫面</span>
+                    <h5 class="text-xs font-bold text-slate-900">管理者後台字級</h5>
+                    <p class="text-[11px] text-slate-400 mt-0.5">即時調整目前您操作的控制中心頁面</p>
+                  </div>
+                  <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                  </div>
                 </div>
-                <div class="flex items-center gap-1">
-                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">標準 15px</button>
-                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-blue-600 text-white shadow-sm transition">大 17px (推薦)</button>
-                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">特大 20px</button>
+
+                <div class="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/70">
+                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-[10px] opacity-75">標準</span>
+                    <span class="text-xs font-black">14px</span>
+                  </button>
+                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
+                    <span class="text-[10px] opacity-85">預設推薦</span>
+                    <span class="text-xs font-black">15px</span>
+                  </button>
+                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-[10px] opacity-75">放大</span>
+                    <span class="text-xs font-black">17px</span>
+                  </button>
                 </div>
               </div>
 
-              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <p class="text-xs font-bold text-slate-800">訪客前台預設字級</p>
-                  <p class="text-[10px] text-slate-400">學生進入報名時看到的預設字體大小</p>
+              <!-- 學員前台預設字級設定卡片 -->
+              <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-colors flex flex-col justify-between gap-3">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <span class="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mb-1">學員瀏覽體驗</span>
+                    <h5 class="text-xs font-bold text-slate-900">訪客前台預設字級</h5>
+                    <p class="text-[11px] text-slate-400 mt-0.5">決定新學員進入預約頁時的預設字體尺寸</p>
+                  </div>
+                  <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i class="fa-solid fa-mobile-screen-button text-xs"></i>
+                  </div>
                 </div>
-                <div class="flex items-center gap-1">
+
+                <div class="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/70">
                   <input type="hidden" id="settingDefaultFontSize" value="large">
-                  <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">標準 15px</button>
-                  <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-emerald-600 text-white shadow-sm transition">大 17px (推薦)</button>
-                  <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">特大 20px</button>
+                  <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-[10px] opacity-75">標準</span>
+                    <span class="text-xs font-black">14px</span>
+                  </button>
+                  <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="py-2 text-xs rounded-lg font-black transition text-center flex flex-col items-center justify-center gap-0.5 shadow-sm">
+                    <span class="text-[10px] opacity-85">預設推薦</span>
+                    <span class="text-xs font-black">15px</span>
+                  </button>
+                  <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="py-2 text-xs rounded-lg font-bold transition text-center flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-[10px] opacity-75">放大</span>
+                    <span class="text-xs font-black">17px</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -726,7 +765,7 @@
         }
       });
 
-      // 2. 同步設定頁按鈕狀態
+      // 2. 同步設定頁按鈕狀態 (精緻質感卡片)
       const setBtns = {
         normal: document.getElementById("setBtnNormal"),
         large: document.getElementById("setBtnLarge"),
@@ -736,9 +775,9 @@
         const btn = setBtns[k];
         if (btn) {
           if (k === size) {
-            btn.className = "px-3 py-1.5 text-xs rounded-xl bg-blue-600 text-white font-black shadow-sm transition";
+            btn.className = "py-2 text-xs rounded-lg font-black bg-blue-600 text-white shadow-md shadow-blue-500/20 transition text-center flex flex-col items-center justify-center gap-0.5 cursor-default";
           } else {
-            btn.className = "px-3 py-1.5 text-xs rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition";
+            btn.className = "py-2 text-xs rounded-lg font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer";
           }
         }
       });
@@ -764,9 +803,9 @@
         const btn = btns[k];
         if (btn) {
           if (k === size) {
-            btn.className = "flex-1 py-1.5 text-xs rounded-xl bg-emerald-600 text-white font-black shadow-sm transition text-center border-transparent";
+            btn.className = "py-2 text-xs rounded-lg font-black bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition text-center flex flex-col items-center justify-center gap-0.5 cursor-default";
           } else {
-            btn.className = "flex-1 py-1.5 text-xs rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold transition text-center border border-slate-200";
+            btn.className = "py-2 text-xs rounded-lg font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer";
           }
         }
       });
@@ -2768,6 +2807,93 @@
       if (!val) return "";
       return String(val).split("T")[0];
     }
+
+    // 匯出學員名冊為 CSV (包含 UTF-8 BOM，Excel 雙擊打開絕不亂碼)
+    function exportBookingsToCSV() {
+      if (!adminBookings || adminBookings.length === 0) {
+        alert("目前名冊中無任何學員資料可匯出！");
+        return;
+      }
+      const headers = ["報名時間", "課程名稱", "學員姓名", "聯絡電話", "Line ID", "付款方式/五碼", "備註需求", "簽到狀態"];
+      let csvContent = "\uFEFF"; // 加入 UTF-8 BOM
+      csvContent += headers.join(",") + "\r\n";
+
+      adminBookings.forEach(b => {
+        const row = [
+          `"${(b["報名時間"] || "").replace(/"/g, '""')}"`,
+          `"${(b["課程名稱"] || "").replace(/"/g, '""')}"`,
+          `"${(b["學員姓名"] || "").replace(/"/g, '""')}"`,
+          `"${(b["聯絡電話"] || "").replace(/"/g, '""')}"`,
+          `"${(b["Line ID"] || "").replace(/"/g, '""')}"`,
+          `"${(b["匯款五碼"] || "").replace(/"/g, '""')}"`,
+          `"${(b["備註需求"] || "").replace(/"/g, '""')}"`,
+          `"${(b["簽到狀態"] || "").replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().split("T")[0];
+      link.setAttribute("href", url);
+      link.setAttribute("download", `學員預約名冊_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 備份完整系統資料庫為 JSON
+    function exportFullDatabaseJSON() {
+      const backupData = {
+        exportedAt: new Date().toISOString(),
+        courses: adminCourses,
+        bookings: adminBookings,
+        templates: customCourseTemplates,
+        classrooms: customClassrooms
+      };
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().split("T")[0];
+      link.setAttribute("href", url);
+      link.setAttribute("download", `課程預約系統備份_${dateStr}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 還原備份 JSON
+    function importFullDatabaseJSON(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          if (data.courses && Array.isArray(data.courses)) {
+            adminCourses = data.courses;
+            localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
+          }
+          if (data.bookings && Array.isArray(data.bookings)) {
+            adminBookings = data.bookings;
+            localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
+          }
+          if (data.templates && Array.isArray(data.templates)) {
+            customCourseTemplates = data.templates;
+            localStorage.setItem("appsheet_course_templates", JSON.stringify(customCourseTemplates));
+          }
+          calculateCourseBookedCounts();
+          renderAll();
+          renderSettingsTemplateRows();
+          alert("🎉 系統資料庫已成功還原！");
+        } catch(err) {
+          alert("備份檔解析失敗，請確認檔案為有效的 JSON 備份檔！");
+        }
+      };
+      reader.readAsText(file);
+    }
+
   </script>
 </body>
 </html>

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --client-font-size: 17px; /* 縮小一號舒適版 17px (標準 15px / 大 17px / 特大 20px) */
+      --client-font-size: 15px; /* 精緻舒適版 (標準 14px / 預設 15px / 放大 17px) */
     }
     html {
       font-size: var(--client-font-size) !important;
@@ -22,15 +22,15 @@
       font-size: 1rem;
       line-height: 1.5;
     }
-    .text-\[9px\] { font-size: 0.72rem !important; }
-    .text-\[10px\] { font-size: 0.78rem !important; }
-    .text-\[11px\] { font-size: 0.84rem !important; }
-    .text-xs { font-size: 0.88rem !important; }
-    .text-sm { font-size: 0.96rem !important; }
-    .text-base { font-size: 1.08rem !important; }
-    .text-lg { font-size: 1.2rem !important; }
-    .text-xl { font-size: 1.35rem !important; }
-    .text-2xl { font-size: 1.55rem !important; }
+    .text-\[9px\] { font-size: 0.7rem !important; }
+    .text-\[10px\] { font-size: 0.75rem !important; }
+    .text-\[11px\] { font-size: 0.8rem !important; }
+    .text-xs { font-size: 0.85rem !important; }
+    .text-sm { font-size: 0.92rem !important; }
+    .text-base { font-size: 1.02rem !important; }
+    .text-lg { font-size: 1.15rem !important; }
+    .text-xl { font-size: 1.28rem !important; }
+    .text-2xl { font-size: 1.45rem !important; }
 
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
@@ -871,5 +871,43 @@
       return dateStr;
     }
   </script>
+
+  <!-- 學員自主查詢預約 Modal -->
+  <div id="myBookingsModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">查詢我的預約課程</h3>
+            <p class="text-[11px] text-slate-400">輸入手機號碼即可查看您的報名狀態與對帳進度</p>
+          </div>
+        </div>
+        <button onclick="closeMyBookingsModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="tel" id="queryPhoneInput" placeholder="請輸入報名時的手機號碼" class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+        </div>
+        <button type="button" onclick="queryMyBookings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+          查詢
+        </button>
+      </div>
+
+      <!-- 查詢結果列表 -->
+      <div id="myBookingsList" class="flex-1 overflow-y-auto space-y-2.5 max-h-72 pr-1">
+        <div class="text-center py-6 text-slate-400 text-xs">
+          請於上方輸入報名手機號碼開始查詢
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
