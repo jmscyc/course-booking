@@ -1851,7 +1851,18 @@
         const sharedBookings = localStorage.getItem("appsheet_shared_bookings");
         if (sharedBookings) {
           const parsedB = JSON.parse(sharedBookings);
-          if (Array.isArray(parsedB) && parsedB.length > 0) adminBookings = parsedB;
+          if (Array.isArray(parsedB) && parsedB.length > 0) {
+            // 將本地儲存的新預約與既有示範預約進行依預約編號合併，確保不遺失示範歷史資料
+            const existingIds = new Set(parsedB.map(b => b["預約編號"]));
+            const merged = [...parsedB];
+            adminBookings.forEach(b => {
+              if (!existingIds.has(b["預約編號"])) {
+                merged.push(b);
+              }
+            });
+            adminBookings = merged;
+            localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
+          }
         } else {
           localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
         }
