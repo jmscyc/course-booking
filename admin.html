@@ -351,20 +351,43 @@
             </div>
           </div>
 
-          <!-- UI 視覺與字體大小預設 -->
-          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 flex items-center justify-between">
-            <div>
-              <p class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                <i class="fa-solid fa-text-height text-indigo-600"></i>
-                <span>訪客前台預設字體大小</span>
-              </p>
-              <p class="text-[11px] text-indigo-700/80">管理者可決定訪客開啟預約頁面時的預設字級大小</p>
+          <!-- UI 介面視覺與字體大小設定專區 -->
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                  <i class="fa-solid fa-text-height text-indigo-600 text-sm"></i>
+                  <span>介面字體大小設定</span>
+                </h4>
+                <p class="text-[11px] text-indigo-800/80">可隨時自由調整後台與前台的文字大小，告別吃力小字</p>
+              </div>
             </div>
-            <select id="settingDefaultFontSize" class="text-xs px-3 py-1.5 rounded-lg border border-indigo-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="normal">標準字體 (100%)</option>
-              <option value="large">大字體 (115% 舒適護眼)</option>
-              <option value="xlarge">特大字體 (130% 長輩友善)</option>
-            </select>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold text-slate-800">管理者後台字級</p>
+                  <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 font-bold">標準</button>
+                  <button type="button" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-bold">大 A+</button>
+                  <button type="button" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700">特大 A++</button>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold text-slate-800">訪客前台預設字級</p>
+                  <p class="text-[10px] text-slate-400">學生進入報名時的預設值</p>
+                </div>
+                <select id="settingDefaultFontSize" class="text-xs px-3 py-1.5 rounded-lg border border-indigo-200 bg-white font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="normal">標準字體 (16px)</option>
+                  <option value="large">大字體 (18px 舒適清晰)</option>
+                  <option value="xlarge">特大字體 (21px 極度清晰)</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -1701,8 +1724,23 @@
                 </div>
               ` : '-'}
             </td>
-            <td class="px-4 py-3 max-w-[140px] truncate text-slate-600 font-medium" title="${b["備註需求"] || ''}">
-              ${b["備註需求"] ? `<span class="bg-amber-50 text-amber-900 px-1.5 py-0.5 rounded text-[11px] font-mono border border-amber-200/60">${b["備註需求"]}</span>` : '-'}
+            <td class="px-4 py-3 text-center">
+              ${(() => {
+                const payCode = b["匯款五碼"] || (b["備註需求"] && b["備註需求"].match(/(?:後五碼|末五碼|五碼|轉帳|匯款)?\s*[:：]?\s*([A-Za-z0-9一-龥\s]+)/)?.[1]) || b["備註需求"] || "-";
+                const isLinePay = String(payCode).includes("LINE") || String(payCode).includes("line");
+                const isCash = String(payCode).includes("現") || String(payCode).includes("店");
+                if (isLinePay) {
+                  return `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-lg text-xs font-bold font-mono">LINE Pay</span>`;
+                } else if (isCash) {
+                  return `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-lg text-xs font-bold font-mono">現場付現</span>`;
+                } else if (payCode !== "-") {
+                  return `<span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded-lg text-xs font-mono font-black border border-blue-200/80 tracking-wider">${payCode}</span>`;
+                }
+                return `<span class="text-slate-300">-</span>`;
+              })()}
+            </td>
+            <td class="px-4 py-3 max-w-[130px] truncate text-slate-500" title="${b["備註需求"] || ''}">
+              ${b["備註需求"] || '-'}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
             <td class="px-4 py-3 text-right whitespace-nowrap">

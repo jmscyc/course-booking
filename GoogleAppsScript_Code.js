@@ -218,8 +218,8 @@ function setupSheets() {
   let bookingSheet = ss.getSheetByName(SHEET_BOOKINGS);
   if (!bookingSheet) {
     bookingSheet = ss.insertSheet(SHEET_BOOKINGS);
-    bookingSheet.appendRow(["預約編號", "報名時間", "課程編號", "課程名稱", "學員姓名", "聯絡電話", "Line ID", "備註需求", "簽到狀態"]);
-    bookingSheet.getRange(1, 1, 1, 9).setBackground("#059669").setFontColor("#ffffff").setFontWeight("bold");
+    bookingSheet.appendRow(["預約編號", "報名時間", "課程編號", "課程名稱", "學員姓名", "聯絡電話", "Line ID", "匯款五碼", "備註需求", "簽到狀態"]);
+    bookingSheet.getRange(1, 1, 1, 10).setBackground("#059669").setFontColor("#ffffff").setFontWeight("bold");
     
     const realBookings = [
       [
@@ -932,6 +932,7 @@ function doPost(e) {
       const studentName = String(data.name || "").trim();
       const studentPhone = String(data.phone || "").trim();
       const lineId = String(data.lineId || "").trim();
+      const paymentCode = String(data.paymentCode || "").trim();
       const notes = String(data.notes || "").trim();
 
       if (!courseId || !studentName || !studentPhone) {
@@ -970,6 +971,7 @@ function doPost(e) {
         studentName,
         studentPhone,
         lineId,
+        paymentCode,
         notes,
         "待確認"
       ]);
@@ -1110,7 +1112,8 @@ function doPost(e) {
         return jsonResponse({ success: false, message: "找不到該預約記錄" });
       }
 
-      bookingSheet.getRange(foundRow, 9).setValue("報名成功");
+      const maxCol = bookingSheet.getLastColumn();
+      bookingSheet.getRange(foundRow, maxCol).setValue("報名成功");
 
       // 檢查是否發送通知至學員 LINE
       let notificationResult = "未發送";
@@ -1175,7 +1178,8 @@ function doPost(e) {
 
       for (let r = 1; r < bookingRows.length; r++) {
         if (String(bookingRows[r][0]) === bookingId) {
-          bookingSheet.getRange(r + 1, 9).setValue(newStatus);
+          const maxCol = bookingSheet.getLastColumn();
+          bookingSheet.getRange(r + 1, maxCol).setValue(newStatus);
           return jsonResponse({ success: true, message: "預約狀態已更新為：" + newStatus });
         }
       }
