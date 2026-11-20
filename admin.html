@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --app-font-size: 20px; /* 基礎字體直接放大三號 (預設大字 20px，特大可達 24px) */
+      --app-font-size: 23px; /* 基礎字體超大護眼 (標準 20px / 預設大字 23px / 特大 27px) */
     }
     html {
       font-size: var(--app-font-size) !important;
@@ -19,18 +19,23 @@
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       font-size: 1rem;
-      line-height: 1.5;
+      line-height: 1.55;
     }
-    /* 覆蓋 Tailwind 絕對小像素，強制使用 rem 相對比例，保證字級放大三號真實全面生效 */
-    .text-\[9px\] { font-size: 0.75rem !important; }
-    .text-\[10px\] { font-size: 0.8rem !important; }
-    .text-\[11px\] { font-size: 0.85rem !important; }
-    .text-xs { font-size: 0.95rem !important; }
-    .text-sm { font-size: 1.05rem !important; }
-    .text-base { font-size: 1.2rem !important; }
-    .text-lg { font-size: 1.35rem !important; }
-    .text-xl { font-size: 1.5rem !important; }
-    .text-2xl { font-size: 1.8rem !important; }
+    /* 徹底覆蓋所有小字，全面大幅度放大，清晰可讀 */
+    .text-\[9px\] { font-size: 0.85rem !important; }
+    .text-\[10px\] { font-size: 0.9rem !important; }
+    .text-\[11px\] { font-size: 0.95rem !important; }
+    .text-xs { font-size: 1rem !important; }
+    .text-sm { font-size: 1.15rem !important; }
+    .text-base { font-size: 1.3rem !important; }
+    .text-lg { font-size: 1.45rem !important; }
+    .text-xl { font-size: 1.65rem !important; }
+    .text-2xl { font-size: 2.0rem !important; }
+
+    /* 表格單元格內邊距與外觀微調 */
+    th, td {
+      vertical-align: middle;
+    }
 
     .tab-active {
       border-bottom: 3px solid #2563eb;
@@ -41,10 +46,10 @@
   <script>
     // 立即生效防閃爍：在頁面渲染前讀取永久保存的管理後台字級
     (function() {
-      var saved = localStorage.getItem("admin_app_font_size") || "large"; // 預設放大三號
-      var fs = "20px";
-      if (saved === "xlarge") fs = "24px"; // 特大超清晰
-      else if (saved === "normal") fs = "18px";
+      var saved = localStorage.getItem("admin_app_font_size") || "large";
+      var fs = "23px";
+      if (saved === "xlarge") fs = "27px";
+      else if (saved === "normal") fs = "20px";
       document.documentElement.style.setProperty("--app-font-size", fs);
     })();
   </script>
@@ -181,7 +186,7 @@
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
         <div class="relative flex-1 max-w-sm">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="bookingSearchInput" oninput="renderBookingsTable()" placeholder="搜尋學員姓名、電話、預約編號..." class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" id="bookingSearchInput" oninput="renderBookingsTable()" placeholder="搜尋學員姓名、電話、報名日期..." class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="flex items-center gap-2">
           <select id="bookingStatusFilter" onchange="renderBookingsTable()" class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
@@ -200,7 +205,7 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
               <tr>
-                <th class="px-4 py-3">預約編號</th>
+                <th class="px-4 py-3">報名日期時間</th>
                 <th class="px-4 py-3">課程名稱</th>
                 <th class="px-4 py-3">學員姓名</th>
                 <th class="px-4 py-3">聯絡電話</th>
@@ -309,7 +314,7 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80">
               <tr>
-                <th class="px-4 py-3">預約編號</th>
+                <th class="px-4 py-3">報名日期時間</th>
                 <th class="px-4 py-3">課程名稱 (編號)</th>
                 <th class="px-4 py-3">學員姓名</th>
                 <th class="px-4 py-3">電話</th>
@@ -391,9 +396,9 @@
                   <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">標準 18px</button>
-                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">大 20px (推薦)</button>
-                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">特大 24px</button>
+                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">標準 20px</button>
+                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">大 23px (推薦)</button>
+                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">特大 27px</button>
                 </div>
               </div>
 
@@ -675,13 +680,13 @@
         size = "large";
       }
 
-      let fs = "20px";
+      let fs = "23px";
       if (size === "xlarge") {
-        fs = "24px";
+        fs = "27px";
       } else if (size === "normal") {
-        fs = "18px";
-      } else {
         fs = "20px";
+      } else {
+        fs = "23px";
       }
 
       document.documentElement.style.setProperty("--app-font-size", fs);
@@ -1812,7 +1817,7 @@
 
         // 快速喚起 LINE 對話文字
         const encodedLineText = encodeURIComponent(
-          `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！預約編號：${b["預約編號"]}。期待與您課堂相見！`
+          `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！期待與您課堂相見！`
         );
         const lineContactUrl = b["Line ID"] 
           ? `https://line.me/R/oaMessage/@me/?${encodedLineText}` 
@@ -1820,9 +1825,9 @@
 
         html += `
           <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
-            <td class="px-4 py-3">
-              <span class="font-mono font-bold text-slate-800">${b["預約編號"]}</span>
-              <div class="text-[11px] text-slate-400">${b["報名時間"]}</div>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
             </td>
             <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]}</td>
             <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
@@ -2520,7 +2525,7 @@
           filteredRecords.forEach(b => {
             html += `
               <tr class="hover:bg-slate-50 transition">
-                <td class="px-4 py-3 font-mono font-bold text-slate-700">${b["預約編號"]}<div class="text-[10px] text-slate-400 font-normal">${b["報名時間"]}</div></td>
+                <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
                 <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"]})</span></td>
                 <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
                 <td class="px-4 py-3 font-mono text-slate-600">${b["聯絡電話"]}</td>
