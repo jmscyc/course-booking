@@ -688,15 +688,35 @@
       });
     }
 
-    // 渲染所有 UI 元素
+    // 判斷課程是否已過期 (依日期與結束時間，相較於當前時間)
+    function isCourseExpired(course) {
+      if (!course || !course.date) return false;
+      const dateStr = String(course.date).trim();
+      const endStr = course.endTime ? String(course.endTime).trim() : "23:59";
+      const courseDateTime = new Date(`${dateStr}T${endStr.length === 5 ? endStr + ":00" : endStr}`);
+      if (isNaN(courseDateTime.getTime())) {
+        return new Date(dateStr + "T23:59:59") < new Date();
+      }
+      return courseDateTime < new Date();
+    }
+
+    // 渲染所有 UI 元素 (自動排除已結束/過期的課程)
     function renderUI() {
       syncRemainingCounts();
       document.getElementById("loadingSkeleton").classList.add("hidden");
       
-      // 產生日期頁籤
-      const dates = Array.from(new Set(allCourses.map(c => c.date))).filter(Boolean).sort();
+      // 僅保留尚未過期之課程清單供學員預約
+      const activeCourses = (Array.isArray(allCourses) ? allCourses : []).filter(c => !isCourseExpired(c));
+
+      // 產生日期頁籤 (僅包含未過期課程的開課日期)
+      const dates = Array.from(new Set(activeCourses.map(c => c.date))).filter(Boolean).sort();
       const tabsContainer = document.getElementById("dateFilterTabs");
       
+      // 若當前選取的日期已過期或不在有效日期中，自動重設為 'all'
+      if (selectedDate !== 'all' && !dates.includes(selectedDate)) {
+        selectedDate = 'all';
+      }
+
       let tabsHtml = `
         <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${selectedDate === 'all' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" data-date="all">
           全部時段
@@ -713,10 +733,10 @@
       });
       tabsContainer.innerHTML = tabsHtml;
 
-      // 篩選過濾
+      // 篩選過濾 (未過期課程)
       const filtered = selectedDate === 'all' 
-        ? allCourses 
-        : allCourses.filter(c => c.date === selectedDate);
+        ? activeCourses 
+        : activeCourses.filter(c => c.date === selectedDate);
 
       document.getElementById("courseCount").innerText = filtered.length;
 
