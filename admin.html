@@ -377,82 +377,99 @@
             <input type="text" id="settingPassword" value="admin888" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
-          <!-- 通知設定區塊 -->
-          <div class="pt-3 border-t border-slate-100 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <i class="fa-solid fa-bell text-blue-600"></i>
-                  <span>即時通知整合設定 (LINE / Telegram)</span>
-                </h4>
-                <p class="text-[11px] text-slate-400">當學員新報名、或管理者確認匯款成功時自動推播</p>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="settingNotifyEnabled" class="sr-only peer" checked>
-                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                <span class="ml-2 text-xs font-medium text-slate-600">通知總開關</span>
-              </label>
+          <!-- 通知設定區塊：獨立平行卡片，非巢狀結構 -->
+          <div class="pt-4 border-t border-slate-200/80 space-y-4">
+            <div>
+              <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-bell text-blue-600"></i>
+                <span>推播通知整合設定</span>
+              </h4>
+              <p class="text-xs text-slate-500 mt-0.5">各通知管道獨立開關，您可自由勾選開啟 LINE 或 Telegram，或兩者同時開啟</p>
             </div>
 
-            <!-- 學員 LINE 通知開關 -->
-            <div class="bg-blue-50/60 border border-blue-100 rounded-xl p-3 flex items-center justify-between">
-              <div>
-                <p class="text-xs font-bold text-blue-900 flex items-center gap-1">
-                  <i class="fa-brands fa-line text-emerald-500 text-sm"></i>
-                  <span>確認收到匯款後，發送 LINE 通知到對方填寫的 ID</span>
-                </p>
-                <p class="text-[10px] text-blue-700/80">開啟後，管理者在後台點選「確認入帳」時，系統會自動發送通知並提供一鍵開啟對話</p>
+            <!-- 卡片 1: LINE 通知 (包含學員確認與管理者接收) -->
+            <div class="bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm space-y-3.5 transition-all">
+              <div class="flex items-center justify-between pb-2.5 border-b border-emerald-50">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-lg shadow-sm">
+                    <i class="fa-brands fa-line"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-900">LINE 即時通知</h5>
+                    <p class="text-[11px] text-slate-400">支援學員報名成功確認與管理者 LINE Notify 群組推播</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="settingLineEnabled" class="sr-only peer" checked onchange="toggleNotifyCard('line', this.checked)">
+                  <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <span class="ml-2 text-xs font-bold text-emerald-800" id="lineStatusLabel">已啟用</span>
+                </label>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer ml-3">
-                <input type="checkbox" id="settingStudentLineNotify" class="sr-only peer" checked>
-                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
+
+              <!-- LINE 細項設定 -->
+              <div id="lineDetailsContainer" class="space-y-3">
+                <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-200/60 flex items-center justify-between">
+                  <div>
+                    <p class="text-xs font-bold text-emerald-950">確認收到款項後，通知學員填寫之 LINE ID</p>
+                    <p class="text-[10px] text-emerald-700">後台點選「確認入帳」時，提供一鍵複製與喚起學員 LINE 對話</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" id="settingStudentLineNotify" class="sr-only peer" checked>
+                    <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-bold text-slate-700">管理者 LINE Notify 權杖 Token (新報名推播至手機/群組)</label>
+                    <button type="button" onclick="testNotificationChannel('line')" class="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-md text-[10px] font-bold transition">
+                      測試 LINE 推播
+                    </button>
+                  </div>
+                  <input type="text" id="settingLineNotifyToken" placeholder="貼上 LINE Notify Personal Access Token..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 mb-1">LINE Bot Channel Access Token <span class="text-slate-400 font-normal">(選填，若有申請官方 Messaging API)</span></label>
+                  <input type="text" id="settingLineChannelToken" placeholder="LINE Messaging API Channel Access Token..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                </div>
+              </div>
             </div>
 
-            <!-- 管理者接收通知管道 -->
-            <div class="space-y-3 pt-1">
-              <p class="text-xs font-semibold text-slate-700">管理者接收新報名通知管道 (選填其中一種即可)：</p>
-
-              <!-- Telegram 設定 -->
-              <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-brands fa-telegram text-sky-500 text-base"></i> 方案 A：Telegram Bot 即時推播 (推薦，免審查秒送達)
-                  </span>
-                  <button type="button" onclick="testNotificationChannel('telegram')" class="px-2.5 py-1 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg text-[11px] font-bold transition">
-                    發送測試通知
-                  </button>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label class="block text-[11px] text-slate-500 mb-0.5">Telegram Bot Token</label>
-                    <input type="text" id="settingTgBotToken" placeholder="例如：123456789:ABCdefGhI..." class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono">
+            <!-- 卡片 2: Telegram 即時通知 (獨立平級，非巢狀) -->
+            <div class="bg-white border-2 border-sky-100 rounded-2xl p-4 shadow-sm space-y-3.5 transition-all">
+              <div class="flex items-center justify-between pb-2.5 border-b border-sky-50">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center text-lg shadow-sm">
+                    <i class="fa-brands fa-telegram"></i>
                   </div>
                   <div>
-                    <label class="block text-[11px] text-slate-500 mb-0.5">Telegram Chat ID</label>
-                    <input type="text" id="settingTgChatId" placeholder="例如：987654321" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono">
+                    <h5 class="text-xs font-bold text-slate-900">Telegram Bot 即時推播</h5>
+                    <p class="text-[11px] text-slate-400">免審查秒送達、零成本推播至手機或管理群組</p>
                   </div>
                 </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="settingTelegramEnabled" class="sr-only peer" checked onchange="toggleNotifyCard('telegram', this.checked)">
+                  <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
+                  <span class="ml-2 text-xs font-bold text-sky-800" id="telegramStatusLabel">已啟用</span>
+                </label>
               </div>
 
-              <!-- LINE 設定 -->
-              <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-brands fa-line text-emerald-600 text-base"></i> 方案 B：LINE Notify / LINE Bot Channel Token
-                  </span>
-                  <button type="button" onclick="testNotificationChannel('line')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold transition">
-                    發送測試通知
+              <!-- Telegram 細項設定 -->
+              <div id="telegramDetailsContainer" class="space-y-3">
+                <div class="flex justify-end">
+                  <button type="button" onclick="testNotificationChannel('telegram')" class="px-2 py-0.5 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-md text-[10px] font-bold transition">
+                    測試 Telegram 推播
                   </button>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label class="block text-[11px] text-slate-500 mb-0.5">LINE Notify 權杖 Token (發給管理群組)</label>
-                    <input type="text" id="settingLineNotifyToken" placeholder="LINE Notify Personal Access Token..." class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono">
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Telegram Bot Token</label>
+                    <input type="text" id="settingTgBotToken" placeholder="例如：123456789:ABCdefGhI..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono">
                   </div>
                   <div>
-                    <label class="block text-[11px] text-slate-500 mb-0.5">LINE Bot Channel Access Token (選填)</label>
-                    <input type="text" id="settingLineChannelToken" placeholder="用於 Push Message API..." class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono">
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Telegram Chat ID (個人或群組)</label>
+                    <input type="text" id="settingTgChatId" placeholder="例如：987654321" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono">
                   </div>
                 </div>
               </div>
@@ -1372,10 +1389,18 @@
       tomorrow.setDate(tomorrow.getDate() + 1);
       document.getElementById("formDate").value = tomorrow.toISOString().split("T")[0];
 
-      // 載入本地快取之通知設定
-      const savedNotifyEnabled = localStorage.getItem("appsheet_notify_enabled");
-      if (savedNotifyEnabled !== null && document.getElementById("settingNotifyEnabled")) {
-        document.getElementById("settingNotifyEnabled").checked = savedNotifyEnabled === "開啟";
+      // 載入本地快取之通知設定 (平級平行開關)
+      const savedLineEnabled = localStorage.getItem("appsheet_line_enabled");
+      if (savedLineEnabled !== null && document.getElementById("settingLineEnabled")) {
+        const isEn = savedLineEnabled === "開啟";
+        document.getElementById("settingLineEnabled").checked = isEn;
+        toggleNotifyCard("line", isEn);
+      }
+      const savedTelegramEnabled = localStorage.getItem("appsheet_telegram_enabled");
+      if (savedTelegramEnabled !== null && document.getElementById("settingTelegramEnabled")) {
+        const isEn = savedTelegramEnabled === "開啟";
+        document.getElementById("settingTelegramEnabled").checked = isEn;
+        toggleNotifyCard("telegram", isEn);
       }
       const savedStudentLine = localStorage.getItem("appsheet_student_line_notify");
       if (savedStudentLine !== null && document.getElementById("settingStudentLineNotify")) {
@@ -1447,8 +1472,15 @@
                 localStorage.setItem("appsheet_default_fontsize", json.config["前台預設字體大小"]);
               }
               populatePresetsDropdowns();
-              if (json.config["通知總開關"] && document.getElementById("settingNotifyEnabled")) {
-                document.getElementById("settingNotifyEnabled").checked = json.config["通知總開關"] === "開啟";
+              if (json.config["LINE通知開關"] && document.getElementById("settingLineEnabled")) {
+                const isEn = json.config["LINE通知開關"] === "開啟";
+                document.getElementById("settingLineEnabled").checked = isEn;
+                toggleNotifyCard("line", isEn);
+              }
+              if (json.config["Telegram通知開關"] && document.getElementById("settingTelegramEnabled")) {
+                const isEn = json.config["Telegram通知開關"] === "開啟";
+                document.getElementById("settingTelegramEnabled").checked = isEn;
+                toggleNotifyCard("telegram", isEn);
               }
               if (json.config["學員LINE通知開關"] && document.getElementById("settingStudentLineNotify")) {
                 document.getElementById("settingStudentLineNotify").checked = json.config["學員LINE通知開關"] === "開啟";
@@ -1963,6 +1995,21 @@
       }
     }
 
+    // 通知卡片即時啟用/停用 UI 反映
+    function toggleNotifyCard(type, enabled) {
+      if (type === "line") {
+        const con = document.getElementById("lineDetailsContainer");
+        const lbl = document.getElementById("lineStatusLabel");
+        if (con) con.style.opacity = enabled ? "1" : "0.4";
+        if (lbl) lbl.innerText = enabled ? "已啟用" : "已關閉";
+      } else if (type === "telegram") {
+        const con = document.getElementById("telegramDetailsContainer");
+        const lbl = document.getElementById("telegramStatusLabel");
+        if (con) con.style.opacity = enabled ? "1" : "0.4";
+        if (lbl) lbl.innerText = enabled ? "已啟用" : "已關閉";
+      }
+    }
+
     // 測試管理者通知管道 (Telegram 或 LINE)
     async function testNotificationChannel(channelType) {
       const tgToken = document.getElementById("settingTgBotToken").value.trim();
@@ -2050,7 +2097,8 @@
         localStorage.setItem("appsheet_admin_pass", newPass);
       }
 
-      const notifyEnabled = document.getElementById("settingNotifyEnabled")?.checked ? "開啟" : "關閉";
+      const lineEnabled = document.getElementById("settingLineEnabled")?.checked ? "開啟" : "關閉";
+      const telegramEnabled = document.getElementById("settingTelegramEnabled")?.checked ? "開啟" : "關閉";
       const studentLineNotify = document.getElementById("settingStudentLineNotify")?.checked ? "開啟" : "關閉";
       const tgBotToken = document.getElementById("settingTgBotToken")?.value.trim() || "";
       const tgChatId = document.getElementById("settingTgChatId")?.value.trim() || "";
@@ -2058,7 +2106,8 @@
       const lineChannelAccessToken = document.getElementById("settingLineChannelToken")?.value.trim() || "";
 
       // 暫存於 localStorage
-      localStorage.setItem("appsheet_notify_enabled", notifyEnabled);
+      localStorage.setItem("appsheet_line_enabled", lineEnabled);
+      localStorage.setItem("appsheet_telegram_enabled", telegramEnabled);
       localStorage.setItem("appsheet_student_line_notify", studentLineNotify);
       localStorage.setItem("appsheet_tg_token", tgBotToken);
       localStorage.setItem("appsheet_tg_chat", tgChatId);
@@ -2080,7 +2129,8 @@
               courseTitles: customCourseTitles.join("\n"),
               courseNotes: customCourseNotes.join("\n"),
               defaultFontSize: defaultFontSize,
-              notifyEnabled: notifyEnabled,
+              lineEnabled: lineEnabled,
+              telegramEnabled: telegramEnabled,
               studentLineNotify: studentLineNotify,
               tgBotToken: tgBotToken,
               tgChatId: tgChatId,

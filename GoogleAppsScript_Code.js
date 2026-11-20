@@ -796,7 +796,8 @@ function setupSheets() {
     configSheet.appendRow(["管理員密碼", "admin888"]);
     configSheet.appendRow(["預約提醒事項", "課程開始前 2 小時前取消不扣堂數，如額滿可隨時關注名額釋出。"]);
     configSheet.appendRow(["常用教室清單", "高雄-近高美館,台南安南醫院,台北場地"]);
-    configSheet.appendRow(["通知總開關", "開啟"]);
+    configSheet.appendRow(["LINE通知開關", "開啟"]);
+    configSheet.appendRow(["Telegram通知開關", "開啟"]);
     configSheet.appendRow(["學員LINE通知開關", "開啟"]);
     configSheet.appendRow(["TelegramBotToken", ""]);
     configSheet.appendRow(["TelegramChatId", ""]);
@@ -975,9 +976,11 @@ function doPost(e) {
 
       updateCourseCount(courseSheet, courseId, currentBooked + 1);
 
-      // 觸發管理者即時通知 (Telegram / LINE)
+      // 觸發管理者即時通知 (依照各別 LINE / Telegram 開關發送)
       const config = getConfigMap(ss);
-      if (String(config["通知總開關"] || "開啟") === "開啟") {
+      const isTgOn = String(config["Telegram通知開關"] || "開啟") === "開啟";
+      const isLineOn = String(config["LINE通知開關"] || "開啟") === "開啟";
+      if (isTgOn || isLineOn) {
         const adminMsg = "🔔【收到新學員課程報名】\n" +
           "────────────\n" +
           "• 課程：" + targetCourse["課程名稱"] + "\n" +
@@ -1188,7 +1191,8 @@ function doPost(e) {
       const newNotice = data.notice;
       const newPass = data.newPassword;
       const newClassrooms = data.classrooms;
-      const notifyEnabled = data.notifyEnabled;
+      const lineEnabled = data.lineEnabled;
+      const telegramEnabled = data.telegramEnabled;
       const studentLineNotify = data.studentLineNotify;
       const tgBotToken = data.tgBotToken;
       const tgChatId = data.tgChatId;
@@ -1210,7 +1214,8 @@ function doPost(e) {
       if (newNotice) updateOrAddConfig("預約提醒事項", newNotice);
       if (newPass) updateOrAddConfig("管理員密碼", newPass);
       if (newClassrooms) updateOrAddConfig("常用教室清單", newClassrooms);
-      if (notifyEnabled) updateOrAddConfig("通知總開關", notifyEnabled);
+      if (lineEnabled) updateOrAddConfig("LINE通知開關", lineEnabled);
+      if (telegramEnabled) updateOrAddConfig("Telegram通知開關", telegramEnabled);
       if (studentLineNotify) updateOrAddConfig("學員LINE通知開關", studentLineNotify);
       if (tgBotToken !== undefined) updateOrAddConfig("TelegramBotToken", tgBotToken);
       if (tgChatId !== undefined) updateOrAddConfig("TelegramChatId", tgChatId);
@@ -1287,8 +1292,11 @@ function jsonResponse(obj) {
 // ── 通知輔助函式 ───────────────────────────────────────────────────
 
 function sendAdminNotification(config, messageText) {
-  // 1. 若有設定 Telegram
-  if (config["TelegramBotToken"] && config["TelegramChatId"]) {
+  const isTgEnabled = String(config["Telegram通知開關"] || "開啟") === "開啟";
+  const isLineEnabled = String(config["LINE通知開關"] || "開啟") === "開啟";
+
+  // 1. 若開啟 Telegram 且有設定 Token
+  if (isTgEnabled && config["TelegramBotToken"] && config["TelegramChatId"]) {
     try {
       sendTelegramMessage(config["TelegramBotToken"], config["TelegramChatId"], messageText);
     } catch(err) {
@@ -1296,8 +1304,8 @@ function sendAdminNotification(config, messageText) {
     }
   }
 
-  // 2. 若有設定 LINE Notify
-  if (config["LineNotifyToken"]) {
+  // 2. 若開啟 LINE 且有設定 LINE Notify Token
+  if (isLineEnabled && config["LineNotifyToken"]) {
     try {
       sendLineNotify(config["LineNotifyToken"], messageText);
     } catch(err) {
