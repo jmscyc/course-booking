@@ -801,15 +801,19 @@
 
               <!-- 時間、地點與說明 (灰底容器統一風格) -->
               <div class="bg-slate-50 rounded-xl p-3 space-y-1.5 mb-3.5 text-xs text-slate-600 border border-slate-100">
-                <div class="flex items-center gap-2">
-                  <i class="fa-regular fa-calendar-days text-blue-500 w-4 text-center shrink-0"></i>
-                  <span class="font-bold text-slate-800">${c.date} (${getWeekDay(c.date)})</span>
-                  <span class="text-slate-300">•</span>
-                  <span class="font-bold text-slate-700 font-mono">${c.startTime} - ${c.endTime}</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 font-bold text-slate-800 whitespace-nowrap">
+                    <i class="fa-regular fa-calendar-days text-blue-500 w-4 text-center shrink-0"></i>
+                    <span>${c.date} (${getWeekDay(c.date)})</span>
+                  </div>
+                  <span class="text-slate-300 hidden xs:inline">•</span>
+                  <div class="font-bold text-slate-700 font-mono whitespace-nowrap pl-5 xs:pl-0">
+                    ${c.startTime} - ${c.endTime}
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 text-slate-600">
                   <i class="fa-solid fa-location-dot text-rose-500 w-4 text-center shrink-0"></i>
-                  <span class="font-medium text-slate-700">${c.location || '待定教室'}</span>
+                  <span class="font-medium text-slate-700 truncate">${c.location || '待定教室'}</span>
                 </div>
                 ${c.notes ? `
                   <div class="flex items-start gap-2 pt-1 text-slate-500 border-t border-slate-200/60 mt-1">
