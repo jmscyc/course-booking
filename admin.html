@@ -228,8 +228,9 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
               <tr>
-                <th class="px-3 py-3 whitespace-nowrap">報名日期時間</th>
+                <th class="px-3 py-3 whitespace-nowrap bg-blue-50/60 text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>開課時間</th>
                 <th class="px-3 py-3 whitespace-nowrap">課程名稱</th>
+                <th class="px-3 py-3 whitespace-nowrap text-slate-500">報名日期時間</th>
                 <th class="px-3 py-3 whitespace-nowrap">學員姓名</th>
                 <th class="px-3 py-3 whitespace-nowrap">聯絡電話</th>
                 <th class="px-3 py-3 whitespace-nowrap">Line ID</th>
@@ -354,8 +355,9 @@
             <table class="w-full text-left text-xs text-slate-600">
               <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
                 <tr>
-                  <th class="px-3.5 py-3 whitespace-nowrap">報名日期時間</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap bg-blue-50/60 text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>開課時間</th>
                   <th class="px-3.5 py-3 whitespace-nowrap">課程名稱</th>
+                  <th class="px-3.5 py-3 whitespace-nowrap text-slate-500">報名日期時間</th>
                   <th class="px-3.5 py-3 whitespace-nowrap">學員姓名</th>
                   <th class="px-3.5 py-3 whitespace-nowrap">聯絡電話</th>
                   <th class="px-3.5 py-3 whitespace-nowrap">Line ID</th>
@@ -2014,6 +2016,40 @@
       if (selectedVal) selectEl.value = selectedVal;
     }
 
+    // 判斷課程是否已過期 (依日期與結束時間，相較於當前時間)
+    function isCourseExpired(course) {
+      if (!course || !course.date) return false;
+      const dateStr = String(course.date).trim();
+      const endStr = course.endTime ? String(course.endTime).trim() : "23:59";
+      const courseDateTime = new Date(`${dateStr}T${endStr.length === 5 ? endStr + ":00" : endStr}`);
+      if (isNaN(courseDateTime.getTime())) {
+        return new Date(dateStr + "T23:59:59") < new Date();
+      }
+      return courseDateTime < new Date();
+    }
+
+    // 判斷預約紀錄是否屬於已過期之課程
+    function isBookingExpired(booking) {
+      if (!booking) return false;
+      // 先從課程編號尋找對應課程
+      const course = adminCourses.find(c => String(c.id) === String(booking["課程編號"]));
+      if (course) {
+        return isCourseExpired(course);
+      }
+      // 若課程編號未對應到（舊歷史紀錄），檢查課程名稱是否有日期或簽到狀態是否為已完成
+      if (booking["簽到狀態"] === "已完成") return true;
+      // 嘗試從報名時間判斷：若報名時間已逾三個月或為歷史紀錄
+      if (booking["報名時間"]) {
+        const bDate = new Date(booking["報名時間"].replace(" ", "T"));
+        if (!isNaN(bDate.getTime())) {
+          // 若超過 60 天以上無對應現有課程，視為歷史過期預約
+          const daysDiff = (new Date() - bDate) / (1000 * 60 * 60 * 24);
+          if (daysDiff > 60) return true;
+        }
+      }
+      return false;
+    }
+
     // 計算每堂課目前的有效預約數
     function calculateCourseBookedCounts() {
       const counts = {};
@@ -2036,16 +2072,19 @@
     function renderAll() {
       // 統計數據
       document.getElementById("statCourseTotal").innerText = adminCourses.length;
-      const validBookings = adminBookings.filter(b => b["簽到狀態"] !== "已取消");
-      document.getElementById("statBookingTotal").innerText = validBookings.length;
+      // 預約名冊只計算未過期且未取消之有效預約
+      const unexpiredBookings = adminBookings.filter(b => !isBookingExpired(b) && b["簽到狀態"] !== "已取消");
+      document.getElementById("statBookingTotal").innerText = unexpiredBookings.length;
       document.getElementById("statFullTotal").innerText = adminCourses.filter(c => (c.remaining || 0) <= 0).length;
 
-      const checkedCount = adminBookings.filter(b => b["簽到狀態"] === "已簽到").length;
-      const rate = validBookings.length > 0 ? Math.round((checkedCount / validBookings.length) * 100) : 100;
+      const checkedCount = unexpiredBookings.filter(b => b["簽到狀態"] === "已簽到").length;
+      const rate = unexpiredBookings.length > 0 ? Math.round((checkedCount / unexpiredBookings.length) * 100) : 100;
       document.getElementById("statCheckinRate").innerText = rate + "%";
 
       document.getElementById("courseCountBadge").innerText = adminCourses.length;
-      document.getElementById("bookingCountBadge").innerText = adminBookings.length;
+      // 頁籤「預約名冊」計數更新為尚未過期的預約數量
+      const activeBookings = adminBookings.filter(b => !isBookingExpired(b));
+      document.getElementById("bookingCountBadge").innerText = activeBookings.length;
 
       renderCoursesTable();
       renderBookingsTable();
@@ -2078,32 +2117,44 @@
       let mHtml = "";
 
       filtered.forEach(c => {
+        const expired = isCourseExpired(c);
+        const isEnded = expired || c.status === "已結束";
         const isFull = (c.remaining || 0) <= 0;
-        const statusBadge = c.status === "開啟報名"
-          ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>`
-          : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">${c.status}</span>`;
 
-        // 桌機表格列
+        let statusBadge = "";
+        if (isEnded) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600 border border-slate-300 inline-flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>已結束</span>`;
+        } else if (c.status === "開啟報名") {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">${c.status}</span>`;
+        }
+
+        // 桌機表格列 (若已結束/過期，整條反灰、顏色變淡，方便一眼辨識)
+        const rowClass = isEnded 
+          ? "bg-slate-100/70 opacity-60 grayscale-[40%] hover:bg-slate-200/60 transition" 
+          : "hover:bg-slate-50 transition";
+
         html += `
-          <tr class="hover:bg-slate-50 transition">
+          <tr class="${rowClass}">
             <td class="px-4 py-3 font-mono font-bold text-slate-500">${c.id}</td>
             <td class="px-4 py-3 whitespace-nowrap">
-              <div class="font-bold text-slate-900">${c.title}</div>
+              <div class="font-bold ${isEnded ? 'text-slate-600 line-through' : 'text-slate-900'}">${c.title}</div>
               <div class="flex items-center gap-1.5 mt-0.5">
                 ${c.earlyBirdPrice ? `<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $${c.earlyBirdPrice}</span>` : ''}
                 ${c.regularPrice ? `<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">定價 $${c.regularPrice}</span>` : ''}
                 ${c.notes ? `<span class="text-[11px] text-slate-400 truncate max-w-[180px]" title="${c.notes}">${c.notes}</span>` : ''}
               </div>
             </td>
-            <td class="px-4 py-3 font-semibold text-blue-600">${c.instructor}</td>
+            <td class="px-4 py-3 font-semibold ${isEnded ? 'text-slate-500' : 'text-blue-600'}">${c.instructor}</td>
             <td class="px-4 py-3">
-              <span class="font-medium text-slate-800">${c.date}</span>
+              <span class="font-medium ${isEnded ? 'text-slate-500' : 'text-slate-800'}">${c.date}</span>
               <div class="text-[11px] text-slate-400">${c.startTime} - ${c.endTime}</div>
             </td>
             <td class="px-4 py-3 text-slate-600">${c.location || '待定'}</td>
             <td class="px-4 py-3 text-center">
               <div class="inline-flex items-baseline gap-1">
-                <span class="font-bold ${isFull ? 'text-rose-600' : 'text-slate-800'}">${c.bookedCount || 0}</span>
+                <span class="font-bold ${isFull ? 'text-rose-600' : (isEnded ? 'text-slate-500' : 'text-slate-800')}">${c.bookedCount || 0}</span>
                 <span class="text-slate-400">/ ${c.capacity}</span>
               </div>
               ${c.virtualCount ? `
@@ -2111,7 +2162,7 @@
                   (實${c.realBookedCount || 0}+虛${c.virtualCount})
                 </div>
               ` : ''}
-              ${isFull ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
+              ${isFull && !isEnded ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
@@ -2125,22 +2176,26 @@
           </tr>
         `;
 
-        // 手機專用觸控卡片 (與學員前台卡片完全同構統一)
+        // 手機專用觸控卡片 (若已過期，整張反灰、變淡、邊框淡化，一眼即可辨識)
+        const mobileCardClass = isEnded
+          ? "bg-slate-100/80 opacity-60 grayscale-[35%] border-slate-200/60 rounded-2xl p-4 border shadow-sm space-y-3"
+          : "bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3";
+
         mHtml += `
-          <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+          <div class="${mobileCardClass}">
             <div class="space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">#${c.id}</span>
                   ${statusBadge}
-                  ${isFull ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200">已額滿</span>` : ''}
+                  ${isFull && !isEnded ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200">已額滿</span>` : ''}
                 </div>
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100 shrink-0">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold ${isEnded ? 'bg-slate-200 text-slate-600' : 'bg-blue-50 text-blue-700 border border-blue-100'} shrink-0">
                   <i class="fa-solid fa-chalkboard-user text-[10px]"></i> ${c.instructor || '霖霖老師'}
                 </span>
               </div>
 
-              <h3 class="font-black text-slate-900 text-base leading-snug">${c.title}</h3>
+              <h3 class="font-black ${isEnded ? 'text-slate-600 line-through' : 'text-slate-900'} text-base leading-snug">${c.title}</h3>
 
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
@@ -2162,7 +2217,7 @@
                   <span class="text-slate-300">•</span>
                   <span class="font-mono text-slate-700">${c.startTime} - ${c.endTime}</span>
                 </span>
-                <span class="font-bold text-xs ${isFull ? 'text-rose-600' : 'text-blue-700'}">
+                <span class="font-bold text-xs ${isFull && !isEnded ? 'text-rose-600' : 'text-blue-700'}">
                   已報 ${c.bookedCount || 0} / 上限 ${c.capacity}
                 </span>
               </div>
@@ -2189,16 +2244,24 @@
       if (mobileContainer) mobileContainer.innerHTML = mHtml;
     }
 
-    // 渲染「預約名冊」表格
+    // 渲染「預約名冊」表格 (僅呈現尚未過期之課程預約，已過期課程預約自動移往過往統計)
     function renderBookingsTable() {
       const query = (document.getElementById("bookingSearchInput").value || "").toLowerCase();
       const status = document.getElementById("bookingStatusFilter").value;
 
-      const filtered = adminBookings.filter(b => {
+      // 1. 先篩選出未過期的有效名冊資料 (!isBookingExpired)
+      const activeBookings = adminBookings.filter(b => !isBookingExpired(b));
+
+      // 2. 進行搜尋與狀態過濾
+      const filtered = activeBookings.filter(b => {
+        const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
+        const courseDate = course ? `${course.date} ${course.startTime}-${course.endTime}` : "";
         const matchQuery = (b["學員姓名"] || "").toLowerCase().includes(query) ||
                            (b["聯絡電話"] || "").includes(query) ||
                            (b["課程名稱"] || "").toLowerCase().includes(query) ||
-                           (b["預約編號"] || "").toLowerCase().includes(query);
+                           (b["預約編號"] || "").toLowerCase().includes(query) ||
+                           (b["報名時間"] || "").includes(query) ||
+                           courseDate.includes(query);
         const matchStatus = status === "all" || b["簽到狀態"] === status;
         return matchQuery && matchStatus;
       });
@@ -2209,7 +2272,7 @@
 
       if (filtered.length === 0) {
         if (tbody) tbody.innerHTML = "";
-        if (mobileContainer) mobileContainer.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">無符合條件的預約記錄</div>`;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前尚無符合條件的未過期預約記錄</div>`;
         if (noRow) noRow.classList.remove("hidden");
         return;
       }
@@ -2240,6 +2303,11 @@
           statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-400 line-through whitespace-nowrap">已取消</span>`;
         }
 
+        // 查找對應課程以取得開課時間
+        const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
+        const classDate = course ? course.date : "-";
+        const classTime = course ? `${course.startTime} - ${course.endTime}` : "";
+
         // 快速喚起 LINE 對話文字
         const encodedLineText = encodeURIComponent(
           `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！期待與您課堂相見！`
@@ -2250,13 +2318,29 @@
 
         html += `
           <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
+            <!-- 1. 開課時間 (第一欄) -->
+            <td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">
+              <div class="font-bold text-slate-900 leading-tight flex items-center gap-1.5">
+                <i class="fa-regular fa-calendar-days text-blue-600 text-xs"></i>
+                <span class="font-mono">${classDate}</span>
+              </div>
+              <div class="text-[11px] text-blue-700 font-mono leading-tight mt-0.5">${classTime}</div>
+            </td>
+            <!-- 2. 課程名稱 -->
+            <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900">
+              <div>${b["課程名稱"]}</div>
+              <div class="text-[11px] text-slate-400 font-mono">編號 #${b["課程編號"] || ""}</div>
+            </td>
+            <!-- 3. 報名日期時間 (移至課程名稱後面) -->
             <td class="px-3.5 py-2.5 whitespace-nowrap">
-              <div class="font-mono font-bold text-slate-900 leading-tight">${(b["報名時間"] || "").split(" ")[0]}</div>
+              <div class="font-mono font-medium text-slate-600 leading-tight">${(b["報名時間"] || "").split(" ")[0]}</div>
               <div class="text-[11px] text-slate-400 font-mono leading-tight">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
             </td>
-            <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900">${b["課程名稱"]}</td>
+            <!-- 4. 學員姓名 -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-800">${b["學員姓名"]}</td>
+            <!-- 5. 聯絡電話 -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-700">${b["聯絡電話"]}</td>
+            <!-- 6. Line ID -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600">
               ${b["Line ID"] ? `
                 <div class="inline-flex items-center gap-1.5">
@@ -2267,6 +2351,7 @@
                 </div>
               ` : '-'}
             </td>
+            <!-- 7. 付款方式 / 五碼 -->
             <td class="px-4 py-3 text-center whitespace-nowrap">
               ${(() => {
                 const payCode = b["匯款五碼"] || "-";
@@ -2280,13 +2365,17 @@
                 return `<span class="text-slate-300">-</span>`;
               })()}
             </td>
+            <!-- 8. 備註需求 -->
             <td class="px-3 py-2.5 whitespace-nowrap max-w-[140px] truncate text-slate-600" title="${b["備註需求"] || ''}">
               ${b["備註需求"] || '<span class="text-slate-300">-</span>'}
             </td>
+            <!-- 9. 管理備註 -->
             <td class="px-3 py-2.5 whitespace-nowrap max-w-[140px] truncate text-amber-800 bg-amber-50/40 font-medium" title="${b["管理備註"] || ''}">
               ${b["管理備註"] ? `<span class="inline-flex items-center gap-1"><i class="fa-solid fa-tag text-[10px] text-amber-600"></i>${b["管理備註"]}</span>` : '<span class="text-slate-300">-</span>'}
             </td>
+            <!-- 10. 狀態 -->
             <td class="px-4 py-3 text-center">${statusBadge}</td>
+            <!-- 11. 操作與修改 -->
             <td class="px-3 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">
               <div class="inline-flex items-center gap-1.5 justify-center">
                 <!-- ✏️ 修改預約名冊欄位按鈕 -->
@@ -2337,17 +2426,33 @@
             </td>
           </tr>
         `;
-        // 手機專用預約卡片 (姓名大字、狀態與末五碼排版不折行)
+        // 手機專用預約卡片 (開課時間第一、接著課程名稱與報名日期)
         mHtml += `
           <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3 ${isCancelled ? 'opacity-60 bg-slate-50' : ''}">
+            <!-- 頂部：開課時間標籤與狀態 -->
+            <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 font-mono font-bold text-xs text-blue-900">
+                  <i class="fa-regular fa-calendar-days text-blue-600"></i>
+                  <span>${classDate}</span>
+                </div>
+                <div class="font-mono text-[11px] text-blue-600 font-medium pl-4">
+                  ${classTime}
+                </div>
+              </div>
+              <div class="shrink-0">${statusBadge}</div>
+            </div>
+
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
-                <div class="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 class="font-black text-slate-900 text-base tracking-wide">${b["學員姓名"]}</h3>
-                  ${statusBadge}
-                </div>
-                <p class="text-xs font-bold text-slate-800 leading-snug">${b["課程名稱"]}</p>
-                <p class="text-[11px] font-mono text-slate-400 mt-0.5">${b["報名時間"] || ""}</p>
+                <h3 class="font-black text-slate-900 text-base tracking-wide">${b["學員姓名"]}</h3>
+                <!-- 課程名稱 -->
+                <p class="text-xs font-bold text-slate-800 leading-snug mt-1">${b["課程名稱"]}</p>
+                <!-- 報名時間 (在課程名稱後面) -->
+                <p class="text-[11px] font-mono text-slate-400 mt-0.5 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>
+                  <span>報名時間：${b["報名時間"] || "-"}</span>
+                </p>
               </div>
               <div class="shrink-0 text-right">
                 ${(() => {
@@ -3262,6 +3367,10 @@
           let mHtml = "";
 
           filteredRecords.forEach(b => {
+            const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
+            const classDate = course ? course.date : "-";
+            const classTime = course ? `${course.startTime} - ${course.endTime}` : "";
+
             const payCode = b["匯款五碼"] || "-";
             let payBadge = `<span class="text-slate-300">-</span>`;
             if (String(payCode).includes("LINE") || String(payCode).includes("line")) {
@@ -3272,11 +3381,18 @@
               payBadge = `<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded text-[11px] font-mono font-black border border-blue-200 tracking-wider">${payCode}</span>`;
             }
 
-            // 電腦版 Table Row
+            // 電腦版 Table Row (第一欄: 開課時間, 第二欄: 課程名稱, 第三欄: 報名日期時間)
             tHtml += `
               <tr class="hover:bg-slate-50 transition">
-                <td class="px-3.5 py-2.5 whitespace-nowrap font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
+                <td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">
+                  <div class="font-bold text-slate-900 leading-tight flex items-center gap-1.5">
+                    <i class="fa-regular fa-calendar-days text-blue-600 text-xs"></i>
+                    <span class="font-mono">${classDate}</span>
+                  </div>
+                  <div class="text-[11px] text-blue-700 font-mono leading-tight mt-0.5">${classTime}</div>
+                </td>
                 <td class="px-3.5 py-2.5 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"] || ""})</span></td>
+                <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600 leading-tight">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
                 <td class="px-3.5 py-2.5 font-bold text-slate-800">${b["學員姓名"]}</td>
                 <td class="px-3.5 py-2.5 font-mono text-slate-600">${b["聯絡電話"]}</td>
                 <td class="px-3.5 py-2.5 text-slate-500 font-mono">${b["Line ID"] || "-"}</td>
@@ -3295,14 +3411,28 @@
             // 手機版專屬明細卡片 (Mobile UI)
             mHtml += `
               <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+                <!-- 頂部開課時間標籤與狀態 -->
+                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 font-mono font-bold text-xs text-blue-900">
+                      <i class="fa-regular fa-calendar-days text-blue-600"></i>
+                      <span>${classDate}</span>
+                    </div>
+                    <div class="font-mono text-[11px] text-blue-600 font-medium pl-4">
+                      ${classTime}
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">${b["簽到狀態"]}</span>
+                </div>
+
                 <div class="flex items-start justify-between gap-2">
                   <div class="min-w-0">
-                    <div class="flex items-center gap-2 mb-1 flex-wrap">
-                      <h4 class="font-black text-slate-900 text-base">${b["學員姓名"]}</h4>
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span>
-                    </div>
-                    <p class="text-xs font-bold text-slate-800 leading-snug">${b["課程名稱"]}</p>
-                    <p class="text-[11px] font-mono text-slate-400 mt-0.5">${b["報名時間"] || ""}</p>
+                    <h4 class="font-black text-slate-900 text-base">${b["學員姓名"]}</h4>
+                    <p class="text-xs font-bold text-slate-800 leading-snug mt-1">${b["課程名稱"]}</p>
+                    <p class="text-[11px] font-mono text-slate-400 mt-0.5 flex items-center gap-1">
+                      <i class="fa-regular fa-clock text-[10px]"></i>
+                      <span>報名時間：${b["報名時間"] || "-"}</span>
+                    </p>
                   </div>
                   <div class="shrink-0 text-right">
                     ${payBadge}
@@ -3388,14 +3518,17 @@
         alert("目前名冊中無任何學員資料可匯出！");
         return;
       }
-      const headers = ["報名時間", "課程名稱", "學員姓名", "聯絡電話", "Line ID", "付款方式/五碼", "備註需求", "管理備註", "簽到狀態"];
+      const headers = ["開課時間", "課程名稱", "報名時間", "學員姓名", "聯絡電話", "Line ID", "付款方式/五碼", "備註需求", "管理備註", "簽到狀態"];
       let csvContent = "\uFEFF"; // 加入 UTF-8 BOM
       csvContent += headers.join(",") + "\r\n";
 
       adminBookings.forEach(b => {
+        const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
+        const classDate = course ? `${course.date} ${course.startTime}-${course.endTime}` : "-";
         const row = [
-          `"${(b["報名時間"] || "").replace(/"/g, '""')}"`,
+          `"${classDate.replace(/"/g, '""')}"`,
           `"${(b["課程名稱"] || "").replace(/"/g, '""')}"`,
+          `"${(b["報名時間"] || "").replace(/"/g, '""')}"`,
           `"${(b["學員姓名"] || "").replace(/"/g, '""')}"`,
           `"${(b["聯絡電話"] || "").replace(/"/g, '""')}"`,
           `"${(b["Line ID"] || "").replace(/"/g, '""')}"`,
