@@ -317,10 +317,11 @@
                 <th class="px-4 py-3">報名日期時間</th>
                 <th class="px-4 py-3">課程名稱 (編號)</th>
                 <th class="px-4 py-3">學員姓名</th>
-                <th class="px-4 py-3">電話</th>
+                <th class="px-4 py-3">聯絡電話</th>
                 <th class="px-4 py-3">Line ID</th>
-                <th class="px-4 py-3">匯款/備註</th>
-                <th class="px-4 py-3 text-center">狀態</th>
+                <th class="px-4 py-3 text-center">匯款五碼 / 付款</th>
+                <th class="px-4 py-3">備註需求</th>
+                <th class="px-4 py-3 text-center">簽到狀態</th>
               </tr>
             </thead>
             <tbody id="historyRecordsTableBody" class="divide-y divide-slate-100">
@@ -396,22 +397,23 @@
                   <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">標準 20px</button>
-                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">大 23px (推薦)</button>
-                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-3 py-1.5 text-xs rounded-xl font-bold transition">特大 27px</button>
+                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">標準 18px</button>
+                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-blue-600 text-white shadow-sm transition">大 22px (推薦)</button>
+                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">特大 27px</button>
                 </div>
               </div>
 
-              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex items-center justify-between">
+              <div class="bg-white p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <p class="text-xs font-bold text-slate-800">訪客前台預設字級</p>
-                  <p class="text-[10px] text-slate-400">學生進入報名時的預設值</p>
+                  <p class="text-[10px] text-slate-400">學生進入報名時看到的預設字體大小</p>
                 </div>
-                <select id="settingDefaultFontSize" class="text-xs px-3 py-1.5 rounded-lg border border-indigo-200 bg-white font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option value="normal">標準字體 (16px)</option>
-                  <option value="large">大字體 (18px 舒適清晰)</option>
-                  <option value="xlarge">特大字體 (21px 極度清晰)</option>
-                </select>
+                <div class="flex items-center gap-1">
+                  <input type="hidden" id="settingDefaultFontSize" value="large">
+                  <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">標準 18px</button>
+                  <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-emerald-600 text-white shadow-sm transition">大 22px (推薦)</button>
+                  <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">特大 27px</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1838,6 +1840,89 @@
               ` : ''}
               ${isFull ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
             </td>
+            <td class="px-4 py-3 text-center">${statusBadge}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button onclick="openCourseModal('${c.id}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold mr-1 transition">
+                <i class="fa-solid fa-pen"></i> 編輯
+              </button>
+              <button onclick="deleteCourse('${c.id}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-semibold transition" title="刪除課程">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // 渲染「預約名冊」表格
+    function renderBookingsTable() {
+      const query = (document.getElementById("bookingSearchInput").value || "").toLowerCase();
+      const status = document.getElementById("bookingStatusFilter").value;
+
+      const filtered = adminBookings.filter(b => {
+        const matchQuery = (b["學員姓名"] || "").toLowerCase().includes(query) ||
+                           (b["聯絡電話"] || "").includes(query) ||
+                           (b["課程名稱"] || "").toLowerCase().includes(query) ||
+                           (b["預約編號"] || "").toLowerCase().includes(query);
+        const matchStatus = status === "all" || b["簽到狀態"] === status;
+        return matchQuery && matchStatus;
+      });
+
+      const tbody = document.getElementById("bookingsTableBody");
+      const noRow = document.getElementById("noBookingsRow");
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = "";
+        noRow.classList.remove("hidden");
+        return;
+      }
+
+      noRow.classList.add("hidden");
+      let html = "";
+      filtered.forEach(b => {
+        const st = b["簽到狀態"] || "待確認";
+        const isCancelled = st === "已取消";
+        const isChecked = st === "已簽到";
+        const isSuccess = st === "報名成功";
+        const isPending = st === "待確認" || st === "已預約";
+
+        let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80"><i class="fa-solid fa-hourglass-half mr-1"></i>待確認</span>`;
+        if (isSuccess) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><i class="fa-solid fa-circle-check mr-1"></i>報名成功</span>`;
+        } else if (isChecked) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80"><i class="fa-solid fa-check-double mr-1"></i>已簽到</span>`;
+        } else if (isCancelled) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-400 line-through">已取消</span>`;
+        }
+
+        // 快速喚起 LINE 對話文字
+        const encodedLineText = encodeURIComponent(
+          `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！期待與您課堂相見！`
+        );
+        const lineContactUrl = b["Line ID"] 
+          ? `https://line.me/R/oaMessage/@me/?${encodedLineText}` 
+          : "";
+
+        html += `
+          <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
+            </td>
+            <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]}</td>
+            <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
+            <td class="px-4 py-3 font-mono">${b["聯絡電話"]}</td>
+            <td class="px-4 py-3 font-mono text-slate-600">
+              ${b["Line ID"] ? `
+                <div class="flex items-center gap-1.5">
+                  <span>${b["Line ID"]}</span>
+                  <a href="https://line.me/R/ti/p/~${b["Line ID"]}" target="_blank" title="開啟 LINE 加好友" class="text-emerald-500 hover:text-emerald-600">
+                    <i class="fa-brands fa-line text-sm"></i>
+                  </a>
+                </div>
+              ` : '-'}
+            </td>
             <td class="px-4 py-3 text-center whitespace-nowrap">
               ${(() => {
                 const payCode = b["匯款五碼"] || "-";
@@ -2002,6 +2087,7 @@
         }
         document.getElementById("formLocation").value = loc;
 
+        document.getElementById("formVirtualCount").value = c.virtualCount || 0;
         document.getElementById("formStatus").value = c.status || "開啟報名";
         document.getElementById("formNotes").value = c.notes || "";
       } else {
@@ -2010,6 +2096,7 @@
         document.getElementById("formTitle").value = "";
         document.getElementById("formInstructor").value = "霖霖教練";
         document.getElementById("formCapacity").value = "8";
+        document.getElementById("formVirtualCount").value = "0";
         document.getElementById("formStartTime").value = "19:00";
         document.getElementById("formEndTime").value = "20:00";
         
@@ -2064,6 +2151,7 @@
         title: document.getElementById("formTitle").value.trim(),
         instructor: document.getElementById("formInstructor").value.trim(),
         capacity: Number(document.getElementById("formCapacity").value),
+        virtualCount: Number(document.getElementById("formVirtualCount").value) || 0,
         date: document.getElementById("formDate").value,
         startTime: document.getElementById("formStartTime").value,
         endTime: document.getElementById("formEndTime").value,
@@ -2517,15 +2605,26 @@
           noHistoryRow.classList.add("hidden");
           let html = "";
           filteredRecords.forEach(b => {
+            const payCode = b["匯款五碼"] || "-";
+            let payBadge = `<span class="text-slate-300">-</span>`;
+            if (String(payCode).includes("LINE") || String(payCode).includes("line")) {
+              payBadge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold font-mono"><i class="fa-brands fa-line mr-1"></i>LINE轉帳</span>`;
+            } else if (String(payCode).includes("現")) {
+              payBadge = `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded text-[11px] font-bold font-mono">現場付現</span>`;
+            } else if (payCode !== "-" && payCode) {
+              payBadge = `<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded text-[11px] font-mono font-black border border-blue-200 tracking-wider">${payCode}</span>`;
+            }
+
             html += `
               <tr class="hover:bg-slate-50 transition">
                 <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
                 <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"]})</span></td>
                 <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
                 <td class="px-4 py-3 font-mono text-slate-600">${b["聯絡電話"]}</td>
-                <td class="px-4 py-3 text-slate-500">${b["Line ID"] || "-"}</td>
-                <td class="px-4 py-3 text-slate-600 max-w-xs truncate" title="${b["備註需求"] || ""}">${b["備註需求"] || "-"}</td>
-                <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span></td>
+                <td class="px-4 py-3 text-slate-500 font-mono">${b["Line ID"] || "-"}</td>
+                <td class="px-4 py-3 text-center whitespace-nowrap">${payBadge}</td>
+                <td class="px-4 py-3 text-slate-600 max-w-xs break-words" title="${b["備註需求"] || ""}">${b["備註需求"] || "-"}</td>
+                <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span></td>
               </tr>
             `;
           });
