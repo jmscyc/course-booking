@@ -344,40 +344,31 @@
             <input type="text" id="settingSysName" value="霖霖的課程預約系統" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
-          <!-- 課程範本快速下拉選單整併設定 -->
-          <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3.5">
-            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-              <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
-              <span>開課範本快速選單設定 (免去每次手打重複文字)</span>
-            </h4>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">常用課程名稱選單 <span class="text-slate-400 font-normal">(每行一門課程)</span></label>
-              <textarea id="settingCourseTitles" rows="3" placeholder="例如：
-❷ 學習：頌缽入門
-❸ 學習：頌缽進階
-❷ 學習：初進階整日班
-❹ 團體頌缽音樂療癒" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
-              <p class="text-[11px] text-slate-400 mt-0.5">開課時可在「課程名稱」直接下拉選取，亦可手動修改。</p>
+          <!-- 課程範本快速下拉選單整併設定 (一對一綁定) -->
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
+                  <span>開課範本設定 (一對一綁定：課程名稱與對應說明)</span>
+                </h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">一門課程對應其專屬說明與價位，開課時選取課程即連動帶入說明！</p>
+              </div>
+              <button type="button" onclick="addNewTemplateRow()" class="px-2.5 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition flex items-center gap-1 shadow-sm">
+                <i class="fa-solid fa-plus"></i> 新增範本
+              </button>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">常用課程說明 / 價位說明範本 <span class="text-slate-400 font-normal">(每行一筆常用範本)</span></label>
-              <textarea id="settingCourseNotes" rows="3" placeholder="例如：
-想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)
-想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)
-學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)
-音頻深層放鬆，舒緩身心壓力 (早鳥價 $800 / 定價 $1000)" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
-              <p class="text-[11px] text-slate-400 mt-0.5">開課時可一鍵帶入備註說明，不用每次重複輸入價格與課堂須知。</p>
+            <div id="templateRowsContainer" class="space-y-2.5">
+              <!-- 動態生成一對一範本列 -->
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單設定 <span class="text-slate-400 font-normal">(每行一個教室或用逗號分開)</span></label>
+            <div class="pt-2 border-t border-slate-200/60">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單設定 <span class="text-slate-400 font-normal">(每行一個教室)</span></label>
               <textarea id="settingClassrooms" rows="3" placeholder="例如：
 高雄-近高美館
 台南安南醫院
-台北場地
-台中私人包班" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+台北場地" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
             </div>
           </div>
 
@@ -555,17 +546,21 @@
       <form id="courseForm" onsubmit="handleCourseSubmit(event)" class="space-y-3.5">
         <input type="hidden" id="editCourseId">
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-slate-700">課程名稱 <span class="text-rose-500">*</span></label>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] text-slate-400">快速範本：</span>
-              <select id="formTitlePresetSelect" onchange="applyTitlePreset(this.value)" class="text-[11px] px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none">
-                <option value="">-- 常用課程快速帶入 --</option>
-              </select>
-            </div>
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
+              <span>快速套用開課範本 (名稱與說明一對一自動帶入)</span>
+            </label>
           </div>
-          <input type="text" id="formTitle" required placeholder="如：❷ 學習：頌缽入門" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+          <select id="formTemplateSelect" onchange="applyCourseTemplate(this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-blue-300 bg-white text-blue-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+            <option value="">✨ 選擇常用課程範本（點選即自動帶入名稱與說明）...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">課程名稱 <span class="text-rose-500">*</span></label>
+          <input type="text" id="formTitle" required placeholder="如：❷ 學習：頌缽入門" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900">
         </div>
 
         <div class="grid grid-cols-3 gap-2.5">
@@ -629,16 +624,8 @@
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-slate-700">課程備註說明 (學員可見)</label>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] text-slate-400">快速範本：</span>
-              <select id="formNotesPresetSelect" onchange="applyNotesPreset(this.value)" class="text-[11px] px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none">
-                <option value="">-- 常用說明快速帶入 --</option>
-              </select>
-            </div>
-          </div>
-          <textarea id="formNotes" rows="2" placeholder="注意事項、價位說明、自備物品等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">課程備註說明 / 價位 (學員可見)</label>
+          <textarea id="formNotes" rows="2" placeholder="由上方範本自動帶入，或自行輸入注意事項、價位說明等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-medium"></textarea>
         </div>
 
         <div class="flex items-center gap-2 pt-2">
@@ -754,31 +741,34 @@
       } catch(e) {}
     }
 
-    // 常用課程名稱範本（預設已完整匯入您現有所有真實課程類型）
-    let customCourseTitles = [
-      "❷ 學習：頌缽入門",
-      "❷ 學習：初進階整日班",
-      "❸ 學習：頌缽進階",
-      "❹ 團體頌缽音樂療癒"
+    // 常用開課範本：【課程名稱】與【課程說明/價格】一對一綁定
+    let customCourseTemplates = [
+      {
+        title: "❷ 學習：頌缽入門",
+        notes: "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)"
+      },
+      {
+        title: "❷ 學習：初進階整日班",
+        notes: "想學頌缽，照顧自己，幫助他人 (早鳥價 $9000 / 定價 $12000)"
+      },
+      {
+        title: "❸ 學習：頌缽進階",
+        notes: "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)"
+      },
+      {
+        title: "❹ 團體頌缽音樂療癒",
+        notes: "團體放鬆療癒體驗 (早鳥價 $800 / 定價 $1000)"
+      }
     ];
-    const savedTitles = localStorage.getItem("appsheet_course_titles");
-    if (savedTitles) {
-      try { customCourseTitles = JSON.parse(savedTitles); } catch(e) {}
-    }
 
-    // 常用課程說明 / 價位範本（預設已完整匯入您現有所有真實課程說明與定價）
-    let customCourseNotes = [
-      "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)",
-      "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)",
-      "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $12000)",
-      "學習整套頌缽使用方式 (早鳥價 $8000 / 定價 $10000)",
-      "想學頌缽，照顧自己，幫助他人 (早鳥價 $9000 / 定價 $12000)",
-      "團體放鬆療癒體驗 (早鳥價 $800 / 定價 $1000)",
-      "私人專屬包班教學"
-    ];
-    const savedNotes = localStorage.getItem("appsheet_course_notes");
-    if (savedNotes) {
-      try { customCourseNotes = JSON.parse(savedNotes); } catch(e) {}
+    const savedTemplates = localStorage.getItem("appsheet_course_templates");
+    if (savedTemplates) {
+      try {
+        const parsed = JSON.parse(savedTemplates);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          customCourseTemplates = parsed;
+        }
+      } catch(e) {}
     }
 
     // 預設示範課程資料（已同步 AppSheet 真實課程清單）
@@ -1524,13 +1514,8 @@
       setAppFontSize(savedAdminFont, false);
       document.getElementById("apiInput").value = API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" ? API_URL : "";
       
-      // 將現有完整範本回填至系統設定畫面
-      if (document.getElementById("settingCourseTitles")) {
-        document.getElementById("settingCourseTitles").value = customCourseTitles.join("\n");
-      }
-      if (document.getElementById("settingCourseNotes")) {
-        document.getElementById("settingCourseNotes").value = customCourseNotes.join("\n");
-      }
+      // 初始渲染一對一範本編輯清單
+      renderSettingsTemplateRows();
       if (document.getElementById("settingClassrooms")) {
         document.getElementById("settingClassrooms").value = customClassrooms.join("\n");
       }
@@ -1906,37 +1891,83 @@
       tbody.innerHTML = html;
     }
 
-    // 渲染開課 Modal 中的「快速範本」下拉選單
+    // 渲染開課 Modal 中的「一對一快速範本」下拉選單
     function renderPresetOptions() {
-      const titleSelect = document.getElementById("formTitlePresetSelect");
-      if (titleSelect) {
-        let tHtml = `<option value="">-- 常用課程快速帶入 --</option>`;
-        customCourseTitles.forEach(t => {
-          tHtml += `<option value="${t}">${t}</option>`;
-        });
-        titleSelect.innerHTML = tHtml;
-      }
+      const tSelect = document.getElementById("formTemplateSelect");
+      if (!tSelect) return;
+      let html = `<option value="">✨ 選擇常用課程範本（點選即自動帶入名稱與說明）...</option>`;
+      customCourseTemplates.forEach((tpl, idx) => {
+        html += `<option value="${idx}">【${tpl.title}】 - ${tpl.notes.slice(0, 30)}...</option>`;
+      });
+      tSelect.innerHTML = html;
+    }
 
-      const notesSelect = document.getElementById("formNotesPresetSelect");
-      if (notesSelect) {
-        let nHtml = `<option value="">-- 常用說明快速帶入 --</option>`;
-        customCourseNotes.forEach(n => {
-          nHtml += `<option value="${n}">${n}</option>`;
-        });
-        notesSelect.innerHTML = nHtml;
+    // 點選範本時，名稱與說明一對一同時自動帶入！
+    function applyCourseTemplate(idxStr) {
+      if (idxStr === "" || idxStr === null) return;
+      const idx = parseInt(idxStr, 10);
+      const tpl = customCourseTemplates[idx];
+      if (tpl) {
+        document.getElementById("formTitle").value = tpl.title;
+        document.getElementById("formNotes").value = tpl.notes;
       }
     }
 
-    function applyTitlePreset(val) {
-      if (val) {
-        document.getElementById("formTitle").value = val;
-      }
+    // 渲染設定頁籤中的「一對一範本編輯列表」
+    function renderSettingsTemplateRows() {
+      const container = document.getElementById("templateRowsContainer");
+      if (!container) return;
+      let html = "";
+      customCourseTemplates.forEach((tpl, idx) => {
+        html += `
+          <div class="bg-white p-3 rounded-xl border border-slate-200/90 shadow-sm space-y-2 relative group">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">範本 #${idx + 1}</span>
+              <button type="button" onclick="removeTemplateRow(${idx})" class="text-slate-400 hover:text-rose-600 text-xs transition px-2 py-0.5 rounded" title="刪除此範本">
+                <i class="fa-solid fa-trash-can mr-1"></i>刪除
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <div class="sm:col-span-5">
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程名稱</label>
+                <input type="text" class="template-title-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800" value="${escapeHtmlAttr(tpl.title)}" placeholder="例如：❷ 學習：頌缽入門">
+              </div>
+              <div class="sm:col-span-7">
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">對應說明 / 價位</label>
+                <input type="text" class="template-notes-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" value="${escapeHtmlAttr(tpl.notes)}" placeholder="例如：想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)">
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
-    function applyNotesPreset(val) {
-      if (val) {
-        document.getElementById("formNotes").value = val;
+    function escapeHtmlAttr(str) {
+      if (!str) return "";
+      return String(str).replace(/"/g, "&quot;");
+    }
+
+    function addNewTemplateRow() {
+      customCourseTemplates.push({
+        title: "",
+        notes: ""
+      });
+      renderSettingsTemplateRows();
+      // 自動聚焦到新一筆的標題輸入框
+      setTimeout(() => {
+        const inputs = document.querySelectorAll(".template-title-input");
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
+      }, 50);
+    }
+
+    function removeTemplateRow(idx) {
+      if (customCourseTemplates.length <= 1) {
+        alert("至少請保留一組課程範本！");
+        return;
       }
+      customCourseTemplates.splice(idx, 1);
+      renderSettingsTemplateRows();
     }
 
     // 開啟課程 Modal (支援新增與編輯)
@@ -2264,8 +2295,6 @@
       const notice = document.getElementById("settingNotice").value.trim();
       const newPass = document.getElementById("settingPassword").value.trim();
       const rawClassrooms = document.getElementById("settingClassrooms").value;
-      const rawTitles = document.getElementById("settingCourseTitles").value;
-      const rawNotes = document.getElementById("settingCourseNotes").value;
       const defaultFontSize = document.getElementById("settingDefaultFontSize").value;
 
       // 解析常用教室清單
@@ -2275,18 +2304,20 @@
         localStorage.setItem("appsheet_classrooms", JSON.stringify(customClassrooms));
       }
 
-      // 解析常用課程名稱
-      const parsedTitles = rawTitles.split(/\n/).map(s => s.trim()).filter(Boolean);
-      if (parsedTitles.length > 0) {
-        customCourseTitles = parsedTitles;
-        localStorage.setItem("appsheet_course_titles", JSON.stringify(customCourseTitles));
-      }
-
-      // 解析常用課程說明
-      const parsedNotes = rawNotes.split(/\n/).map(s => s.trim()).filter(Boolean);
-      if (parsedNotes.length > 0) {
-        customCourseNotes = parsedNotes;
-        localStorage.setItem("appsheet_course_notes", JSON.stringify(customCourseNotes));
+      // 收集並保存一對一開課範本
+      const titleInputs = document.querySelectorAll(".template-title-input");
+      const noteInputs = document.querySelectorAll(".template-notes-input");
+      const newTemplates = [];
+      titleInputs.forEach((ti, idx) => {
+        const tVal = ti.value.trim();
+        const nVal = noteInputs[idx] ? noteInputs[idx].value.trim() : "";
+        if (tVal) {
+          newTemplates.push({ title: tVal, notes: nVal });
+        }
+      });
+      if (newTemplates.length > 0) {
+        customCourseTemplates = newTemplates;
+        localStorage.setItem("appsheet_course_templates", JSON.stringify(customCourseTemplates));
       }
 
       localStorage.setItem("appsheet_default_fontsize", defaultFontSize);
