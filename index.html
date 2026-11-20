@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --client-font-size: 22px; /* 預設大字體 22px */
+      --client-font-size: 17px; /* 縮小一號舒適版 17px (標準 15px / 大 17px / 特大 20px) */
     }
     html {
       font-size: var(--client-font-size) !important;
@@ -20,18 +20,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-tap-highlight-color: transparent;
       font-size: 1rem;
-      line-height: 1.55;
+      line-height: 1.5;
     }
-    /* 覆蓋 Tailwind 死值，讓 A/A+/A++ 縮放等比放大有感 */
-    .text-\[9px\] { font-size: 0.8rem !important; }
-    .text-\[10px\] { font-size: 0.85rem !important; }
-    .text-\[11px\] { font-size: 0.9rem !important; }
-    .text-xs { font-size: 1rem !important; }
-    .text-sm { font-size: 1.12rem !important; }
-    .text-base { font-size: 1.25rem !important; }
-    .text-lg { font-size: 1.45rem !important; }
-    .text-xl { font-size: 1.65rem !important; }
-    .text-2xl { font-size: 1.95rem !important; }
+    .text-\[9px\] { font-size: 0.72rem !important; }
+    .text-\[10px\] { font-size: 0.78rem !important; }
+    .text-\[11px\] { font-size: 0.84rem !important; }
+    .text-xs { font-size: 0.88rem !important; }
+    .text-sm { font-size: 0.96rem !important; }
+    .text-base { font-size: 1.08rem !important; }
+    .text-lg { font-size: 1.2rem !important; }
+    .text-xl { font-size: 1.35rem !important; }
+    .text-2xl { font-size: 1.55rem !important; }
 
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
@@ -592,8 +591,22 @@
                 <i class="fa-solid fa-location-dot text-slate-400 w-3.5"></i>
                 <span>${c.location || '教室地點'}</span>
               </div>
+              ${(c.earlyBirdPrice || c.regularPrice) ? `
+                <div class="flex items-center gap-2 pt-1">
+                  ${c.earlyBirdPrice ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <i class="fa-solid fa-tag text-[10px]"></i> 早鳥價 NT$ ${Number(c.earlyBirdPrice).toLocaleString()}
+                    </span>
+                  ` : ''}
+                  ${c.regularPrice ? `
+                    <span class="text-xs text-slate-400 line-through font-medium">
+                      定價 NT$ ${Number(c.regularPrice).toLocaleString()}
+                    </span>
+                  ` : ''}
+                </div>
+              ` : ''}
               ${c.notes ? `
-                <div class="flex items-start gap-2 pt-0.5 text-slate-400">
+                <div class="flex items-start gap-2 pt-0.5 text-slate-500">
                   <i class="fa-regular fa-note-sticky text-slate-400 w-3.5 mt-0.5"></i>
                   <span class="line-clamp-2">${c.notes}</span>
                 </div>

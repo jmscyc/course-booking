@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --app-font-size: 23px; /* 基礎字體超大護眼 (標準 20px / 預設大字 23px / 特大 27px) */
+      --app-font-size: 23px; /* 基礎字體超大護眼 (標準 20px / 預設大字 23px / 特大 20px) */
     }
     html {
       font-size: var(--app-font-size) !important;
@@ -205,15 +205,15 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
               <tr>
-                <th class="px-4 py-3">報名日期時間</th>
-                <th class="px-4 py-3">課程名稱</th>
-                <th class="px-4 py-3">學員姓名</th>
-                <th class="px-4 py-3">聯絡電話</th>
-                <th class="px-4 py-3">Line ID</th>
-                <th class="px-4 py-3 text-center">匯款五碼 / 付款</th>
-                <th class="px-4 py-3">備註需求</th>
-                <th class="px-4 py-3 text-center">簽到狀態</th>
-                <th class="px-4 py-3 text-right">管理</th>
+                <th class="px-3.5 py-3 whitespace-nowrap">報名日期時間</th>
+                <th class="px-3.5 py-3 whitespace-nowrap min-w-[140px]">課程名稱</th>
+                <th class="px-3.5 py-3 whitespace-nowrap">學員姓名</th>
+                <th class="px-3.5 py-3 whitespace-nowrap">聯絡電話</th>
+                <th class="px-3.5 py-3 whitespace-nowrap">Line ID</th>
+                <th class="px-3.5 py-3 text-center whitespace-nowrap">匯款五碼 / 付款</th>
+                <th class="px-3.5 py-3 whitespace-nowrap min-w-[120px]">備註需求</th>
+                <th class="px-3.5 py-3 text-center whitespace-nowrap">簽到狀態</th>
+                <th class="px-3.5 py-3 text-right whitespace-nowrap">管理操作</th>
               </tr>
             </thead>
             <tbody id="bookingsTableBody" class="divide-y divide-slate-100">
@@ -397,9 +397,9 @@
                   <p class="text-[10px] text-slate-400">目前您使用的管理畫面</p>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">標準 18px</button>
-                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-blue-600 text-white shadow-sm transition">大 22px (推薦)</button>
-                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">特大 27px</button>
+                  <button type="button" id="setBtnNormal" onclick="setAppFontSize('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">標準 15px</button>
+                  <button type="button" id="setBtnLarge" onclick="setAppFontSize('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-blue-600 text-white shadow-sm transition">大 17px (推薦)</button>
+                  <button type="button" id="setBtnXLarge" onclick="setAppFontSize('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">特大 20px</button>
                 </div>
               </div>
 
@@ -410,9 +410,9 @@
                 </div>
                 <div class="flex items-center gap-1">
                   <input type="hidden" id="settingDefaultFontSize" value="large">
-                  <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">標準 18px</button>
-                  <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-emerald-600 text-white shadow-sm transition">大 22px (推薦)</button>
-                  <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">特大 27px</button>
+                  <button type="button" id="setClientBtnNormal" onclick="setClientDefaultFont('normal')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">標準 15px</button>
+                  <button type="button" id="setClientBtnLarge" onclick="setClientDefaultFont('large')" class="px-2.5 py-1 text-xs rounded-xl font-black bg-emerald-600 text-white shadow-sm transition">大 17px (推薦)</button>
+                  <button type="button" id="setClientBtnXLarge" onclick="setClientDefaultFont('xlarge')" class="px-2.5 py-1 text-xs rounded-xl font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition">特大 20px</button>
                 </div>
               </div>
             </div>
@@ -630,9 +630,24 @@
           </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-3 bg-blue-50/50 p-2.5 rounded-xl border border-blue-100">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              <i class="fa-solid fa-tag text-emerald-600 mr-1"></i>早鳥價 (NT$)
+            </label>
+            <input type="number" id="formEarlyBirdPrice" placeholder="例如：4000" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-emerald-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              <i class="fa-solid fa-receipt text-slate-500 mr-1"></i>定價 (NT$)
+            </label>
+            <input type="number" id="formRegularPrice" placeholder="例如：5000" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800">
+          </div>
+        </div>
+
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">課程備註說明 / 價位 (學員可見)</label>
-          <textarea id="formNotes" rows="2" placeholder="由上方範本自動帶入，或自行輸入注意事項、價位說明等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-medium"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">課程詳細說明 (學員可見)</label>
+          <textarea id="formNotes" rows="2" placeholder="由上方範本自動帶入，或自行輸入課程特色、注意事項等..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-medium"></textarea>
         </div>
 
         <div class="flex items-center gap-2 pt-2">
@@ -774,23 +789,31 @@
       } catch(e) {}
     }
 
-    // 常用開課範本：【課程名稱】與【課程說明/價格】一對一綁定
+    // 常用開課範本：【課程名稱】與【早鳥價】、【定價】、【課程說明】獨立結構一對一綁定
     let customCourseTemplates = [
       {
         title: "❷ 學習：頌缽入門",
-        notes: "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)"
+        earlyBirdPrice: "4000",
+        regularPrice: "5000",
+        notes: "想學頌缽，照顧自己"
       },
       {
         title: "❷ 學習：初進階整日班",
-        notes: "想學頌缽，照顧自己，幫助他人 (早鳥價 $9000 / 定價 $12000)"
+        earlyBirdPrice: "9000",
+        regularPrice: "12000",
+        notes: "想學頌缽，照顧自己，幫助他人"
       },
       {
         title: "❸ 學習：頌缽進階",
-        notes: "想進階技能，運用頌缽 (早鳥價 $4000 / 定價 $5000)"
+        earlyBirdPrice: "4000",
+        regularPrice: "5000",
+        notes: "想進階技能，運用頌缽"
       },
       {
         title: "❹ 團體頌缽音樂療癒",
-        notes: "團體放鬆療癒體驗 (早鳥價 $800 / 定價 $1000)"
+        earlyBirdPrice: "800",
+        regularPrice: "1000",
+        notes: "團體放鬆療癒體驗"
       }
     ];
 
@@ -815,7 +838,9 @@
             "location": "高雄-近高美館",
             "capacity": 4,
             "instructor": "霖霖",
-            "notes": "想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)",
+            "notes": "想學頌缽，照顧自己",
+            "earlyBirdPrice": "4000",
+            "regularPrice": "5000",
             "status": "開啟報名"
       },
       {
@@ -827,7 +852,9 @@
             "location": "台南安南醫院",
             "capacity": 1,
             "instructor": "霖霖",
-            "notes": "想學頌缽，照顧自己，幫助他人 (早鳥價 $9000 / 定價 $12000)",
+            "notes": "想學頌缽，照顧自己",
+            "earlyBirdPrice": "4000",
+            "regularPrice": "5000",
             "status": "開啟報名"
       },
       {
@@ -899,7 +926,9 @@
             "location": "高雄-近高美館",
             "capacity": 10,
             "instructor": "霖霖",
-            "notes": "歷史課程 (早鳥價 $4000 / 定價 $5000)",
+            "notes": "想學頌缽，照顧自己",
+            "earlyBirdPrice": "4000",
+            "regularPrice": "5000",
             "status": "已結束"
       },
       {
@@ -959,7 +988,9 @@
             "location": "高雄-近高美館",
             "capacity": 5,
             "instructor": "霖霖",
-            "notes": "歷史課程 (早鳥價 $800 / 定價 $1000)",
+            "notes": "團體放鬆療癒體驗",
+            "earlyBirdPrice": "800",
+            "regularPrice": "1000",
             "status": "已結束"
       },
       {
@@ -971,7 +1002,9 @@
             "location": "台中私人包班",
             "capacity": 3,
             "instructor": "霖霖",
-            "notes": "歷史課程 (私人包班)",
+            "notes": "私人包班",
+            "earlyBirdPrice": "",
+            "regularPrice": "",
             "status": "已結束"
       }
 ];
@@ -1818,9 +1851,13 @@
         html += `
           <tr class="hover:bg-slate-50 transition">
             <td class="px-4 py-3 font-mono font-bold text-slate-500">${c.id}</td>
-            <td class="px-4 py-3">
-              <span class="font-bold text-slate-900">${c.title}</span>
-              ${c.notes ? `<div class="text-[11px] text-slate-400 truncate max-w-xs">${c.notes}</div>` : ''}
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="font-bold text-slate-900">${c.title}</div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                ${c.earlyBirdPrice ? `<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $${c.earlyBirdPrice}</span>` : ''}
+                ${c.regularPrice ? `<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">定價 $${c.regularPrice}</span>` : ''}
+                ${c.notes ? `<span class="text-[11px] text-slate-400 truncate max-w-[180px]" title="${c.notes}">${c.notes}</span>` : ''}
+              </div>
             </td>
             <td class="px-4 py-3 font-semibold text-blue-600">${c.instructor}</td>
             <td class="px-4 py-3">
@@ -1906,16 +1943,16 @@
 
         html += `
           <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="font-mono font-bold text-slate-900">${(b["報名時間"] || "").split(" ")[0]}</div>
-              <div class="text-[11px] text-slate-400 font-mono">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
+            <td class="px-3.5 py-2.5 whitespace-nowrap">
+              <div class="font-mono font-bold text-slate-900 leading-tight">${(b["報名時間"] || "").split(" ")[0]}</div>
+              <div class="text-[11px] text-slate-400 font-mono leading-tight">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
             </td>
-            <td class="px-4 py-3 font-semibold text-slate-900">${b["課程名稱"]}</td>
-            <td class="px-4 py-3 font-bold text-slate-800">${b["學員姓名"]}</td>
-            <td class="px-4 py-3 font-mono">${b["聯絡電話"]}</td>
-            <td class="px-4 py-3 font-mono text-slate-600">
+            <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900">${b["課程名稱"]}</td>
+            <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-800">${b["學員姓名"]}</td>
+            <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-700">${b["聯絡電話"]}</td>
+            <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600">
               ${b["Line ID"] ? `
-                <div class="flex items-center gap-1.5">
+                <div class="inline-flex items-center gap-1.5">
                   <span>${b["Line ID"]}</span>
                   <a href="https://line.me/R/ti/p/~${b["Line ID"]}" target="_blank" title="開啟 LINE 加好友" class="text-emerald-500 hover:text-emerald-600">
                     <i class="fa-brands fa-line text-sm"></i>
@@ -1936,8 +1973,8 @@
                 return `<span class="text-slate-300">-</span>`;
               })()}
             </td>
-            <td class="px-4 py-3 max-w-[200px] break-words text-slate-600" title="${b["備註需求"] || ''}">
-              ${b["備註需求"] || '-'}
+            <td class="px-3.5 py-2.5 whitespace-nowrap max-w-[220px] truncate text-slate-600" title="${b["備註需求"] || ''}">
+              ${b["備註需求"] || '<span class="text-slate-300">-</span>'}
             </td>
             <td class="px-4 py-3 text-center">${statusBadge}</td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
@@ -1979,25 +2016,28 @@
     function renderPresetOptions() {
       const tSelect = document.getElementById("formTemplateSelect");
       if (!tSelect) return;
-      let html = `<option value="">✨ 選擇常用課程範本（點選即自動帶入名稱與說明）...</option>`;
+      let html = `<option value="">✨ 選擇常用課程範本（點選即自動帶入名稱、早鳥價、定價與說明）...</option>`;
       customCourseTemplates.forEach((tpl, idx) => {
-        html += `<option value="${idx}">【${tpl.title}】 - ${tpl.notes.slice(0, 30)}...</option>`;
+        const priceTag = (tpl.earlyBirdPrice || tpl.regularPrice) ? ` (早鳥 $${tpl.earlyBirdPrice || "-"} / 定價 $${tpl.regularPrice || "-"})` : "";
+        html += `<option value="${idx}">【${tpl.title}】${priceTag} - ${(tpl.notes || "").slice(0, 20)}</option>`;
       });
       tSelect.innerHTML = html;
     }
 
-    // 點選範本時，名稱與說明一對一同時自動帶入！
+    // 點選範本時，名稱、早鳥價、定價與說明一對一自動帶入！
     function applyCourseTemplate(idxStr) {
       if (idxStr === "" || idxStr === null) return;
       const idx = parseInt(idxStr, 10);
       const tpl = customCourseTemplates[idx];
       if (tpl) {
-        document.getElementById("formTitle").value = tpl.title;
-        document.getElementById("formNotes").value = tpl.notes;
+        document.getElementById("formTitle").value = tpl.title || "";
+        document.getElementById("formEarlyBirdPrice").value = tpl.earlyBirdPrice || "";
+        document.getElementById("formRegularPrice").value = tpl.regularPrice || "";
+        document.getElementById("formNotes").value = tpl.notes || "";
       }
     }
 
-    // 渲染設定頁籤中的「一對一範本編輯列表」
+    // 渲染設定頁籤中的「獨立價格一對一範本編輯列表」
     function renderSettingsTemplateRows() {
       const container = document.getElementById("templateRowsContainer");
       if (!container) return;
@@ -2012,13 +2052,21 @@
               </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-              <div class="sm:col-span-5">
+              <div class="sm:col-span-4">
                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程名稱</label>
                 <input type="text" class="template-title-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800" value="${escapeHtmlAttr(tpl.title)}" placeholder="例如：❷ 學習：頌缽入門">
               </div>
-              <div class="sm:col-span-7">
-                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">對應說明 / 價位</label>
-                <input type="text" class="template-notes-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" value="${escapeHtmlAttr(tpl.notes)}" placeholder="例如：想學頌缽，照顧自己 (早鳥價 $4000 / 定價 $5000)">
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">早鳥價 (NT$)</label>
+                <input type="number" class="template-early-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-700" value="${escapeHtmlAttr(tpl.earlyBirdPrice || '')}" placeholder="4000">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">定價 (NT$)</label>
+                <input type="number" class="template-regular-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700" value="${escapeHtmlAttr(tpl.regularPrice || '')}" placeholder="5000">
+              </div>
+              <div class="sm:col-span-4">
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程說明備註</label>
+                <input type="text" class="template-notes-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" value="${escapeHtmlAttr(tpl.notes)}" placeholder="想學頌缽，照顧自己">
               </div>
             </div>
           </div>
@@ -2035,6 +2083,8 @@
     function addNewTemplateRow() {
       customCourseTemplates.push({
         title: "",
+        earlyBirdPrice: "",
+        regularPrice: "",
         notes: ""
       });
       renderSettingsTemplateRows();
@@ -2088,6 +2138,8 @@
         document.getElementById("formLocation").value = loc;
 
         document.getElementById("formVirtualCount").value = c.virtualCount || 0;
+        document.getElementById("formEarlyBirdPrice").value = c.earlyBirdPrice || "";
+        document.getElementById("formRegularPrice").value = c.regularPrice || "";
         document.getElementById("formStatus").value = c.status || "開啟報名";
         document.getElementById("formNotes").value = c.notes || "";
       } else {
@@ -2107,6 +2159,8 @@
         document.getElementById("formLocationCustom").value = "";
         document.getElementById("formLocation").value = defaultLoc;
 
+        document.getElementById("formEarlyBirdPrice").value = "";
+        document.getElementById("formRegularPrice").value = "";
         document.getElementById("formStatus").value = "開啟報名";
         document.getElementById("formNotes").value = "";
       }
@@ -2152,6 +2206,8 @@
         instructor: document.getElementById("formInstructor").value.trim(),
         capacity: Number(document.getElementById("formCapacity").value),
         virtualCount: Number(document.getElementById("formVirtualCount").value) || 0,
+        earlyBirdPrice: document.getElementById("formEarlyBirdPrice").value.trim(),
+        regularPrice: document.getElementById("formRegularPrice").value.trim(),
         date: document.getElementById("formDate").value,
         startTime: document.getElementById("formStartTime").value,
         endTime: document.getElementById("formEndTime").value,
@@ -2393,13 +2449,22 @@
 
       // 收集並保存一對一開課範本
       const titleInputs = document.querySelectorAll(".template-title-input");
+      const earlyInputs = document.querySelectorAll(".template-early-input");
+      const regularInputs = document.querySelectorAll(".template-regular-input");
       const noteInputs = document.querySelectorAll(".template-notes-input");
       const newTemplates = [];
       titleInputs.forEach((ti, idx) => {
         const tVal = ti.value.trim();
+        const ebVal = earlyInputs[idx] ? earlyInputs[idx].value.trim() : "";
+        const rgVal = regularInputs[idx] ? regularInputs[idx].value.trim() : "";
         const nVal = noteInputs[idx] ? noteInputs[idx].value.trim() : "";
         if (tVal) {
-          newTemplates.push({ title: tVal, notes: nVal });
+          newTemplates.push({
+            title: tVal,
+            earlyBirdPrice: ebVal,
+            regularPrice: rgVal,
+            notes: nVal
+          });
         }
       });
       if (newTemplates.length > 0) {
