@@ -1643,6 +1643,28 @@
       return dateStr;
     }
 
+    // 輔助函式：取得星期簡稱 (六、日、一...)
+    function getWeekDay(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr.replace(/\//g, "-"));
+      if (isNaN(d.getTime())) return "";
+      const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+      return days[d.getDay()] || "";
+    }
+
+    // 🌟 輔助函式：將 YYYY-MM-DD 轉為 YYYY/MM/DD(日)
+    function formatDisplayDate(dateStr) {
+      if (!dateStr || dateStr === "-") return dateStr;
+      const cleanDate = dateStr.replace(/\//g, "-");
+      const parts = cleanDate.split("-");
+      if (parts.length === 3) {
+        const wDay = (getWeekDay(cleanDate) || "").replace("週", "");
+        return `${parts[0]}/${parts[1]}/${parts[2]}(${wDay})`;
+      }
+      return dateStr;
+    }
+
+    // 判斷課程是否已過期
     function isCourseExpired(course) {
       if (!course || !course.date) return false;
       const dateStr = String(course.date).trim().replace(/\//g, "-");
