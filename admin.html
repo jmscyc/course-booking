@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --app-font-size: 21px; /* 手機端標準 21px */
@@ -119,6 +121,38 @@
         <a href="index.html" class="hover:text-blue-600 font-bold transition flex items-center gap-1.5 text-slate-500">
           <i class="fa-solid fa-arrow-left text-[11px]"></i> 返回學員預約端
         </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📷 多裝置掃描同步 QR Code 彈窗 -->
+  <div id="syncQrModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 transition-all hidden">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-100 text-center space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <h3 class="text-sm font-black text-slate-900">新裝置掃描同步</h3>
+        </div>
+        <button type="button" onclick="closeSyncQrModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 leading-relaxed">
+        拿出另一台手機或平板，打開相機<strong>直接掃描此 QR Code</strong>，即可自動同步連線資料庫並完成綁定！
+      </p>
+
+      <div class="bg-slate-50 p-4 rounded-2xl flex items-center justify-center border border-slate-100">
+        <div id="syncQrContainer" class="p-2 bg-white rounded-xl shadow-sm"></div>
+      </div>
+
+      <div class="space-y-2">
+        <button type="button" onclick="copyDirectSyncUrl()" id="qrCopyLinkBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20">
+          <i class="fa-regular fa-copy"></i>
+          <span>改用 LINE / 訊息傳送同步連結</span>
+        </button>
       </div>
     </div>
   </div>
@@ -616,7 +650,7 @@
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Google Apps Script Web App 網址</label>
               <div class="flex items-center gap-2">
-                <input type="url" id="settingGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                <input type="url" id="settingGasUrl" oninput="updateSyncButtonsState()" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
                 <button type="button" onclick="testGasConnection()" id="testGasBtn" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shrink-0 whitespace-nowrap shadow-sm">
                   測試連線
                 </button>
@@ -624,6 +658,29 @@
               <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                 <i class="fa-solid fa-circle-info text-emerald-600"></i>
                 <span>若未填寫，系統自動維持單機暫存模式，不影響基本展示與操作。</span>
+              </p>
+            </div>
+
+            <!-- 📱 多裝置零手動輸入：一鍵複製同步網址與 QR Code -->
+            <div id="multiDeviceSyncSection" class="pt-3 border-t border-emerald-200/80 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                  <i class="fa-solid fa-mobile-screen-button text-emerald-600"></i>
+                  <span>換手機/平板時？（免重新貼長網址）</span>
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="copyDirectSyncUrl()" id="copySyncUrlBtn" class="flex-1 py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-link text-emerald-600"></i>
+                  <span>複製專屬同步網址</span>
+                </button>
+                <button type="button" onclick="showSyncQrModal()" id="showQrBtn" class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-qrcode text-emerald-600"></i>
+                  <span>顯示同步 QR Code</span>
+                </button>
+              </div>
+              <p class="text-[10.5px] text-slate-500">
+                只要把「專屬同步網址」傳給新手機打開，或用新手機掃描 QR Code，新裝置就會<strong>自動完成綁定</strong>，連一秒鐘都不用重打！
               </p>
             </div>
           </div>
@@ -2092,12 +2149,21 @@
       // 檢查管理密碼驗證狀態
       checkAdminAuth();
 
+      // 支援網址帶入自動同步參數 (?sync=... 或 ?api=...)，跨裝置免重新手動貼網址
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSync = urlParams.get("sync") || urlParams.get("api");
+      if (urlSync && urlSync.startsWith("http")) {
+        localStorage.setItem("appsheet_gas_api", urlSync);
+        API_URL = urlSync;
+      }
+
       // 載入 Google Apps Script 網址設定
       const savedGas = localStorage.getItem("appsheet_gas_api") || "";
       if (document.getElementById("settingGasUrl")) {
         document.getElementById("settingGasUrl").value = savedGas;
       }
       updateGasStatusBadge(savedGas);
+      updateSyncButtonsState();
 
       loadFullAdminData();
     });
@@ -3465,6 +3531,80 @@
           }
         }, 3000);
       }
+    }
+
+    // 更新同步按鈕狀態
+    function updateSyncButtonsState() {
+      const url = (document.getElementById("settingGasUrl")?.value || "").trim();
+      const hasUrl = url.startsWith("http");
+      const copyBtn = document.getElementById("copySyncUrlBtn");
+      const qrBtn = document.getElementById("showQrBtn");
+      if (copyBtn) {
+        copyBtn.style.opacity = hasUrl ? "1" : "0.5";
+        copyBtn.disabled = !hasUrl;
+      }
+      if (qrBtn) {
+        qrBtn.style.opacity = hasUrl ? "1" : "0.5";
+        qrBtn.disabled = !hasUrl;
+      }
+    }
+
+    // 產生並複製專屬同步網址 (新手機一開即自動綁定)
+    function getDirectSyncUrl() {
+      const gasUrl = (document.getElementById("settingGasUrl")?.value || localStorage.getItem("appsheet_gas_api") || "").trim();
+      if (!gasUrl || !gasUrl.startsWith("http")) return null;
+      // 構建帶有 sync 參數的 admin.html 專屬網址
+      const base = window.location.origin + window.location.pathname;
+      return `${base}?sync=${encodeURIComponent(gasUrl)}`;
+    }
+
+    // 複製專屬同步網址
+    async function copyDirectSyncUrl() {
+      const syncUrl = getDirectSyncUrl();
+      if (!syncUrl) {
+        alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(syncUrl);
+        alert("🔗 專屬同步網址已複製！\n\n您可以直接將此網址用 LINE 或備忘錄傳送給新手機或朋友。\n新裝置只要「點開此連結」，就會全自動完成資料庫連線，完全不用手動設定！");
+      } catch (e) {
+        prompt("請手動複製下方專屬同步網址：", syncUrl);
+      }
+    }
+
+    // 彈出並渲染同步 QR Code
+    function showSyncQrModal() {
+      const syncUrl = getDirectSyncUrl();
+      if (!syncUrl) {
+        alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
+        return;
+      }
+
+      const modal = document.getElementById("syncQrModal");
+      const container = document.getElementById("syncQrContainer");
+      if (!modal || !container) return;
+
+      container.innerHTML = "";
+      if (typeof QRCode !== "undefined") {
+        new QRCode(container, {
+          text: syncUrl,
+          width: 200,
+          height: 200,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        container.innerHTML = `<p class="text-xs text-rose-500">QR Code 模組載入中，請直接使用「複製專屬同步網址」。</p>`;
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeSyncQrModal() {
+      const modal = document.getElementById("syncQrModal");
+      if (modal) modal.classList.add("hidden");
     }
 
     let currentHistorySubMode = "students"; // "students" 或 "records"
