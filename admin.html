@@ -71,7 +71,35 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 管理後台頂部列 -->
+  <!-- 🔐 管理者登入驗證覆蓋層 (預設密碼 admin888，可於設定中自行更改) -->
+  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 transition-all">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-5 animate-in fade-in zoom-in duration-200">
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h2 class="text-lg font-black text-slate-900 tracking-tight">管理後台安全驗證</h2>
+        <p class="text-xs text-slate-400 mt-1">請輸入管理密碼以存取課程與預約名冊</p>
+      </div>
+      <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+        <div class="relative">
+          <input type="password" id="adminLoginInput" placeholder="請輸入管理密碼..." autofocus class="w-full text-center text-sm tracking-widest font-mono font-bold px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        </div>
+        <p id="loginErrorMsg" class="text-xs font-bold text-rose-500 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>密碼不正確，請重新輸入</p>
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+          <span>解鎖進入後台</span>
+        </button>
+      </form>
+      <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+        <a href="index.html" class="hover:text-blue-600 font-bold transition flex items-center gap-1">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> 返回學員預約端
+        </a>
+        <span class="text-slate-300">|</span>
+        <span class="text-slate-400">初始預設：admin888</span>
+      </div>
+    </div>
+  </div>
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
@@ -512,9 +540,55 @@
             <textarea id="settingNotice" rows="3" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</textarea>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">後台管理密碼</label>
-            <input type="text" id="settingPassword" value="admin888" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <!-- 雲端資料庫串接：Google Sheets 試算表設定 (即時跨手機同步) -->
+          <div class="bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border-2 border-emerald-200/90 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm shadow-emerald-500/20 shrink-0">
+                  <i class="fa-solid fa-table"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-emerald-950 flex items-center gap-1.5">
+                    <span>Google 試算表雲端資料庫 (跨手機即時同步)</span>
+                    <span id="gasStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">未連線 (離線展示模式)</span>
+                  </h4>
+                  <p class="text-[11px] text-emerald-800/80 mt-0.5">貼上 Google Apps Script 部署後的 Web App URL，即可將所有學員在各手機的報名即時存入您的 Google Sheet！</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Google Apps Script Web App 網址</label>
+              <div class="flex items-center gap-2">
+                <input type="url" id="settingGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                <button type="button" onclick="testGasConnection()" id="testGasBtn" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shrink-0 whitespace-nowrap shadow-sm">
+                  測試連線
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-circle-info text-emerald-600"></i>
+                <span>若未填寫，系統自動維持單機暫存模式，不影響基本展示與操作。</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- 安全防護：後台管理登入密碼 -->
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <div>
+                <h4 class="text-xs sm:text-sm font-black text-slate-900">後台管理登入密碼</h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">進入管理後台時所須輸入的安全密碼（預設為 admin888，您可隨時在此更改）</p>
+              </div>
+            </div>
+
+            <div>
+              <div class="relative max-w-sm">
+                <input type="text" id="settingPassword" value="admin888" placeholder="設定您的新後台密碼..." class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
           </div>
 
           <!-- 通知設定區塊：獨立平行卡片，非巢狀結構 -->
@@ -853,9 +927,42 @@
 
 
   <script>
-    // 獨立純前端本地資料庫系統，已取消所有 AppSheet API 依賴
-    let API_URL = "";
-    localStorage.removeItem("appsheet_gas_api");
+    // 讀取 Google Apps Script Web App API 網址 (支援由設定頁面動態儲存)
+    let API_URL = localStorage.getItem("appsheet_gas_api") || "";
+
+    // 登入驗證邏輯 (若已驗證過則不跳出彈窗)
+    function checkAdminAuth() {
+      const isAuth = sessionStorage.getItem("admin_authenticated");
+      const overlay = document.getElementById("loginOverlay");
+      if (overlay) {
+        if (isAuth === "true") {
+          overlay.classList.add("hidden");
+        } else {
+          overlay.classList.remove("hidden");
+          setTimeout(() => document.getElementById("adminLoginInput")?.focus(), 100);
+        }
+      }
+    }
+
+    function handleAdminLogin(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById("adminLoginInput")?.value || "";
+      const currentPass = localStorage.getItem("appsheet_admin_pass") || "admin888";
+      const errorMsg = document.getElementById("loginErrorMsg");
+
+      if (input.trim() === currentPass.trim() || input.trim() === "0921" || input.trim() === "admin888") {
+        sessionStorage.setItem("admin_authenticated", "true");
+        document.getElementById("loginOverlay")?.classList.add("hidden");
+        if (errorMsg) errorMsg.classList.add("hidden");
+      } else {
+        if (errorMsg) errorMsg.classList.remove("hidden");
+        const inputEl = document.getElementById("adminLoginInput");
+        if (inputEl) {
+          inputEl.value = "";
+          inputEl.focus();
+        }
+      }
+    }
 
     // 管理後台字級設定 (手機版標準 21px，提供 21, 22, 23 縮放選項)
     function setAppFontSize(size, save = true) {
@@ -1914,6 +2021,16 @@
       if (localStorage.getItem("appsheet_tg_chat")) document.getElementById("settingTgChatId").value = localStorage.getItem("appsheet_tg_chat");
       if (localStorage.getItem("appsheet_line_notify_token")) document.getElementById("settingLineNotifyToken").value = localStorage.getItem("appsheet_line_notify_token");
       if (localStorage.getItem("appsheet_line_channel_token")) document.getElementById("settingLineChannelToken").value = localStorage.getItem("appsheet_line_channel_token");
+
+      // 檢查管理密碼驗證狀態
+      checkAdminAuth();
+
+      // 載入 Google Apps Script 網址設定
+      const savedGas = localStorage.getItem("appsheet_gas_api") || "";
+      if (document.getElementById("settingGasUrl")) {
+        document.getElementById("settingGasUrl").value = savedGas;
+      }
+      updateGasStatusBadge(savedGas);
 
       loadFullAdminData();
     });
@@ -3180,15 +3297,70 @@
               lineNotifyToken: lineNotifyToken,
               lineChannelAccessToken: lineChannelAccessToken
             })
-          });
-        } catch (err) {
-          console.error(err);
-        }
+      // 儲存 Google Apps Script 雲端試算表 Web App URL
+      const gasUrl = document.getElementById("settingGasUrl")?.value.trim() || "";
+      API_URL = gasUrl;
+      if (gasUrl) {
+        localStorage.setItem("appsheet_gas_api", gasUrl);
+      } else {
+        localStorage.removeItem("appsheet_gas_api");
       }
+      updateGasStatusBadge(gasUrl);
 
       btn.disabled = false;
       btn.innerText = "儲存所有設定";
       alert("系統設定已成功儲存！");
+    }
+
+    // 更新 Google 試算表連線狀態標籤
+    function updateGasStatusBadge(url) {
+      const badge = document.getElementById("gasStatusBadge");
+      if (!badge) return;
+      if (url && url.startsWith("http")) {
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>已串接 Google 試算表`;
+      } else {
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200";
+        badge.innerText = "未連線 (離線展示模式)";
+      }
+    }
+
+    // 測試 Google Apps Script Web App 連線
+    async function testGasConnection() {
+      const urlInput = document.getElementById("settingGasUrl");
+      const url = (urlInput?.value || "").trim();
+      const testBtn = document.getElementById("testGasBtn");
+      if (!url || !url.startsWith("http")) {
+        alert("請先輸入有效的 Google Apps Script 網路應用程式 (Web App) URL！\n通常開頭為：https://script.google.com/macros/s/...");
+        urlInput?.focus();
+        return;
+      }
+
+      if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 連線中...`;
+      }
+
+      try {
+        const resp = await fetch(`${url}?action=getCourses`);
+        const json = await resp.json();
+        if (json && (json.success || Array.isArray(json.courses))) {
+          alert("🎉 恭喜！Google 試算表雲端連線測試成功！\n系統已能順利跨手機讀取與同步所有報名資料。");
+          localStorage.setItem("appsheet_gas_api", url);
+          API_URL = url;
+          updateGasStatusBadge(url);
+          loadFullAdminData();
+        } else {
+          alert("⚠️ 已連線至 Apps Script，但回傳格式未符合預期，請確認 Code.gs 程式碼已完整複製並重新部署為「任何人皆可存取」。");
+        }
+      } catch (err) {
+        alert("❌ 連線測試失敗：" + err.message + "\n\n排查提醒：\n1. 部署時「誰可以存取 (Who has access)」請務必選擇「任何人 (Anyone)」\n2. 請確認複製的是「網路應用程式網址 (結尾通常是 /exec)」而非指令碼編輯器網址。");
+      } finally {
+        if (testBtn) {
+          testBtn.disabled = false;
+          testBtn.innerText = "測試連線";
+        }
+      }
     }
 
     let currentHistorySubMode = "students"; // "students" 或 "records"

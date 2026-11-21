@@ -344,10 +344,9 @@
   <script>
     /**
      * 後端 API 連線設定
-     * 預設提供內建模擬模式（Demo Mode），部署後端 API 即可全自動連線！
+     * 支援讀取 Google Apps Script Web App API（若有設定則自動跨裝置即時同步，未設定則為展示模式）
      */
-    let API_URL = "";
-    localStorage.removeItem("appsheet_gas_api"); 
+    let API_URL = localStorage.getItem("appsheet_gas_api") || ""; 
 
     // 本地暫存課程資料
     let allCourses = [];
@@ -655,10 +654,10 @@
       const urlParams = new URLSearchParams(window.location.search);
       const queryApi = urlParams.get("api");
       if (queryApi) {
-        // localStorage.setItem("appsheet_gas_api", queryApi);
+        localStorage.setItem("appsheet_gas_api", queryApi);
         API_URL = queryApi;
       } else {
-        const savedApi = null;
+        const savedApi = localStorage.getItem("appsheet_gas_api");
         if (savedApi) API_URL = savedApi;
       }
 
