@@ -1808,6 +1808,190 @@
       }
 
       if (noRow) noRow.classList.add("hidden");
+
+      // ⭐ 核心修改：將課程分為「有效」與「歷史」兩個區塊
+      const activeCourses = [];
+      const pastCourses = [];
+
+      filtered.forEach(c => {
+        const expired = isCourseExpired(c);
+        if (expired || c.status === "已結束") {
+          pastCourses.push(c);
+        } else {
+          activeCourses.push(c);
+        }
+      });
+
+      let html = "";
+      let mHtml = "";
+
+      // 產生電腦版單列 TR HTML 的輔助函式
+      const getDesktopRowHtml = (c, isEnded) => {
+        const isFull = (c.remaining || 0) <= 0;
+        let statusBadge = "";
+        if (isEnded) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600 border border-slate-300 inline-flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>已結束</span>`;
+        } else if (c.status === "開啟報名") {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">${c.status}</span>`;
+        }
+
+        const rowClass = isEnded 
+          ? "bg-slate-100/70 opacity-60 grayscale-[40%] hover:bg-slate-200/60 transition" 
+          : "hover:bg-slate-50 transition";
+
+        return `
+          <tr class="${rowClass}">
+            <td class="px-4 py-3 font-mono font-bold text-slate-500">${c.id}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="font-bold ${isEnded ? 'text-slate-600 line-through' : 'text-slate-900'}">${c.title}</div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                ${c.earlyBirdPrice ? `<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $${c.earlyBirdPrice}</span>` : ''}
+                ${c.regularPrice ? `<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">定價 $${c.regularPrice}</span>` : ''}
+                ${c.notes ? `<span class="text-[11px] text-slate-400 truncate max-w-[180px]" title="${c.notes}">${c.notes}</span>` : ''}
+              </div>
+            </td>
+            <td class="px-4 py-3 font-semibold ${isEnded ? 'text-slate-500' : 'text-blue-600'}">${c.instructor}</td>
+            <td class="px-4 py-3">
+              <span class="font-medium ${isEnded ? 'text-slate-500' : 'text-slate-800'}">${c.date}</span>
+              <div class="text-[11px] text-slate-400">${c.startTime} - ${c.endTime}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-600">${c.location || '待定'}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="inline-flex items-baseline gap-1">
+                <span class="font-bold ${isFull ? 'text-rose-600' : (isEnded ? 'text-slate-500' : 'text-slate-800')}">${c.bookedCount || 0}</span>
+                <span class="text-slate-400">/ ${c.capacity}</span>
+              </div>
+              ${c.virtualCount ? `
+                <div class="text-[10px] text-amber-600 font-medium" title="真實報名 ${c.realBookedCount || 0} 人 + 虛擬膨脹 ${c.virtualCount} 人">
+                  (實${c.realBookedCount || 0}+虛${c.virtualCount})
+                </div>
+              ` : ''}
+              ${isFull && !isEnded ? `<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>` : ''}
+            </td>
+            <td class="px-4 py-3 text-center">${statusBadge}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button onclick="openCourseModal('${c.id}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold mr-1 transition">
+                <i class="fa-solid fa-pen"></i> 編輯
+              </button>
+              <button onclick="deleteCourse('${c.id}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-semibold transition" title="刪除課程">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      };
+
+      // 產生手機版卡片 HTML 的輔助函式
+      const getMobileCardHtml = (c, isEnded) => {
+        const isFull = (c.remaining || 0) <= 0;
+        let statusBadge = "";
+        if (isEnded) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600 border border-slate-300 inline-flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>已結束</span>`;
+        } else if (c.status === "開啟報名") {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">${c.status}</span>`;
+        }
+
+        const mobileCardClass = isEnded
+          ? "bg-slate-100/80 opacity-60 grayscale-[35%] border-slate-200/60 rounded-2xl p-3 border shadow-2xs flex items-center justify-between gap-2.5 transition"
+          : "bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-blue-400 transition flex items-center justify-between gap-2.5";
+
+        const dateParts = (c.date || "").split("-");
+        const wDay = (getWeekDay(c.date) || "").replace("週", "");
+        const shortDate = (dateParts.length === 3)
+          ? `${Number(dateParts[1])}/${Number(dateParts[2])} (${wDay})`
+          : `${c.date} (${wDay})`;
+
+        return `
+          <div class="${mobileCardClass}">
+            <div class="min-w-0 flex-1 space-y-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold ${isEnded ? 'text-slate-600 bg-slate-200/80' : 'text-blue-700 bg-blue-50 border border-blue-100'} px-2 py-0.5 rounded-md">
+                  <i class="fa-regular fa-clock text-[10px]"></i>
+                  <span>${shortDate} ${c.startTime}</span>
+                </span>
+                ${statusBadge}
+                ${isFull && !isEnded ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">額滿</span>` : ''}
+                <span class="inline-flex items-center text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">#${c.id}</span>
+              </div>
+              <h3 class="text-xs sm:text-sm font-black ${isEnded ? 'text-slate-500 line-through' : 'text-slate-900'} leading-snug truncate" title="${c.title}">${c.title}</h3>
+              <div class="flex items-center gap-2 text-[11px] text-slate-500 truncate">
+                <span class="truncate flex items-center gap-1">
+                  <i class="fa-solid fa-location-dot ${isEnded ? 'text-slate-400' : 'text-rose-500'} text-[10px] shrink-0"></i>
+                  <span class="truncate text-slate-700 font-medium">${c.location || '待定教室'}</span>
+                </span>
+                <span class="text-slate-300 shrink-0">|</span>
+                <span class="font-bold text-[11px] ${isFull && !isEnded ? 'text-rose-600' : 'text-blue-700'} shrink-0 whitespace-nowrap">
+                  已報 <span class="font-mono">${c.bookedCount || 0}</span>/${c.capacity}
+                  ${c.virtualCount ? `<span class="text-[10px] text-amber-600 font-normal">(實${c.realBookedCount || 0}+虛${c.virtualCount})</span>` : ''}
+                </span>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center gap-1">
+              <button onclick="openCourseModal('${c.id}')" class="px-2.5 py-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-2xs whitespace-nowrap" title="編輯課程">
+                <i class="fa-solid fa-pen text-[11px]"></i>
+                <span>編輯</span>
+              </button>
+              <button onclick="deleteCourse('${c.id}')" class="p-2 bg-slate-100 hover:bg-rose-50 active:bg-rose-100 text-slate-400 hover:text-rose-600 rounded-xl text-xs transition" title="刪除時段">
+                <i class="fa-solid fa-trash-can text-[11px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      };
+
+      // 1. 渲染上半部：有效課程
+      activeCourses.forEach(c => {
+        html += getDesktopRowHtml(c, false);
+        mHtml += getMobileCardHtml(c, false);
+      });
+
+      // 2. 渲染分隔線與下半部：歷史課程
+      if (pastCourses.length > 0) {
+        if (activeCourses.length > 0) {
+          // 桌機版分隔線
+          html += `
+            <tr>
+              <td colspan="8" class="px-4 py-3 bg-slate-100/90 text-slate-500 font-bold text-center text-xs border-y border-slate-200">
+                <i class="fa-solid fa-box-archive mr-1"></i> 以下為已結束或過期之歷史課程
+              </td>
+            </tr>
+          `;
+          // 手機版分隔線
+          mHtml += `
+            <div class="flex items-center gap-2 py-2">
+              <div class="h-px bg-slate-200 flex-1"></div>
+              <span class="text-[11px] font-bold text-slate-400 tracking-widest"><i class="fa-solid fa-box-archive mr-1"></i>歷史課程</span>
+              <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+          `;
+        }
+        
+        pastCourses.forEach(c => {
+          html += getDesktopRowHtml(c, true);
+          mHtml += getMobileCardHtml(c, true);
+        });
+      }
+
+      if (tbody) tbody.innerHTML = html;
+      if (mobileContainer) mobileContainer.innerHTML = mHtml;
+    }
+
+      const tbody = document.getElementById("coursesTableBody");
+      const mobileContainer = document.getElementById("coursesMobileContainer");
+      const noRow = document.getElementById("noCoursesRow");
+
+      if (filtered.length === 0) {
+        if (tbody) tbody.innerHTML = "";
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前暫無任何課程資料</div>`;
+        if (noRow) noRow.classList.remove("hidden");
+        return;
+      }
+
+      if (noRow) noRow.classList.add("hidden");
       let html = "";
       let mHtml = "";
 
