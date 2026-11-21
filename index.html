@@ -123,49 +123,53 @@
   <!-- 主內容容器 -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-4 sm:space-y-5">
 
-    <!-- 🌟 專屬大器主標題區 (Hero Title Section)：完整展示，絕不擁擠，氣勢大方 -->
-    <div class="pt-1 pb-1">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <!-- 🌟 專屬大器主標題區 (Hero Title Section)：精練緊湊展示，一目了然 -->
+    <div class="pt-0 pb-0">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
         <div>
-          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> 即時線上登記
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> 即時線上登記
             </span>
             <span class="text-xs text-slate-400 font-medium">官方即時更新</span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight">
             霖霖的頌缽課程預約
           </h1>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          <p class="text-xs text-slate-500 mt-0.5">
             專業頌缽聲音療癒入門、進階與師資培訓課程，選擇時段即刻為自己保留名額。
           </p>
         </div>
       </div>
     </div>
 
-    <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 -->
-    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-4 text-white shadow-md shadow-blue-500/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-lg shrink-0">
+    <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 (精巧版) -->
+    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-xl px-3.5 py-2.5 text-white shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center text-white text-sm shrink-0">
           <i class="fa-solid fa-ticket"></i>
         </div>
         <div class="min-w-0">
-          <h2 class="text-sm sm:text-base font-bold leading-snug">已報名課程？隨時查詢對帳進度</h2>
-          <p class="text-[11px] sm:text-xs text-blue-100 mt-0.5">輸入手機號碼即可查看您的報名狀態與上課資訊</p>
+          <h2 class="text-xs sm:text-sm font-bold leading-tight truncate">已報名課程？查詢對帳進度</h2>
+          <p class="text-[10px] sm:text-xs text-blue-100 truncate">輸入手機號碼即可查看您的報名狀態與上課資訊</p>
         </div>
       </div>
-      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-xl text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 shrink-0 cursor-pointer">
-        <i class="fa-solid fa-magnifying-glass text-blue-600"></i>
-        <span>查詢我的預約進度</span>
+      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-3.5 py-1.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-lg text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+        <i class="fa-solid fa-magnifying-glass text-blue-600 text-[11px]"></i>
+        <span>查詢預約進度</span>
       </button>
     </div>
 
-    <!-- 日期篩選 Tab -->
-    <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3" id="dateFilterTabs">
-      <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-600 text-white shadow-sm transition" data-date="all">
-        全部時段
-      </button>
-      <!-- 動態載入日期標籤 -->
+    <!-- 日期篩選 Tab (含漸層滾動提示) -->
+    <div class="relative">
+      <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 mb-2 pr-4" id="dateFilterTabs">
+        <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-600 text-white shadow-sm transition" data-date="all">
+          全部時段
+        </button>
+        <!-- 動態載入日期標籤 -->
+      </div>
+      <!-- 右側向右滾動微光漸層遮罩提示 -->
+      <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent"></div>
     </div>
 
     <!-- 課程清單區域 (Deck Card View) -->
@@ -259,41 +263,58 @@
           <input type="text" id="studentLine" placeholder="請輸入您的 Line ID" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
-        <!-- 付款方式選擇 (銀行匯款 / LINE轉帳 / 現場付現 三選一) -->
+        <!-- 付款方式選擇 (銀行匯款 / LINE轉帳 二選一) -->
         <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-3">
           <div>
             <label class="block text-xs font-bold text-slate-800 mb-1.5">
               <span>付款方式</span>
               <span class="text-rose-500">*</span>
             </label>
-            <div class="grid grid-cols-3 gap-2">
-              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm">
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer">
                 <i class="fa-solid fa-building-columns text-blue-600 text-sm"></i>
                 <span class="whitespace-nowrap">銀行匯款</span>
               </button>
-              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition">
+              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer">
                 <i class="fa-brands fa-line text-emerald-500 text-base"></i>
                 <span class="whitespace-nowrap">LINE 轉帳</span>
-              </button>
-              <button type="button" id="payMethodCash" onclick="selectPayMethod('cash')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-amber-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition">
-                <i class="fa-solid fa-hand-holding-dollar text-amber-500 text-base"></i>
-                <span class="whitespace-nowrap">現場付現</span>
               </button>
             </div>
           </div>
 
-          <!-- 1. 銀行匯款專用：五碼輸入框 (僅限輸入剛好5碼純數字) -->
-          <div id="bankCodeContainer" class="space-y-1 pt-1">
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                <i class="fa-solid fa-hashtag text-blue-600"></i>
-                <span>匯款帳號後五碼</span>
-                <span class="text-rose-500">*</span>
-              </label>
-              <span class="text-[11px] text-slate-400">必須剛好 5 碼數字</span>
+          <!-- 1. 銀行匯款專用：匯款帳號資訊卡 (支援一鍵複製) 與五碼輸入框 -->
+          <div id="bankCodeContainer" class="space-y-2.5 pt-1">
+            <!-- 匯款帳號展示卡 -->
+            <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-xs text-blue-950 space-y-1.5">
+              <div class="flex items-center justify-between gap-1 flex-wrap">
+                <span class="font-bold text-blue-900 flex items-center gap-1.5 text-xs">
+                  <i class="fa-solid fa-building-columns text-blue-600"></i>
+                  <span>收款帳戶資訊</span>
+                </span>
+                <button type="button" onclick="copyBankAccount()" id="copyBankBtn" class="px-2 py-0.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer shrink-0">
+                  <i class="fa-regular fa-copy"></i>
+                  <span id="copyBankText">一鍵複製帳號</span>
+                </button>
+              </div>
+              <div class="font-mono text-[11px] sm:text-xs space-y-1 pt-1 border-t border-blue-200/60">
+                <div class="flex items-center justify-between"><span class="text-blue-700">銀行機構</span><span class="font-bold">822 中國信託</span></div>
+                <div class="flex items-center justify-between"><span class="text-blue-700">收款帳號</span><span id="bankAccountNum" class="font-black text-sm tracking-wider text-blue-950">1234-5678-9012</span></div>
+                <div class="flex items-center justify-between"><span class="text-blue-700">戶　　名</span><span class="font-bold">霖霖身心靈工坊 (陳霖霖)</span></div>
+              </div>
             </div>
-            <input type="text" id="studentPaymentCode" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="請輸入 5 碼純數字 (例如：42919)" class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
-            <p class="text-[11px] text-slate-500">管理者將以此 5 位數核對您的銀行入帳</p>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <i class="fa-solid fa-hashtag text-blue-600"></i>
+                  <span>匯款帳號後五碼</span>
+                  <span class="text-rose-500">*</span>
+                </label>
+                <span class="text-[11px] text-slate-400">必須剛好 5 碼數字</span>
+              </div>
+              <input type="text" id="studentPaymentCode" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="請輸入 5 碼純數字 (例如：42919)" class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
+              <p class="text-[11px] text-slate-500 mt-1">管理者將以此 5 位數核對您的銀行入帳</p>
+            </div>
           </div>
 
           <!-- 2. LINE 轉帳提示 -->
@@ -304,15 +325,6 @@
             </p>
             <p class="text-[11px] leading-relaxed">請確認上方已填寫正確的 <b>Line ID</b>，送出後我們將透過 LINE 與您核對款項並發送報名成功通知！</p>
           </div>
-
-          <!-- 3. 現場付現提示 -->
-          <div id="cashPayContainer" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
-            <p class="font-bold flex items-center gap-1.5 text-amber-900">
-              <i class="fa-solid fa-circle-check text-amber-600"></i>
-              <span>已選擇上課現場付現</span>
-            </p>
-            <p class="text-[11px] leading-relaxed">請於上課當日提早 10 分鐘抵達教室並向現場助教完成繳費報到即可！</p>
-          </div>
         </div>
 
         <div>
@@ -320,10 +332,13 @@
           <textarea id="studentNotes" rows="2" placeholder="如自備頌缽、特殊身體狀況需留意等..." class="w-full text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
         </div>
 
-        <button type="submit" id="submitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition mt-2">
-          <span>確認預約報名</span>
-          <i class="fa-solid fa-arrow-right text-xs"></i>
-        </button>
+        <!-- 🌟 吸底操作列 (Sticky Bottom Submit Bar) 提升手機預約體驗 -->
+        <div class="sticky bottom-0 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 p-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 rounded-b-3xl sm:rounded-b-2xl">
+          <button type="submit" id="submitBtn" class="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition cursor-pointer">
+            <span>確認預約報名</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -847,91 +862,76 @@
         const remainingPercent = Math.min(100, Math.round((c.bookedCount / c.capacity) * 100));
 
         cardsHtml += `
-          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${isFull ? 'opacity-80 bg-slate-50/50' : ''}">
-            <div>
-              <!-- 頂部標籤列：編號、教練、名額 -->
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">#${c.id}</span>
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+          <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between ${isFull ? 'opacity-85 bg-slate-50/60' : ''}">
+            <div class="space-y-2">
+              <!-- 頂部資訊列：教練、狀態、價格 -->
+              <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
                     <i class="fa-solid fa-chalkboard-user text-[10px]"></i>
                     ${c.instructor || '霖霖老師'}
                   </span>
+                  ${(c.earlyBirdPrice || c.regularPrice) ? `
+                    <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <i class="fa-solid fa-tag text-[9px]"></i> NT$ ${Number(c.earlyBirdPrice || c.regularPrice).toLocaleString()}
+                    </span>
+                  ` : ''}
                 </div>
                 <div>
                   ${isFull 
-                    ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 flex items-center gap-1">
-                        <i class="fa-solid fa-lock text-[10px]"></i> 已額滿
+                    ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 inline-flex items-center gap-1">
+                        <i class="fa-solid fa-lock text-[9px]"></i> 額滿
                       </span>`
-                    : `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                        <i class="fa-solid fa-user-check text-[10px]"></i> 剩餘 ${c.remaining} 名
+                    : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                        <i class="fa-solid fa-user-check text-[9px]"></i> 剩 ${c.remaining} 名
                       </span>`
                   }
                 </div>
               </div>
 
               <!-- 課程標題 -->
-              <h3 class="text-base sm:text-lg font-black text-slate-900 leading-snug mb-2 hover:text-blue-600 transition-colors">${c.title}</h3>
+              <h3 class="text-sm sm:text-base font-black text-slate-900 leading-snug hover:text-blue-600 transition-colors">${c.title}</h3>
 
-              <!-- 價格標籤 (醒目置頂) -->
-              ${(c.earlyBirdPrice || c.regularPrice) ? `
-                <div class="flex items-center gap-2 flex-wrap mb-2.5">
-                  ${c.earlyBirdPrice ? `
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <i class="fa-solid fa-tag text-[10px]"></i> 早鳥 NT$ ${Number(c.earlyBirdPrice).toLocaleString()}
-                    </span>
-                  ` : ''}
-                  ${c.regularPrice ? `
-                    <span class="text-xs text-slate-400 line-through font-medium">
-                      定價 NT$ ${Number(c.regularPrice).toLocaleString()}
-                    </span>
-                  ` : ''}
-                </div>
-              ` : ''}
-
-              <!-- 時間、地點與說明 (灰底容器統一風格) -->
-              <div class="bg-slate-50 rounded-xl p-3 space-y-1.5 mb-3.5 text-xs text-slate-600 border border-slate-100">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <div class="flex items-center gap-1.5 font-bold text-slate-800 whitespace-nowrap">
-                    <i class="fa-regular fa-calendar-days text-blue-500 w-4 text-center shrink-0"></i>
+              <!-- 時間、地點 (緊湊一體式灰底框) -->
+              <div class="bg-slate-50 rounded-xl px-2.5 py-2 text-xs text-slate-600 border border-slate-100 space-y-1">
+                <div class="flex items-center justify-between gap-1 flex-wrap font-bold text-slate-800">
+                  <div class="flex items-center gap-1.5">
+                    <i class="fa-regular fa-calendar-days text-blue-500 text-xs shrink-0"></i>
                     <span>${c.date} (${getWeekDay(c.date)})</span>
                   </div>
-                  <span class="text-slate-300 hidden xs:inline">•</span>
-                  <div class="font-bold text-slate-700 font-mono whitespace-nowrap pl-5 xs:pl-0">
-                    ${c.startTime} - ${c.endTime}
-                  </div>
+                  <span class="text-slate-600 font-mono text-[11px]">${c.startTime} - ${c.endTime}</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-600">
-                  <i class="fa-solid fa-location-dot text-rose-500 w-4 text-center shrink-0"></i>
-                  <span class="font-medium text-slate-700 truncate">${c.location || '待定教室'}</span>
+                <div class="flex items-center gap-1.5 text-slate-600 text-[11px]">
+                  <i class="fa-solid fa-location-dot text-rose-500 text-xs shrink-0"></i>
+                  <span class="truncate font-medium text-slate-700">${c.location || '待定教室'}</span>
                 </div>
                 ${c.notes ? `
-                  <div class="flex items-start gap-2 pt-1 text-slate-500 border-t border-slate-200/60 mt-1">
-                    <i class="fa-regular fa-note-sticky text-slate-400 w-4 text-center mt-0.5 shrink-0"></i>
-                    <span class="line-clamp-2 text-[11px] leading-relaxed">${c.notes}</span>
+                  <div class="flex items-start gap-1.5 pt-1 text-slate-500 border-t border-slate-200/50 text-[10px] leading-tight line-clamp-1">
+                    <i class="fa-regular fa-note-sticky text-slate-400 shrink-0 mt-0.5"></i>
+                    <span class="truncate">${c.notes}</span>
                   </div>
                 ` : ''}
               </div>
             </div>
 
-            <div>
-              <!-- 名額進度條 -->
-              <div class="mb-3.5">
-                <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium mb-1">
+            <div class="pt-2">
+              <!-- 名額進度條 (緊湊精美) -->
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-0.5">
                   <span>報名進度</span>
                   <span>已報 ${c.bookedCount || 0} / 上限 ${c.capacity}</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div class="h-2 rounded-full transition-all duration-500 ${isFull ? 'bg-rose-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}" style="width: ${remainingPercent}%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-1.5 rounded-full transition-all duration-500 ${isFull ? 'bg-rose-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}" style="width: ${remainingPercent}%"></div>
                 </div>
               </div>
 
               <!-- 動作按鈕 -->
               ${isFull 
-                ? `<button disabled class="w-full py-2.5 sm:py-3 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed">
-                    此時段名額已滿
+                ? `<button disabled class="w-full py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed">
+                    此時段已額滿
                   </button>`
-                : `<button onclick="openBookingModal('${c.id}')" class="w-full py-2.5 sm:py-3 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-md shadow-slate-900/10 active:scale-[0.99] cursor-pointer">
+                : `<button onclick="openBookingModal('${c.id}')" class="w-full py-2 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm active:scale-[0.99] cursor-pointer">
                     <i class="fa-regular fa-pen-to-square"></i>
                     <span>立即預約登記</span>
                   </button>`
@@ -954,30 +954,70 @@
     // 付款方式選擇 (bank / line / cash)
     let currentPayMethod = "bank";
 
+    function copyBankAccount() {
+      const bankNum = "123456789012";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(bankNum).then(() => {
+          showCopySuccess();
+        }).catch(() => {
+          fallbackCopyText(bankNum);
+        });
+      } else {
+        fallbackCopyText(bankNum);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showCopySuccess();
+      } catch (err) {
+        alert("匯款帳號：" + text);
+      }
+      document.body.removeChild(ta);
+    }
+
+    function showCopySuccess() {
+      const btnText = document.getElementById("copyBankText");
+      const btn = document.getElementById("copyBankBtn");
+      if (btnText && btn) {
+        const original = btnText.innerText;
+        btnText.innerText = "已複製帳號！";
+        btn.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-300");
+        setTimeout(() => {
+          btnText.innerText = original;
+          btn.classList.remove("bg-emerald-50", "text-emerald-700", "border-emerald-300");
+        }, 2000);
+      }
+    }
+
     function selectPayMethod(method, autoFocus = true) {
       currentPayMethod = method;
       const btnBank = document.getElementById("payMethodBank");
       const btnLine = document.getElementById("payMethodLine");
-      const btnCash = document.getElementById("payMethodCash");
       const bankBox = document.getElementById("bankCodeContainer");
       const lineBox = document.getElementById("linePayContainer");
-      const cashBox = document.getElementById("cashPayContainer");
       const codeInput = document.getElementById("studentPaymentCode");
 
-      if (!btnBank || !btnLine || !btnCash) return;
+      if (!btnBank || !btnLine) return;
 
-      // 重設所有按鈕樣式
-      btnBank.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-blue-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
-      btnLine.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
-      btnCash.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white hover:bg-amber-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+      // 重設按鈕樣式
+      btnBank.className = "py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-blue-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+      btnLine.className = "py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
 
       if (bankBox) bankBox.classList.add("hidden");
       if (lineBox) lineBox.classList.add("hidden");
-      if (cashBox) cashBox.classList.add("hidden");
       if (codeInput) codeInput.required = false;
 
       if (method === "bank") {
-        btnBank.className = "py-2.5 px-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
+        btnBank.className = "py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
         if (bankBox) bankBox.classList.remove("hidden");
         if (codeInput) {
           codeInput.required = true;
@@ -986,12 +1026,8 @@
           }
         }
       } else if (method === "line") {
-        btnLine.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 text-emerald-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
+        btnLine.className = "py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 text-emerald-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
         if (lineBox) lineBox.classList.remove("hidden");
-        if (codeInput) codeInput.value = "";
-      } else if (method === "cash") {
-        btnCash.className = "py-2.5 px-2 rounded-xl border-2 border-amber-500 bg-amber-50/80 text-amber-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
-        if (cashBox) cashBox.classList.remove("hidden");
         if (codeInput) codeInput.value = "";
       }
     }
@@ -1067,8 +1103,6 @@
           document.getElementById("studentLine")?.focus();
           return;
         }
-      } else if (currentPayMethod === "cash") {
-        finalPaymentCode = "現場付現";
       }
 
       const submitBtn = document.getElementById("submitBtn");

@@ -84,8 +84,8 @@
         <div class="min-w-0">
           <h1 class="text-xs sm:text-base font-bold leading-tight whitespace-nowrap">管理中心</h1>
           <p class="text-[9px] sm:text-[11px] text-slate-400 flex items-center gap-1 sm:gap-1.5 truncate">
-            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 inline-block animate-pulse shrink-0"></span>
-            <span class="truncate">即時在線</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse shrink-0" title="即時在線"></span>
+            <span class="truncate hidden xs:inline sm:inline">即時在線</span>
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@
           <button type="button" onclick="setAppFontSize('large')" id="fontBtnLarge" class="px-2 py-0.5 sm:py-1 rounded text-slate-400 font-bold hover:text-white transition" title="放大字級 (22px)">A+</button>
           <button type="button" onclick="setAppFontSize('xlarge')" id="fontBtnXLarge" class="px-2 py-0.5 sm:py-1 rounded text-slate-400 font-bold hover:text-white transition" title="特大字級 (23px)">A++</button>
         </div>
-        <button onclick="loadFullAdminData()" class="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
+        <button onclick="loadFullAdminData()" class="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer" title="重新整理">
           <i class="fa-solid fa-rotate-right text-xs" id="adminRefreshIcon"></i>
         </button>
       </div>
@@ -104,25 +104,25 @@
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
+  <main class="max-w-7xl mx-auto px-3.5 sm:px-4 pt-4 sm:pt-6 space-y-4 sm:space-y-6">
 
-    <!-- 數據概覽卡片 -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">總開課時段</p>
-        <p class="text-2xl font-black text-slate-900 mt-1" id="statCourseTotal">0</p>
+    <!-- 數據概覽卡片 (手機版緊湊精緻化) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">總開課時段</p>
+        <p class="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1" id="statCourseTotal">0</p>
       </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">有效預約人次</p>
-        <p class="text-2xl font-black text-blue-600 mt-1" id="statBookingTotal">0</p>
+      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">有效預約人次</p>
+        <p class="text-xl sm:text-2xl font-black text-blue-600 mt-0.5 sm:mt-1" id="statBookingTotal">0</p>
       </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">已額滿時段</p>
-        <p class="text-2xl font-black text-rose-500 mt-1" id="statFullTotal">0</p>
+      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">已額滿時段</p>
+        <p class="text-xl sm:text-2xl font-black text-rose-500 mt-0.5 sm:mt-1" id="statFullTotal">0</p>
       </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">出席簽到率</p>
-        <p class="text-2xl font-black text-emerald-600 mt-1" id="statCheckinRate">100%</p>
+      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">出席簽到率</p>
+        <p class="text-xl sm:text-2xl font-black text-emerald-600 mt-0.5 sm:mt-1" id="statCheckinRate">100%</p>
       </div>
     </div>
 
