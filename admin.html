@@ -81,12 +81,12 @@
         <h2 class="text-lg font-black text-slate-900 tracking-tight">管理後台安全驗證</h2>
         <p class="text-xs text-slate-400 mt-1">請輸入管理密碼以存取課程與預約名冊</p>
       </div>
-      <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+      <form onsubmit="return handleAdminLogin(event)" class="space-y-4">
         <div class="relative">
           <input type="password" id="adminLoginInput" placeholder="請輸入管理密碼..." autofocus class="w-full text-center text-sm tracking-widest font-mono font-bold px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
         </div>
         <p id="loginErrorMsg" class="text-xs font-bold text-rose-500 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>密碼不正確，請重新輸入</p>
-        <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
+        <button type="button" onclick="handleAdminLogin(event)" id="loginSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
           <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
           <span>解鎖進入後台</span>
         </button>
@@ -945,22 +945,31 @@
     }
 
     function handleAdminLogin(e) {
-      if (e) e.preventDefault();
-      const input = document.getElementById("adminLoginInput")?.value || "";
-      const currentPass = localStorage.getItem("appsheet_admin_pass") || "admin888";
+      if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+      }
+      const inputEl = document.getElementById("adminLoginInput");
+      const input = (inputEl?.value || "").trim().toLowerCase();
+      const rawCurrentPass = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
 
-      if (input.trim() === currentPass.trim() || input.trim() === "0921" || input.trim() === "admin888") {
+      // 支援 admin888、0921 或使用者在後台自訂的密碼
+      if (input === rawCurrentPass || input === "admin888" || input === "0921") {
         sessionStorage.setItem("admin_authenticated", "true");
-        document.getElementById("loginOverlay")?.classList.add("hidden");
+        const overlay = document.getElementById("loginOverlay");
+        if (overlay) {
+          overlay.style.display = "none";
+          overlay.classList.add("hidden");
+        }
         if (errorMsg) errorMsg.classList.add("hidden");
+        return false;
       } else {
         if (errorMsg) errorMsg.classList.remove("hidden");
-        const inputEl = document.getElementById("adminLoginInput");
         if (inputEl) {
           inputEl.value = "";
           inputEl.focus();
         }
+        return false;
       }
     }
 
