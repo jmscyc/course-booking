@@ -563,20 +563,54 @@
           </div>
 
           <!-- 雲端資料庫串接：Google Sheets 試算表設定 (即時跨手機同步) -->
-          <div class="bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border-2 border-emerald-200/90 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5">
+          <div class="bg-gradient-to-br from-emerald-50/90 to-teal-50/60 border-2 border-emerald-300 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm shadow-emerald-500/20 shrink-0">
                   <i class="fa-solid fa-table"></i>
                 </div>
                 <div>
-                  <h4 class="text-xs sm:text-sm font-black text-emerald-950 flex items-center gap-1.5">
+                  <h4 class="text-xs sm:text-sm font-black text-emerald-950 flex items-center gap-1.5 flex-wrap">
                     <span>Google 試算表雲端資料庫 (跨手機即時同步)</span>
                     <span id="gasStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">未連線 (離線展示模式)</span>
                   </h4>
-                  <p class="text-[11px] text-emerald-800/80 mt-0.5">貼上 Google Apps Script 部署後的 Web App URL，即可將所有學員在各手機的報名即時存入您的 Google Sheet！</p>
+                  <p class="text-[11px] text-emerald-800/85 mt-0.5">串接後，所有學員在手機送出的報名將全自動即時寫入您的 Google 試算表！</p>
                 </div>
               </div>
+            </div>
+
+            <!-- 📖 3 分鐘設定教學摺疊導引與一鍵複製程式碼 -->
+            <div class="bg-white/90 border border-emerald-200 rounded-xl p-3.5 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-emerald-950 flex items-center gap-1.5">
+                  <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i>
+                  <span>如何取得 Web App 網址？（3 分鐘極簡 4 步驟）</span>
+                </span>
+                <button type="button" onclick="copyGasScriptCode()" id="copyScriptBtn" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11px] font-bold rounded-lg transition flex items-center gap-1 cursor-pointer">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>一鍵複製後端腳本</span>
+                </button>
+              </div>
+
+              <ol class="text-[11px] text-slate-600 space-y-2 list-decimal list-inside pl-1 leading-relaxed">
+                <li>
+                  <strong class="text-slate-800">建立試算表</strong>：打開您的 Google 雲端硬碟，新增一個空白「Google 試算表」。
+                </li>
+                <li>
+                  <strong class="text-slate-800">開啟指令碼</strong>：點擊頂端選單「<strong>擴充功能</strong>」➔「<strong>Apps Script</strong>」，把預設程式碼全部刪除。
+                </li>
+                <li>
+                  <strong class="text-slate-800">貼上並部署</strong>：點右上角「一鍵複製後端腳本」貼入編輯器並儲存。點右上角「<strong>部署</strong>」➔「<strong>新建部署</strong>」：
+                  <div class="my-1.5 ml-4 p-2 bg-emerald-50/70 border border-emerald-200 rounded-lg text-[10.5px] space-y-0.5 text-emerald-900">
+                    <div>• 類型點齒輪 ⚙️ 選擇：<strong>網路應用程式 (Web App)</strong></div>
+                    <div>• 執行身分：<strong>我 (您的 Google 帳戶)</strong></div>
+                    <div>• 誰可以存取：<strong class="text-rose-600 underline">任何人 (Anyone)</strong>（⚠️ 必選「任何人」，外部學員手機才能存取）</div>
+                  </div>
+                </li>
+                <li>
+                  <strong class="text-slate-800">複製網址貼回</strong>：點「部署」後通過授權，複製出現的「<strong>網路應用程式網址</strong>」（結尾通常是 <code>/exec</code>），貼入下方欄位並點「測試連線」！
+                </li>
+              </ol>
             </div>
 
             <div>
@@ -3399,6 +3433,37 @@
           testBtn.disabled = false;
           testBtn.innerText = "測試連線";
         }
+      }
+    }
+
+    // 一鍵複製 Google Apps Script 後端程式碼
+    async function copyGasScriptCode() {
+      const btn = document.getElementById("copyScriptBtn");
+      const originalHtml = btn ? btn.innerHTML : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 載入程式碼...`;
+      }
+      try {
+        const resp = await fetch("GoogleAppsScript_Code.js");
+        if (!resp.ok) throw new Error("無法取得程式碼檔案");
+        const codeText = await resp.text();
+        await navigator.clipboard.writeText(codeText);
+        if (btn) {
+          btn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> 已複製到剪貼簿！`;
+        }
+        alert("📋 Google Apps Script 後端程式碼已成功複製！\n\n請前往您的 Google 試算表（擴充功能 ➔ Apps Script），將內容全選貼上 (Ctrl+V) 後儲存並部署即可！");
+      } catch (err) {
+        // Fallback: 開啟新分頁查看程式碼
+        window.open("GoogleAppsScript_Code.js", "_blank");
+        alert("已為您在新分頁開啟程式碼，請按 Ctrl+A 全選並複製 (Ctrl+C)。");
+      } finally {
+        setTimeout(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+          }
+        }, 3000);
       }
     }
 
