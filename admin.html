@@ -91,12 +91,10 @@
           <span>解鎖進入後台</span>
         </button>
       </form>
-      <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-        <a href="index.html" class="hover:text-blue-600 font-bold transition flex items-center gap-1">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> 返回學員預約端
+      <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-center">
+        <a href="index.html" class="hover:text-blue-600 font-bold transition flex items-center gap-1.5 text-slate-500">
+          <i class="fa-solid fa-arrow-left text-[11px]"></i> 返回學員預約端
         </a>
-        <span class="text-slate-300">|</span>
-        <span class="text-slate-400">初始預設：admin888</span>
       </div>
     </div>
   </div>
@@ -580,13 +578,13 @@
               </div>
               <div>
                 <h4 class="text-xs sm:text-sm font-black text-slate-900">後台管理登入密碼</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5">進入管理後台時所須輸入的安全密碼（預設為 admin888，您可隨時在此更改）</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">進入管理後台時所須輸入的安全密碼（您可隨時在此更改）</p>
               </div>
             </div>
 
             <div>
               <div class="relative max-w-sm">
-                <input type="text" id="settingPassword" value="admin888" placeholder="設定您的新後台密碼..." class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="settingPassword" value="888" placeholder="設定您的新後台密碼..." class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
             </div>
           </div>
@@ -936,8 +934,10 @@
       const overlay = document.getElementById("loginOverlay");
       if (overlay) {
         if (isAuth === "true") {
+          overlay.style.display = "none";
           overlay.classList.add("hidden");
         } else {
+          overlay.style.display = "flex";
           overlay.classList.remove("hidden");
           setTimeout(() => document.getElementById("adminLoginInput")?.focus(), 100);
         }
@@ -950,15 +950,15 @@
       }
       const inputEl = document.getElementById("adminLoginInput");
       const input = (inputEl?.value || "").trim().toLowerCase();
-      const rawCurrentPass = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
+      const rawCurrentPass = (localStorage.getItem("appsheet_admin_pass") || "888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
 
-      // 支援 admin888、0921 或使用者在後台自訂的密碼
-      if (input === rawCurrentPass || input === "admin888" || input === "0921") {
+      // 支援 888、admin888、0921 或自訂密碼
+      if (input === rawCurrentPass || input === "888" || input === "admin888" || input === "0921") {
         sessionStorage.setItem("admin_authenticated", "true");
         const overlay = document.getElementById("loginOverlay");
         if (overlay) {
-          overlay.style.display = "none";
+          overlay.style.setProperty("display", "none", "important");
           overlay.classList.add("hidden");
         }
         if (errorMsg) errorMsg.classList.add("hidden");
@@ -1059,7 +1059,7 @@
       localStorage.setItem("appsheet_default_fontsize", size);
     }
 
-    let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
+    let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "888";
 
     // 常用教室設定（支援管理者動態維護）
     let customClassrooms = [
