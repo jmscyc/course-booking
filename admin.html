@@ -140,8 +140,18 @@
         </button>
       </div>
 
-      <p class="text-xs text-slate-500 leading-relaxed">
-        拿出另一台手機或平板，打開相機<strong>直接掃描此 QR Code</strong>，即可自動同步連線資料庫並完成綁定！
+      <!-- 分頁切換：管理後台 vs 學員報名端 -->
+      <div class="flex items-center p-1 bg-slate-100 rounded-xl gap-1">
+        <button type="button" id="qrTabAdmin" onclick="switchSyncQrTarget('admin')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm">
+          <i class="fa-solid fa-sliders mr-1"></i>管理後台
+        </button>
+        <button type="button" id="qrTabStudent" onclick="switchSyncQrTarget('student')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+          <i class="fa-solid fa-user-graduate mr-1"></i>學員報名頁
+        </button>
+      </div>
+
+      <p id="qrTargetDesc" class="text-xs text-slate-500 leading-relaxed">
+        新手機掃描後，將自動綁定並開啟「管理後台」：
       </p>
 
       <div class="bg-slate-50 p-4 rounded-2xl flex items-center justify-center border border-slate-100">
@@ -149,9 +159,9 @@
       </div>
 
       <div class="space-y-2">
-        <button type="button" onclick="copyDirectSyncUrl()" id="qrCopyLinkBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20">
+        <button type="button" onclick="copyDirectSyncUrl(currentQrTarget)" id="qrCopyLinkBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20">
           <i class="fa-regular fa-copy"></i>
-          <span>改用 LINE / 訊息傳送同步連結</span>
+          <span>複製此端專屬同步連結</span>
         </button>
       </div>
     </div>
@@ -669,18 +679,22 @@
                   <span>換手機/平板時？（免重新貼長網址）</span>
                 </span>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="copyDirectSyncUrl()" id="copySyncUrlBtn" class="flex-1 py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                  <i class="fa-solid fa-link text-emerald-600"></i>
-                  <span>複製專屬同步網址</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="copyDirectSyncUrl('admin')" id="copySyncUrlBtn" class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-sliders text-emerald-600"></i>
+                  <span>複製【管理後台】同步網址</span>
                 </button>
-                <button type="button" onclick="showSyncQrModal()" id="showQrBtn" class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                  <i class="fa-solid fa-qrcode text-emerald-600"></i>
-                  <span>顯示同步 QR Code</span>
+                <button type="button" onclick="copyDirectSyncUrl('student')" id="copyStudentSyncUrlBtn" class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-user-graduate text-emerald-600"></i>
+                  <span>複製【學員端】報名網址</span>
                 </button>
               </div>
+              <button type="button" onclick="showSyncQrModal('admin')" id="showQrBtn" class="w-full py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-qrcode text-emerald-600"></i>
+                <span>顯示多裝置同步 QR Code（支援相機掃描）</span>
+              </button>
               <p class="text-[10.5px] text-slate-500">
-                只要把「專屬同步網址」傳給新手機打開，或用新手機掃描 QR Code，新裝置就會<strong>自動完成綁定</strong>，連一秒鐘都不用重打！
+                只要把「專屬同步網址」傳給新手機打開，或用手機掃描 QR Code，手機與電腦就會<strong>連到同一個 Google 試算表</strong>，手機報名的資料電腦立刻同步可見！
               </p>
             </div>
           </div>
@@ -1531,6 +1545,11 @@
       if (urlSync && urlSync.startsWith("http")) {
         localStorage.setItem("appsheet_gas_api", urlSync);
         API_URL = urlSync;
+        // 清理網址參數，保持網址整潔且避免暴露參數
+        try {
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch(e) {}
       }
 
       // 載入 Google Apps Script 網址設定
@@ -2914,10 +2933,15 @@
       const url = (document.getElementById("settingGasUrl")?.value || "").trim();
       const hasUrl = url.startsWith("http");
       const copyBtn = document.getElementById("copySyncUrlBtn");
+      const copyStudentBtn = document.getElementById("copyStudentSyncUrlBtn");
       const qrBtn = document.getElementById("showQrBtn");
       if (copyBtn) {
         copyBtn.style.opacity = hasUrl ? "1" : "0.5";
         copyBtn.disabled = !hasUrl;
+      }
+      if (copyStudentBtn) {
+        copyStudentBtn.style.opacity = hasUrl ? "1" : "0.5";
+        copyStudentBtn.disabled = !hasUrl;
       }
       if (qrBtn) {
         qrBtn.style.opacity = hasUrl ? "1" : "0.5";
@@ -2925,48 +2949,83 @@
       }
     }
 
-    // 產生並複製專屬同步網址 (新手機一開即自動綁定)
-    function getDirectSyncUrl() {
+    // 產生專屬同步網址 (支援管理後台與學員報名端)
+    function getDirectSyncUrl(target = "admin") {
       const gasUrl = (document.getElementById("settingGasUrl")?.value || localStorage.getItem("appsheet_gas_api") || "").trim();
       if (!gasUrl || !gasUrl.startsWith("http")) return null;
-      // 構建帶有 sync 參數的 admin.html 專屬網址
-      const base = window.location.origin + window.location.pathname;
+      let path = window.location.pathname;
+      if (target === "student") {
+        path = path.replace(/admin\.html$/, "index.html");
+        if (!path.endsWith("index.html")) path = path.replace(/\/[^/]*$/, "/index.html");
+      } else {
+        path = path.replace(/index\.html$/, "admin.html");
+        if (!path.endsWith("admin.html")) path = path.replace(/\/[^/]*$/, "/admin.html");
+      }
+      const base = window.location.origin + path;
       return `${base}?sync=${encodeURIComponent(gasUrl)}`;
     }
 
     // 複製專屬同步網址
-    async function copyDirectSyncUrl() {
-      const syncUrl = getDirectSyncUrl();
+    async function copyDirectSyncUrl(target = "admin") {
+      const syncUrl = getDirectSyncUrl(target);
       if (!syncUrl) {
         alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
         return;
       }
+      const targetLabel = target === "student" ? "學員報名端" : "管理後台";
       try {
         await navigator.clipboard.writeText(syncUrl);
-        alert("🔗 專屬同步網址已複製！\n\n您可以直接將此網址用 LINE 或備忘錄傳送給新手機或朋友。\n新裝置只要「點開此連結」，就會全自動完成資料庫連線，完全不用手動設定！");
+        alert(`🔗 專屬【${targetLabel}】同步網址已複製！\n\n您可以直接將此網址用 LINE 或備忘錄傳送給手機或平板。\n新裝置只要「點開此連結」，就會全自動完成 Google 試算表綁定，連一秒鐘都不用重打！`);
       } catch (e) {
-        prompt("請手動複製下方專屬同步網址：", syncUrl);
+        prompt(`請手動複製下方專屬【${targetLabel}】同步網址：`, syncUrl);
       }
     }
 
     // 彈出並渲染同步 QR Code
-    function showSyncQrModal() {
-      const syncUrl = getDirectSyncUrl();
+    let currentQrTarget = "admin";
+    function showSyncQrModal(target = "admin") {
+      currentQrTarget = target;
+      renderSyncQrCode();
+      const modal = document.getElementById("syncQrModal");
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function switchSyncQrTarget(target) {
+      currentQrTarget = target;
+      renderSyncQrCode();
+    }
+
+    function renderSyncQrCode() {
+      const syncUrl = getDirectSyncUrl(currentQrTarget);
       if (!syncUrl) {
         alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
         return;
       }
 
-      const modal = document.getElementById("syncQrModal");
       const container = document.getElementById("syncQrContainer");
-      if (!modal || !container) return;
+      const tabAdmin = document.getElementById("qrTabAdmin");
+      const tabStudent = document.getElementById("qrTabStudent");
+      const desc = document.getElementById("qrTargetDesc");
+      if (!container) return;
+
+      if (tabAdmin && tabStudent) {
+        if (currentQrTarget === "admin") {
+          tabAdmin.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
+          tabStudent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+          if (desc) desc.innerText = "新手機掃描後，將自動綁定並開啟「管理後台」：";
+        } else {
+          tabStudent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
+          tabAdmin.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+          if (desc) desc.innerText = "手機/學員掃描後，將自動綁定並開啟「學員預約報名頁」：";
+        }
+      }
 
       container.innerHTML = "";
       if (typeof QRCode !== "undefined") {
         new QRCode(container, {
           text: syncUrl,
-          width: 200,
-          height: 200,
+          width: 190,
+          height: 190,
           colorDark: "#0f172a",
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.M
@@ -2974,8 +3033,6 @@
       } else {
         container.innerHTML = `<p class="text-xs text-rose-500">QR Code 模組載入中，請直接使用「複製專屬同步網址」。</p>`;
       }
-
-      modal.classList.remove("hidden");
     }
 
     function closeSyncQrModal() {

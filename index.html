@@ -650,12 +650,17 @@
     })();
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 支援從 URL 參數 (?api=...) 或 localStorage 讀取 API 網址
+      // 支援從 URL 參數 (?sync=... 或 ?api=...) 或 localStorage 讀取 API 網址，跨裝置一開即自動綁定
       const urlParams = new URLSearchParams(window.location.search);
-      const queryApi = urlParams.get("api");
-      if (queryApi) {
+      const queryApi = urlParams.get("sync") || urlParams.get("api");
+      if (queryApi && queryApi.startsWith("http")) {
         localStorage.setItem("appsheet_gas_api", queryApi);
         API_URL = queryApi;
+        // 清理網址參數，保持網址整潔且避免暴露參數
+        try {
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch(e) {}
       } else {
         const savedApi = localStorage.getItem("appsheet_gas_api");
         if (savedApi) API_URL = savedApi;
