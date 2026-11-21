@@ -97,7 +97,7 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 🔐 管理者登入驗證覆蓋層 (預設密碼 admin888，可於設定中自行更改) -->
+  <!-- 🔐 管理者登入驗證覆蓋層 (可於設定中自行更改密碼) -->
   <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 transition-all">
     <div class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-5 animate-in fade-in zoom-in duration-200">
       <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
@@ -1068,7 +1068,7 @@
       const rawCurrentPass = (localStorage.getItem("appsheet_admin_pass") || "888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
 
-      // 支援 888、admin888、0921 或自訂密碼
+      // 支援 888、0921、相容原密碼或自訂密碼
       if (input === rawCurrentPass || input === "888" || input === "admin888" || input === "0921") {
         sessionStorage.setItem("admin_authenticated", "true");
         const overlay = document.getElementById("loginOverlay");
