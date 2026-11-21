@@ -89,31 +89,36 @@
     })();
   </script>
 </head>
-<body class="min-h-screen text-slate-800 pb-20">
+<body class="min-h-screen text-slate-800 pb-20 overflow-x-hidden">
 
-  <!-- 頂部精簡導航列 (吸頂黏性導航，只放精煉品牌Logo與系統工具，絕不擠壓) -->
-  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-3.5 sm:px-6 py-2 transition-all">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
-      <!-- 導航列左側：品牌徽章標籤 (確保 whitespace-nowrap 不折行) -->
-      <div class="flex items-center gap-2 shrink-0">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
-          <i class="fa-solid fa-spa text-sm"></i>
+  <!-- 頂部精簡導航列 (吸頂黏性導航，完美適配手機與桌面，零溢出) -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-2.5 sm:px-6 py-2 sm:py-2.5 transition-all">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
+      <!-- 導航列左側：品牌徽章標籤 (保證文字完整不截斷) -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
+          <i class="fa-solid fa-spa text-xs sm:text-sm"></i>
         </div>
-        <span class="font-extrabold text-xs sm:text-sm text-slate-800 tracking-tight whitespace-nowrap">霖霖頌缽教學</span>
+        <span class="font-extrabold text-xs sm:text-base text-slate-800 tracking-tight whitespace-nowrap">霖霖頌缽教學</span>
       </div>
 
-      <!-- 導航列右側：字級調整 + 查詢按鈕 + 重新整理 -->
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <div class="flex items-center bg-slate-100/90 rounded-lg p-0.5 border border-slate-200 text-xs">
-          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-2 py-0.5 rounded text-slate-600 font-bold hover:text-blue-600 transition" title="標準字級">A</button>
-          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="放大字級">A+</button>
-          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="特大字級">A++</button>
-        </div>
-        <button onclick="openMyBookingsModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-xs transition flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer whitespace-nowrap" title="查詢預約進度">
+      <!-- 導航列右側：查詢按鈕 (桌機版顯示於此) + 字級調整 + 重新整理 -->
+      <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+        <!-- 桌機版查詢按鈕 -->
+        <button onclick="openMyBookingsModal()" class="hidden sm:inline-flex px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-xs transition items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer whitespace-nowrap" title="查詢預約進度">
           <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
           <span>查詢預約進度</span>
         </button>
-        <button onclick="loadCourses()" title="重新整理" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
+
+        <!-- 字級調整 -->
+        <div class="flex items-center bg-slate-100/90 rounded-lg p-0.5 border border-slate-200 text-xs">
+          <button type="button" onclick="changeFontSize('normal')" id="clientFontNormal" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-600 font-bold hover:text-blue-600 transition" title="標準字級">A</button>
+          <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="放大字級">A+</button>
+          <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="特大字級">A++</button>
+        </div>
+
+        <!-- 重新整理按鈕 -->
+        <button onclick="loadCourses()" title="重新整理" class="p-1 sm:p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
           <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
         </button>
       </div>
@@ -135,10 +140,18 @@
       <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent"></div>
     </div>
 
-    <!-- 課程清單區域 (Deck Card View) -->
+    <!-- 課程清單標題列 + 手機版專屬明亮「查詢進度」按鈕 -->
     <div class="flex items-center justify-between mb-2.5 px-0.5">
-      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">開放報名課程 (<span id="courseCount">0</span>)</span>
-      <span class="text-xs text-slate-400">點擊卡片即可預約</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">開放報名課程 (<span id="courseCount">0</span>)</span>
+        <span class="text-[11px] text-slate-400 hidden xs:inline">點擊卡片預約</span>
+      </div>
+
+      <!-- 手機版專屬查詢按鈕：位在課程清單右上方，醒目不超出、100%在手機第一眼可視範圍 -->
+      <button onclick="openMyBookingsModal()" class="sm:hidden px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1.5 border border-blue-200 cursor-pointer shadow-2xs whitespace-nowrap" title="查詢預約進度">
+        <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+        <span>查詢進度</span>
+      </button>
     </div>
 
     <!-- 載入中骨架屏 (響應式雙欄/單欄極簡卡) -->
