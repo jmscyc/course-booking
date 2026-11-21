@@ -52,7 +52,7 @@
     }
   </style>
   <script>
-    // 立即生效防閃爍：在頁面渲染前讀取永久保存的管理後台字級（手機端標準 21px，提供 21, 22, 23 縮放）
+    // 立即生效防閃爍：在頁面渲染前讀取永久保存的管理後台字級
     (function() {
       var isDesktop = window.innerWidth >= 768;
       var saved = localStorage.getItem("admin_app_font_size") || "normal";
@@ -70,11 +70,10 @@
       document.documentElement.style.fontSize = fs;
     })();
 
-    // 🔐 管理後台安全登入處理 (支援 admin888、0921 或自訂密碼)
+    // 🔐 管理後台安全登入處理
     function handleAdminLogin() {
       const inputEl = document.getElementById("adminLoginInput");
       const input = (inputEl ? inputEl.value : "").trim().toLowerCase();
-      // ✅ 修正 Bug 1：預設密碼與後端一致改為 admin888
       const storedPass = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
 
@@ -98,7 +97,7 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 🔐 管理者登入驗證覆蓋層 (可於設定中自行更改密碼) -->
+  <!-- 🔐 管理者登入驗證覆蓋層 -->
   <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 transition-all">
     <div class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-5 animate-in fade-in zoom-in duration-200">
       <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
@@ -141,7 +140,6 @@
         </button>
       </div>
 
-      <!-- 分頁切換：管理後台 vs 學員報名端 -->
       <div class="flex items-center p-1 bg-slate-100 rounded-xl gap-1">
         <button type="button" id="qrTabAdmin" onclick="switchSyncQrTarget('admin')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm">
           <i class="fa-solid fa-sliders mr-1"></i>管理後台
@@ -201,7 +199,7 @@
   <!-- 主內容容器 -->
   <main class="max-w-7xl mx-auto px-3.5 sm:px-4 pt-3 sm:pt-5 space-y-4 sm:space-y-6">
 
-    <!-- 頁籤切換：課程維護 / 學員預約名冊 / 統計 / 設定 (手機橫向滑動貼心排版) -->
+    <!-- 頁籤切換 -->
     <div class="flex border-b border-slate-200 gap-2 sm:gap-6 overflow-x-auto custom-scrollbar pb-1">
       <button onclick="switchTab('courses')" id="tabCoursesBtn" class="tab-active pb-2.5 sm:pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5 shrink-0">
         <i class="fa-solid fa-calendar-days text-sm"></i>
@@ -221,10 +219,8 @@
       </button>
     </div>
 
-    <!-- 頁籤 1: 課程維護管理 (直接在此填表增修，免開 Sheet) -->
+    <!-- 頁籤 1: 課程維護管理 -->
     <div id="viewCourses" class="space-y-4">
-      
-      <!-- 功能列 -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <button onclick="openCourseModal(null)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition">
@@ -240,12 +236,8 @@
         </div>
       </div>
 
-      <!-- 課程清單：手機專屬觸控卡片 (md:hidden) -->
-      <div id="coursesMobileContainer" class="md:hidden space-y-3">
-        <!-- 手機卡片動態渲染 -->
-      </div>
+      <div id="coursesMobileContainer" class="md:hidden space-y-3"></div>
 
-      <!-- 課程表格清單：桌機平板大螢幕寬版表格 (hidden md:block) -->
       <div class="hidden md:block bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
           <table class="w-full text-left text-xs text-slate-600">
@@ -262,7 +254,6 @@
               </tr>
             </thead>
             <tbody id="coursesTableBody" class="divide-y divide-slate-100">
-              <!-- 動態渲染表格列 -->
             </tbody>
           </table>
         </div>
@@ -272,7 +263,7 @@
       </div>
     </div>
 
-    <!-- 頁籤 2: 學員預約名單 (可搜尋、簽到、取消) -->
+    <!-- 頁籤 2: 學員預約名單 -->
     <div id="viewBookings" class="hidden space-y-4">
       <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
         <div class="relative flex-1 max-w-sm">
@@ -292,12 +283,8 @@
         </div>
       </div>
 
-      <!-- 學員預約：手機專屬觸控卡片 (md:hidden) -->
-      <div id="bookingsMobileContainer" class="md:hidden space-y-3">
-        <!-- 手機卡片動態渲染 -->
-      </div>
+      <div id="bookingsMobileContainer" class="md:hidden space-y-3"></div>
 
-      <!-- 學員預約：桌機平板大螢幕寬版表格 (hidden md:block) -->
       <div class="hidden md:block bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
           <table class="w-full text-left text-xs text-slate-600">
@@ -317,7 +304,6 @@
               </tr>
             </thead>
             <tbody id="bookingsTableBody" class="divide-y divide-slate-100">
-              <!-- 動態生成 -->
             </tbody>
           </table>
         </div>
@@ -330,7 +316,6 @@
 
     <!-- 頁籤 2.5: 過往報名紀錄與學員報名次數統計 -->
     <div id="viewHistory" class="hidden space-y-5">
-      <!-- 頂部資訊與統計概覽 (手機端採 3 欄緊湊並排，迅速看到下方內容與編輯按鈕) -->
       <div class="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
         <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-start justify-between">
@@ -372,7 +357,6 @@
         </div>
       </div>
 
-      <!-- 子頁籤或模式切換：依學員統計 (誰報名了幾次) vs 完整歷史預約明細 -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div class="grid grid-cols-2 sm:flex sm:items-center gap-2">
@@ -390,14 +374,8 @@
           </div>
         </div>
 
-        <!-- 視圖 A: 學員報名次數統計 (誰報名了幾次) -->
         <div id="historyStudentsContainer" class="space-y-4">
-          <!-- 手機版專屬學員統計卡片 (md:hidden) -->
-          <div id="historyStudentsMobileContainer" class="md:hidden space-y-3">
-            <!-- 手機專用卡片動態渲染 -->
-          </div>
-
-          <!-- 電腦版學員統計表格 (hidden md:block) -->
+          <div id="historyStudentsMobileContainer" class="md:hidden space-y-3"></div>
           <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-200/80">
             <table class="w-full text-left text-xs text-slate-600">
               <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
@@ -412,20 +390,13 @@
                 </tr>
               </thead>
               <tbody id="historyStudentsTableBody" class="divide-y divide-slate-100">
-                <!-- 動態渲染 -->
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- 視圖 B: 完整過往報名明細 (支援所有欄位修改與管理備註) -->
         <div id="historyRecordsContainer" class="space-y-4 hidden">
-          <!-- 手機版專屬過往報名紀錄卡片 (md:hidden) -->
-          <div id="historyRecordsMobileContainer" class="md:hidden space-y-3">
-            <!-- 手機專用卡片動態渲染 -->
-          </div>
-
-          <!-- 電腦版過往報名紀錄表格 (hidden md:block) -->
+          <div id="historyRecordsMobileContainer" class="md:hidden space-y-3"></div>
           <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-200/80">
             <table class="w-full text-left text-xs text-slate-600">
               <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
@@ -444,7 +415,6 @@
                 </tr>
               </thead>
               <tbody id="historyRecordsTableBody" class="divide-y divide-slate-100">
-                <!-- 動態渲染 -->
               </tbody>
             </table>
           </div>
@@ -470,7 +440,6 @@
             <input type="text" id="settingSysName" value="霖霖的課程預約系統" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
-          <!-- 匯款收款銀行帳號設定 (供學員預約時匯款與複製帳號) -->
           <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 space-y-3">
             <div>
               <h4 class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
@@ -495,7 +464,6 @@
             </div>
           </div>
 
-          <!-- 課程範本快速下拉選單整併設定 (一對一綁定) -->
           <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-4">
             <div class="flex items-center justify-between">
               <div>
@@ -511,7 +479,6 @@
             </div>
 
             <div id="templateRowsContainer" class="space-y-2.5">
-              <!-- 動態生成一對一範本列 -->
             </div>
 
             <div class="pt-2 border-t border-slate-200/60">
@@ -523,7 +490,6 @@
             </div>
           </div>
 
-          <!-- UI 介面視覺與字體大小設定專區 (重新精緻化排版) -->
           <div class="bg-gradient-to-br from-slate-50 to-indigo-50/40 border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-200/70">
               <div class="flex items-center gap-2.5">
@@ -541,7 +507,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- 管理端字級設定卡片 -->
               <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm hover:border-indigo-300 transition-colors flex flex-col justify-between gap-3">
                 <div class="flex items-start justify-between">
                   <div>
@@ -570,7 +535,6 @@
                 </div>
               </div>
 
-              <!-- 學員前台預設字級設定卡片 -->
               <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-colors flex flex-col justify-between gap-3">
                 <div class="flex items-start justify-between">
                   <div>
@@ -607,7 +571,6 @@
             <textarea id="settingNotice" rows="3" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</textarea>
           </div>
 
-          <!-- 雲端資料庫串接：Google Sheets 試算表設定 (即時跨手機同步) -->
           <div class="bg-gradient-to-br from-emerald-50/90 to-teal-50/60 border-2 border-emerald-300 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-2.5">
@@ -624,7 +587,6 @@
               </div>
             </div>
 
-            <!-- 📖 3 分鐘設定教學摺疊導引與一鍵複製程式碼 -->
             <div class="bg-white/90 border border-emerald-200 rounded-xl p-3.5 space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-black text-emerald-950 flex items-center gap-1.5">
@@ -672,7 +634,6 @@
               </p>
             </div>
 
-            <!-- 📱 多裝置零手動輸入：一鍵複製同步網址與 QR Code -->
             <div id="multiDeviceSyncSection" class="pt-3 border-t border-emerald-200/80 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
@@ -700,7 +661,6 @@
             </div>
           </div>
 
-          <!-- 安全防護：後台管理登入密碼 -->
           <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
             <div class="flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0">
@@ -720,7 +680,6 @@
             </div>
           </div>
 
-          <!-- 通知設定區塊：獨立平行卡片，非巢狀結構 -->
           <div class="pt-4 border-t border-slate-200/80 space-y-4">
             <div>
               <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
@@ -730,7 +689,6 @@
               <p class="text-xs text-slate-500 mt-0.5">各通知管道獨立開關，您可自由勾選開啟 LINE 或 Telegram，或兩者同時開啟</p>
             </div>
 
-            <!-- 卡片 1: LINE 通知 (包含學員確認與管理者接收) -->
             <div class="bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm space-y-3.5 transition-all">
               <div class="flex items-center justify-between pb-2.5 border-b border-emerald-50">
                 <div class="flex items-center gap-2.5">
@@ -749,7 +707,6 @@
                 </label>
               </div>
 
-              <!-- LINE 細項設定 -->
               <div id="lineDetailsContainer" class="space-y-3">
                 <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-200/60 flex items-center justify-between">
                   <div>
@@ -779,7 +736,6 @@
               </div>
             </div>
 
-            <!-- 卡片 2: Telegram 即時通知 (獨立平級，非巢狀) -->
             <div class="bg-white border-2 border-sky-100 rounded-2xl p-4 shadow-sm space-y-3.5 transition-all">
               <div class="flex items-center justify-between pb-2.5 border-b border-sky-50">
                 <div class="flex items-center gap-2.5">
@@ -798,7 +754,6 @@
                 </label>
               </div>
 
-              <!-- Telegram 細項設定 -->
               <div id="telegramDetailsContainer" class="space-y-3">
                 <div class="flex justify-end">
                   <button type="button" onclick="testNotificationChannel('telegram')" class="px-2 py-0.5 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-md text-[10px] font-bold transition">
@@ -828,7 +783,7 @@
 
   </main>
 
-  <!-- 🌟 學員預約名冊修改 Modal (可修改備註需求、管理備註、姓名、電話、付款五碼、課程、狀態等所有欄位) -->
+  <!-- 🌟 學員預約名冊修改 Modal -->
   <div id="editBookingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
@@ -849,7 +804,6 @@
       <form onsubmit="handleSaveBookingEdit(event)" class="space-y-4">
         <input type="hidden" id="editBookingId">
 
-        <!-- 課程名稱與報名時間 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">所屬課程 <span class="text-rose-500">*</span></label>
@@ -861,7 +815,6 @@
           </div>
         </div>
 
-        <!-- 學員基本聯絡資訊 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">學員姓名 <span class="text-rose-500">*</span></label>
@@ -877,7 +830,6 @@
           </div>
         </div>
 
-        <!-- 付款方式/末五碼 與 簽到狀態 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">付款方式 / 匯款後五碼</label>
@@ -895,7 +847,6 @@
           </div>
         </div>
 
-        <!-- 學員備註需求 -->
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">
             <i class="fa-solid fa-comment-dots text-slate-500 mr-1"></i>學員備註需求 (學員報名時填寫或修改)
@@ -903,7 +854,6 @@
           <textarea id="editBookingNotes" rows="2" placeholder="學員飲食、特殊體況或備註事項..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
         </div>
 
-        <!-- 🌟 管理者專用備註 (新增專用欄位) -->
         <div class="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200">
           <label class="block text-xs font-black text-amber-900 mb-1 flex items-center justify-between">
             <span class="flex items-center gap-1.5"><i class="fa-solid fa-lock text-amber-600"></i>管理備註 (管理者專用內部註記)</span>
@@ -913,7 +863,6 @@
           <p class="text-[10px] text-amber-700/80 mt-1">此欄位僅供管理者內部查閱與對帳追蹤，不會公開顯示在學員端查詢結果中。</p>
         </div>
 
-        <!-- 按鈕組 -->
         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeEditBookingModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
             取消
@@ -927,7 +876,7 @@
     </div>
   </div>
 
-  <!-- 課程新增 / 編輯表單 Modal (涵蓋 Sheet 的全部欄位) -->
+  <!-- 課程新增 / 編輯表單 Modal -->
   <div id="courseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
       
@@ -1053,13 +1002,10 @@
     </div>
   </div>
 
-
-
   <script>
-    // 讀取 Google Apps Script Web App API 網址 (支援由設定頁面動態儲存)
+    // 讀取 Google Apps Script Web App API 網址
     let API_URL = localStorage.getItem("appsheet_gas_api") || "";
 
-    // 登入驗證邏輯 (若已驗證過則不跳出彈窗)
     function checkAdminAuth() {
       const isAuth = sessionStorage.getItem("admin_authenticated");
       const overlay = document.getElementById("loginOverlay");
@@ -1075,13 +1021,11 @@
       }
     }
 
-    // ✅ 修正 Bug 1：統一後端密碼全域變數為 admin888
     let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
 
-    // 管理後台字級設定 (手機版標準 21px，提供 21, 22, 23 縮放選項)
     function setAppFontSize(size, save = true) {
       if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
-        size = "normal"; // 預設標準 21px
+        size = "normal";
       }
 
       const isDesktop = window.innerWidth >= 768;
@@ -1091,7 +1035,6 @@
         else if (size === "large") fs = "17px";
         else fs = "16px";
       } else {
-        // 手機版：標準 21px, 22px, 23px
         if (size === "xlarge") fs = "23px";
         else if (size === "large") fs = "22px";
         else fs = "21px";
@@ -1100,7 +1043,6 @@
       document.documentElement.style.setProperty("--app-font-size", fs);
       document.documentElement.style.fontSize = fs;
 
-      // 1. 同步頂部按鈕狀態
       const topBtns = {
         normal: document.getElementById("fontBtnNormal"),
         large: document.getElementById("fontBtnLarge"),
@@ -1117,7 +1059,6 @@
         }
       });
 
-      // 2. 同步設定頁按鈕狀態 (精緻質感卡片)
       const setBtns = {
         normal: document.getElementById("setBtnNormal"),
         large: document.getElementById("setBtnLarge"),
@@ -1138,7 +1079,7 @@
         localStorage.setItem("admin_app_font_size", size);
       }
     }
-        // 前台訪客預設字級按鈕切換（與管理者字級風格 100% 統一）
+
     function setClientDefaultFont(size) {
       if (!size || (size !== "normal" && size !== "large" && size !== "xlarge")) {
         size = "large";
@@ -1164,7 +1105,6 @@
       localStorage.setItem("appsheet_default_fontsize", size);
     }
 
-    // 常用教室設定（支援管理者動態維護）
     let customClassrooms = [
       "高雄-近高美館",
       "台南安南醫院",
@@ -1178,7 +1118,6 @@
       } catch(e) {}
     }
 
-    // 常用開課範本：【課程名稱】與【早鳥價】、【定價】、【課程說明】獨立結構一對一綁定
     let customCourseTemplates = [
       {
         title: "❷ 學習：頌缽入門",
@@ -1216,7 +1155,6 @@
       } catch(e) {}
     }
 
-    // 預設示範課程資料（已同步 AppSheet 真實課程清單）
     let adminCourses = [
       {
             "id": "260428",
@@ -1316,7 +1254,7 @@
             "regularPrice": "12000",
             "status": "開啟報名"
       },
-{
+      {
             "id": "260420",
             "title": "❷ 學習：頌缽入門",
             "date": "2026-10-18",
@@ -1406,37 +1344,31 @@
             "regularPrice": "",
             "status": "已結束"
       }
-];
+    ];
 
-    // 預約資料（為保障學員個資安全，所有報名與歷史資料僅存放於您的私有 Google 試算表中，原始碼中不包含任何學員隱私）
     let adminBookings = [];
 
-    
-      // 自動清洗修復快取資料庫：若舊資料中價格混在 notes 裡，自動提取至 earlyBirdPrice / regularPrice
-      function normalizeCoursePrices(courseList) {
-        if (!Array.isArray(courseList)) return courseList;
-        return courseList.map(c => {
-          let notes = c.notes || "";
-          let eb = c.earlyBirdPrice || "";
-          let rg = c.regularPrice || "";
-          // 匹配類似 (早鳥價 $4000 / 定價 $5000) 或 （早鳥價 $8,000 / 定價 $12,000）
-          const match = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
-          if (match) {
-            if (!eb) eb = match[1].replace(/,/g, "");
-            if (!rg) rg = match[2].replace(/,/g, "");
-            notes = notes.replace(match[0], "").trim();
-          }
-          return {
-            ...c,
-            notes: notes,
-            earlyBirdPrice: eb,
-            regularPrice: rg
-          };
-        });
-      }
+    function normalizeCoursePrices(courseList) {
+      if (!Array.isArray(courseList)) return courseList;
+      return courseList.map(c => {
+        let notes = c.notes || "";
+        let eb = c.earlyBirdPrice || "";
+        let rg = c.regularPrice || "";
+        const match = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
+        if (match) {
+          if (!eb) eb = match[1].replace(/,/g, "");
+          if (!rg) rg = match[2].replace(/,/g, "");
+          notes = notes.replace(match[0], "").trim();
+        }
+        return {
+          ...c,
+          notes: notes,
+          earlyBirdPrice: eb,
+          regularPrice: rg
+        };
+      });
+    }
 
-    
-    // 清理舊版過大字體快取，確保新版比例立即 100% 生效
     (function() {
       const saved = localStorage.getItem("admin_app_font_size");
       if (saved === "23px" || saved === "27px" || saved === "20px") {
@@ -1445,7 +1377,6 @@
     })();
 
     document.addEventListener("DOMContentLoaded", () => {
-      // 讀取共用資料庫中的課程與預約紀錄
       try {
         const sharedCourses = localStorage.getItem("appsheet_shared_courses");
         if (sharedCourses) {
@@ -1470,25 +1401,20 @@
         console.error("載入本地快取資料庫失敗：", e);
       }
 
-      // 永久讀取管理後台字級與前台預設字級
       const savedAdminFont = localStorage.getItem("admin_app_font_size") || "normal";
       setAppFontSize(savedAdminFont, false);
       const savedClientDefFont = localStorage.getItem("appsheet_default_fontsize") || "normal";
       setClientDefaultFont(savedClientDefFont);
       
-      
-      // 初始渲染一對一範本編輯清單
       renderSettingsTemplateRows();
       if (document.getElementById("settingClassrooms")) {
         document.getElementById("settingClassrooms").value = customClassrooms.join("\n");
       }
       
-      
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       document.getElementById("formDate").value = tomorrow.toISOString().split("T")[0];
 
-      // 載入本地快取之通知設定 (平級平行開關)
       const savedLineEnabled = localStorage.getItem("appsheet_line_enabled");
       if (savedLineEnabled !== null && document.getElementById("settingLineEnabled")) {
         const isEn = savedLineEnabled === "開啟";
@@ -1510,30 +1436,25 @@
       if (localStorage.getItem("appsheet_line_notify_token")) document.getElementById("settingLineNotifyToken").value = localStorage.getItem("appsheet_line_notify_token");
       if (localStorage.getItem("appsheet_line_channel_token")) document.getElementById("settingLineChannelToken").value = localStorage.getItem("appsheet_line_channel_token");
 
-      // 檢查管理密碼驗證狀態
       checkAdminAuth();
 
-      // 支援網址帶入自動同步參數 (?sync=... 或 ?api=...)，跨裝置免重新手動貼網址
       const urlParams = new URLSearchParams(window.location.search);
       const urlSync = urlParams.get("sync") || urlParams.get("api");
       if (urlSync && urlSync.startsWith("http")) {
         localStorage.setItem("appsheet_gas_api", urlSync);
         API_URL = urlSync;
-        // 清理網址參數，保持網址整潔且避免暴露參數
         try {
           const cleanUrl = window.location.origin + window.location.pathname;
           window.history.replaceState({}, document.title, cleanUrl);
         } catch(e) {}
       }
 
-      // 載入 Google Apps Script 網址設定
       const savedGas = localStorage.getItem("appsheet_gas_api") || "";
       if (document.getElementById("settingGasUrl")) {
         document.getElementById("settingGasUrl").value = savedGas;
       }
       loadFullAdminData();
 
-      // 多視窗 / 多角色本機即時自動同步監聽 (當在隔壁分頁以學員身份報名時，後台無感秒級同步顯示)
       window.addEventListener("storage", (e) => {
         if (e.key === "appsheet_shared_bookings" || e.key === "appsheet_shared_courses" || e.key === "appsheet_gas_api") {
           if (e.key === "appsheet_gas_api") {
@@ -1548,7 +1469,6 @@
         }
       });
 
-      // 當視窗重新獲得焦點（例如切換回管理後台分頁）時自動重新整理
       window.addEventListener("focus", () => {
         loadFullAdminData();
       });
@@ -1647,15 +1567,12 @@
           }
         } catch (err) {
           console.warn("無法取得真實 API 資料，保留展示模式：", err);
-          // 若遠端 API 連線失敗，回退從本地快取讀取最新預約與課程
           loadLocalSharedData();
         }
       } else {
-        // 展示 / 本地模式：每次重新整理皆重新讀取最新共享預約與課程資料
         loadLocalSharedData();
       }
 
-      // 初始化設定頁面的教室輸入框與銀行帳號設定
       const settingClassroomsEl = document.getElementById("settingClassrooms");
       if (settingClassroomsEl) {
         settingClassroomsEl.value = customClassrooms.join("\n");
@@ -1672,7 +1589,6 @@
       if (refreshIcon) refreshIcon.classList.remove("fa-spin");
     }
 
-    // 從 localStorage 重新加載本機共享課程與預約紀錄（供多視窗、多角色即時同步）
     function loadLocalSharedData() {
       try {
         const sharedCourses = localStorage.getItem("appsheet_shared_courses");
@@ -1694,7 +1610,6 @@
       }
     }
 
-    // 重新建立教室下拉選單的 Option
     function buildLocationSelectOptions(selectedVal) {
       const selectEl = document.getElementById("formLocationSelect");
       if (!selectEl) return;
@@ -1707,12 +1622,30 @@
       if (selectedVal) selectEl.value = selectedVal;
     }
 
-    // 判斷課程是否已過期 (依日期與結束時間，相較於當前時間)
+    // 輔助函式：取得星期簡稱 (六、日、一...)
+    function getWeekDay(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr.replace(/\//g, "-"));
+      if (isNaN(d.getTime())) return "";
+      const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+      return days[d.getDay()] || "";
+    }
+
+    // 🌟 新增輔助函式：將 YYYY-MM-DD 轉為 YYYY/MM/DD(日)
+    function formatDisplayDate(dateStr) {
+      if (!dateStr || dateStr === "-") return dateStr;
+      const cleanDate = dateStr.replace(/\//g, "-");
+      const parts = cleanDate.split("-");
+      if (parts.length === 3) {
+        const wDay = (getWeekDay(cleanDate) || "").replace("週", "");
+        return `${parts[0]}/${parts[1]}/${parts[2]}(${wDay})`;
+      }
+      return dateStr;
+    }
+
     function isCourseExpired(course) {
       if (!course || !course.date) return false;
       const dateStr = String(course.date).trim().replace(/\//g, "-");
-      
-      // 🛡️ 【終極防護盾】如果後端因為沒更新而傳來 1899 年的錯誤時間，強制判定為「未過期」，保護名單不消失！
       if (dateStr.startsWith("1899")) return false;
 
       const endStr = course.endTime ? String(course.endTime).trim() : "23:59";
@@ -1723,21 +1656,16 @@
       return courseDateTime < new Date();
     }
 
-    // 判斷預約紀錄是否屬於已過期之課程
     function isBookingExpired(booking) {
       if (!booking) return false;
-      // 先從課程編號尋找對應課程
       const course = adminCourses.find(c => String(c.id) === String(booking["課程編號"]));
       if (course) {
         return isCourseExpired(course);
       }
-      // 若課程編號未對應到（舊歷史紀錄），檢查課程名稱是否有日期或簽到狀態是否為已完成
       if (booking["簽到狀態"] === "已完成") return true;
-      // 嘗試從報名時間判斷：若報名時間已逾三個月或為歷史紀錄
       if (booking["報名時間"]) {
         const bDate = new Date(booking["報名時間"].replace(" ", "T"));
         if (!isNaN(bDate.getTime())) {
-          // 若超過 60 天以上無對應現有課程，視為歷史過期預約
           const daysDiff = (new Date() - bDate) / (1000 * 60 * 60 * 24);
           if (daysDiff > 60) return true;
         }
@@ -1745,7 +1673,6 @@
       return false;
     }
 
-    // 計算每堂課目前的有效預約數
     function calculateCourseBookedCounts() {
       const counts = {};
       adminBookings.forEach(b => {
@@ -1759,17 +1686,13 @@
         const vCount = Number(c.virtualCount) || 0;
         c.realBookedCount = realCount;
         c.virtualCount = vCount;
-        c.bookedCount = realCount + vCount; // 訪客看到的人數
+        c.bookedCount = realCount + vCount; 
         c.remaining = Math.max(0, c.capacity - c.bookedCount);
       });
     }
 
     function renderAll() {
-      // 頁籤計數更新
       document.getElementById("courseCountBadge").innerText = adminCourses.length;
-      // 預約名冊只計算未過期且未取消之有效預約
-      const unexpiredBookings = adminBookings.filter(b => !isBookingExpired(b) && b["簽到狀態"] !== "已取消");
-      // 頁籤「預約名冊」計數更新為尚未過期的預約數量
       const activeBookings = adminBookings.filter(b => !isBookingExpired(b));
       document.getElementById("bookingCountBadge").innerText = activeBookings.length;
 
@@ -1778,15 +1701,6 @@
       renderHistorySection();
     }
 
-    // 輔助函式：取得星期簡稱 (六、日、一...)
-    function getWeekDay(dateStr) {
-      if (!dateStr) return "";
-      const d = new Date(dateStr);
-      const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
-      return days[d.getDay()] || "";
-    }
-
-    // 渲染「課程清單」表格
     function renderCoursesTable() {
       const query = (document.getElementById("courseSearchInput").value || "").toLowerCase();
       const filtered = adminCourses.filter(c => 
@@ -1809,7 +1723,6 @@
 
       if (noRow) noRow.classList.add("hidden");
 
-      // ⭐ 核心修改：將課程分為「有效」與「歷史」兩個區塊
       const activeCourses = [];
       const pastCourses = [];
 
@@ -1825,7 +1738,6 @@
       let html = "";
       let mHtml = "";
 
-      // 產生電腦版單列 TR HTML 的輔助函式
       const getDesktopRowHtml = (c, isEnded) => {
         const isFull = (c.remaining || 0) <= 0;
         let statusBadge = "";
@@ -1840,6 +1752,8 @@
         const rowClass = isEnded 
           ? "bg-slate-100/70 opacity-60 grayscale-[40%] hover:bg-slate-200/60 transition" 
           : "hover:bg-slate-50 transition";
+        
+        const displayDate = formatDisplayDate(c.date);
 
         return `
           <tr class="${rowClass}">
@@ -1854,7 +1768,7 @@
             </td>
             <td class="px-4 py-3 font-semibold ${isEnded ? 'text-slate-500' : 'text-blue-600'}">${c.instructor}</td>
             <td class="px-4 py-3">
-              <span class="font-medium ${isEnded ? 'text-slate-500' : 'text-slate-800'}">${c.date}</span>
+              <span class="font-medium ${isEnded ? 'text-slate-500' : 'text-slate-800'}">${displayDate}</span>
               <div class="text-[11px] text-slate-400">${c.startTime} - ${c.endTime}</div>
             </td>
             <td class="px-4 py-3 text-slate-600">${c.location || '待定'}</td>
@@ -1883,7 +1797,6 @@
         `;
       };
 
-      // 產生手機版卡片 HTML 的輔助函式
       const getMobileCardHtml = (c, isEnded) => {
         const isFull = (c.remaining || 0) <= 0;
         let statusBadge = "";
@@ -1899,11 +1812,7 @@
           ? "bg-slate-100/80 opacity-60 grayscale-[35%] border-slate-200/60 rounded-2xl p-3 border shadow-2xs flex items-center justify-between gap-2.5 transition"
           : "bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-blue-400 transition flex items-center justify-between gap-2.5";
 
-        const dateParts = (c.date || "").split("-");
-        const wDay = (getWeekDay(c.date) || "").replace("週", "");
-        const shortDate = (dateParts.length === 3)
-          ? `${Number(dateParts[1])}/${Number(dateParts[2])} (${wDay})`
-          : `${c.date} (${wDay})`;
+        const displayDate = formatDisplayDate(c.date);
 
         return `
           <div class="${mobileCardClass}">
@@ -1911,7 +1820,7 @@
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold ${isEnded ? 'text-slate-600 bg-slate-200/80' : 'text-blue-700 bg-blue-50 border border-blue-100'} px-2 py-0.5 rounded-md">
                   <i class="fa-regular fa-clock text-[10px]"></i>
-                  <span>${shortDate} ${c.startTime}</span>
+                  <span>${displayDate} ${c.startTime}</span>
                 </span>
                 ${statusBadge}
                 ${isFull && !isEnded ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">額滿</span>` : ''}
@@ -1943,16 +1852,13 @@
         `;
       };
 
-      // 1. 渲染上半部：有效課程
       activeCourses.forEach(c => {
         html += getDesktopRowHtml(c, false);
         mHtml += getMobileCardHtml(c, false);
       });
 
-      // 2. 渲染分隔線與下半部：歷史課程
       if (pastCourses.length > 0) {
         if (activeCourses.length > 0) {
-          // 桌機版分隔線
           html += `
             <tr>
               <td colspan="8" class="px-4 py-3 bg-slate-100/90 text-slate-500 font-bold text-center text-xs border-y border-slate-200">
@@ -1960,7 +1866,6 @@
               </td>
             </tr>
           `;
-          // 手機版分隔線
           mHtml += `
             <div class="flex items-center gap-2 py-2">
               <div class="h-px bg-slate-200 flex-1"></div>
@@ -1980,19 +1885,15 @@
       if (mobileContainer) mobileContainer.innerHTML = mHtml;
     }
 
-
-    // 渲染「預約名冊」表格 (僅呈現尚未過期之課程預約，已過期課程預約自動移往過往統計)
     function renderBookingsTable() {
       const query = (document.getElementById("bookingSearchInput").value || "").toLowerCase();
       const status = document.getElementById("bookingStatusFilter").value;
 
-      // 1. 先篩選出未過期的有效名冊資料 (!isBookingExpired)
       const activeBookings = adminBookings.filter(b => !isBookingExpired(b));
 
-      // 2. 進行搜尋與狀態過濾
       const filtered = activeBookings.filter(b => {
         const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
-        const courseDate = course ? `${course.date} ${course.startTime}-${course.endTime}` : "";
+        const courseDate = course ? `${formatDisplayDate(course.date)} ${course.startTime}-${course.endTime}` : "";
         const matchQuery = (b["學員姓名"] || "").toLowerCase().includes(query) ||
                            (b["聯絡電話"] || "").includes(query) ||
                            (b["課程名稱"] || "").toLowerCase().includes(query) ||
@@ -2021,9 +1922,8 @@
       let mHtml = "";
       filtered.forEach(b => {
         const rawSt = (b["簽到狀態"] || "待確認").trim();
-        // 統一正規化狀態
         let st = rawSt;
-        if (st === "已預約") st = "待確認"; // 將舊系統 AppSheet 的「已預約」自動對齊為「待確認」
+        if (st === "已預約") st = "待確認"; 
 
         const isCancelled = st === "已取消";
         const isChecked = st === "已簽到";
@@ -2042,22 +1942,16 @@
           statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-400 line-through whitespace-nowrap">已取消</span>`;
         }
 
-        // 查找對應課程以取得開課時間
         const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
-        const classDate = course ? course.date : "-";
+        const classDate = course ? formatDisplayDate(course.date) : "-";
         const classTime = course ? `${course.startTime} - ${course.endTime}` : "";
 
-        // 快速喚起 LINE 對話文字
         const encodedLineText = encodeURIComponent(
           `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！期待與您課堂相見！`
         );
-        const lineContactUrl = b["Line ID"] 
-          ? `https://line.me/R/oaMessage/@me/?${encodedLineText}` 
-          : "";
 
         html += `
           <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
-            <!-- 1. 開課時間 (第一欄) -->
             <td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">
               <div class="font-bold text-slate-900 leading-tight flex items-center gap-1.5">
                 <i class="fa-regular fa-calendar-days text-blue-600 text-xs"></i>
@@ -2065,21 +1959,16 @@
               </div>
               <div class="text-[11px] text-blue-700 font-mono leading-tight mt-0.5">${classTime}</div>
             </td>
-            <!-- 2. 課程名稱 -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900">
               <div>${b["課程名稱"]}</div>
               <div class="text-[11px] text-slate-400 font-mono">編號 #${b["課程編號"] || ""}</div>
             </td>
-            <!-- 3. 報名日期時間 (移至課程名稱後面) -->
             <td class="px-3.5 py-2.5 whitespace-nowrap">
               <div class="font-mono font-medium text-slate-600 leading-tight">${(b["報名時間"] || "").split(" ")[0]}</div>
               <div class="text-[11px] text-slate-400 font-mono leading-tight">${(b["報名時間"] || "").split(" ")[1] || ""}</div>
             </td>
-            <!-- 4. 學員姓名 -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-800">${b["學員姓名"]}</td>
-            <!-- 5. 聯絡電話 -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-700">${b["聯絡電話"]}</td>
-            <!-- 6. Line ID -->
             <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600">
               ${b["Line ID"] ? `
                 <div class="inline-flex items-center gap-1.5">
@@ -2090,7 +1979,6 @@
                 </div>
               ` : '-'}
             </td>
-            <!-- 7. 付款方式 / 五碼 -->
             <td class="px-4 py-3 text-center whitespace-nowrap">
               ${(() => {
                 const payCode = b["匯款五碼"] || "-";
@@ -2104,20 +1992,15 @@
                 return `<span class="text-slate-300">-</span>`;
               })()}
             </td>
-            <!-- 8. 備註需求 -->
             <td class="px-3 py-2.5 whitespace-nowrap max-w-[140px] truncate text-slate-600" title="${b["備註需求"] || ''}">
               ${b["備註需求"] || '<span class="text-slate-300">-</span>'}
             </td>
-            <!-- 9. 管理備註 -->
             <td class="px-3 py-2.5 whitespace-nowrap max-w-[140px] truncate text-amber-800 bg-amber-50/40 font-medium" title="${b["管理備註"] || ''}">
               ${b["管理備註"] ? `<span class="inline-flex items-center gap-1"><i class="fa-solid fa-tag text-[10px] text-amber-600"></i>${b["管理備註"]}</span>` : '<span class="text-slate-300">-</span>'}
             </td>
-            <!-- 10. 狀態 -->
             <td class="px-4 py-3 text-center">${statusBadge}</td>
-            <!-- 11. 操作與修改 -->
             <td class="px-3 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">
               <div class="inline-flex items-center gap-1.5 justify-center">
-                <!-- ✏️ 修改預約名冊欄位按鈕 -->
                 <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="編輯學員姓名、電話、備註需求與管理備註等所有欄位">
                   <i class="fa-solid fa-pen text-blue-600"></i> 修改
                 </button>
@@ -2168,21 +2051,14 @@
             </td>
           </tr>
         `;
-        // 手機專用預約卡片：比照報名端方案 A（極簡緊湊橫向卡，層次分明、好操作、不臃腫）
-        const bDateParts = classDate !== "-" ? classDate.split("-") : [];
-        const bWDay = classDate !== "-" ? (getWeekDay(classDate) || "").replace("週", "") : "";
-        const bShortDate = bDateParts.length === 3 
-          ? `${Number(bDateParts[1])}/${Number(bDateParts[2])} (${bWDay})` 
-          : classDate;
 
         mHtml += `
           <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-blue-400 transition space-y-2 ${isCancelled ? 'opacity-60 bg-slate-50' : ''}">
-            <!-- 上半部：開課時段 + 狀態標籤 + 匯款五碼 -->
             <div class="flex items-center justify-between gap-1.5 flex-wrap">
               <div class="flex items-center gap-1.5 flex-wrap min-w-0">
                 <span class="inline-flex items-center gap-1 font-mono font-bold text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
                   <i class="fa-regular fa-clock text-[10px]"></i>
-                  <span>${bShortDate} ${course ? course.startTime : ''}</span>
+                  <span>${classDate} ${course ? course.startTime : ''}</span>
                 </span>
                 ${statusBadge}
               </div>
@@ -2201,7 +2077,6 @@
               </div>
             </div>
 
-            <!-- 中間核心資訊：姓名 + 課程名稱 + 電話/LINE快速捷徑 -->
             <div class="flex items-center justify-between gap-2">
               <div class="min-w-0 flex-1 space-y-0.5">
                 <div class="flex items-baseline gap-2">
@@ -2211,7 +2086,6 @@
                 ${b["備註需求"] ? `<p class="text-[11px] text-slate-400 truncate"><i class="fa-solid fa-comment-dots text-[10px] mr-1"></i>${b["備註需求"]}</p>` : ''}
               </div>
 
-              <!-- 電話與 LINE 迷你圖標按鈕 -->
               <div class="shrink-0 flex items-center gap-1">
                 ${b["聯絡電話"] ? `
                   <a href="tel:${b["聯絡電話"]}" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 flex items-center justify-center transition shadow-2xs" title="撥打電話 ${b["聯絡電話"]}">
@@ -2226,7 +2100,6 @@
               </div>
             </div>
 
-            <!-- 下方：極簡動作按鈕列 (高度緊湊約32px) -->
             <div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
               <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 whitespace-nowrap" title="修改資料">
                 <i class="fa-solid fa-pen text-[10px] text-blue-600"></i>
@@ -2282,1188 +2155,6 @@
       if (mobileContainer) mobileContainer.innerHTML = mHtml;
     }
 
-    // 渲染開課 Modal 中的「一對一快速範本」下拉選單
-    function renderPresetOptions() {
-      const tSelect = document.getElementById("formTemplateSelect");
-      if (!tSelect) return;
-      let html = `<option value="">✨ 選擇常用課程範本（點選即自動帶入名稱、早鳥價、定價與說明）...</option>`;
-      customCourseTemplates.forEach((tpl, idx) => {
-        const priceTag = (tpl.earlyBirdPrice || tpl.regularPrice) ? ` (早鳥 $${tpl.earlyBirdPrice || "-"} / 定價 $${tpl.regularPrice || "-"})` : "";
-        html += `<option value="${idx}">【${tpl.title}】${priceTag} - ${(tpl.notes || "").slice(0, 20)}</option>`;
-      });
-      tSelect.innerHTML = html;
-    }
-
-    // 點選範本時，名稱、早鳥價、定價與說明一對一自動帶入！
-    function applyCourseTemplate(idxStr) {
-      if (idxStr === "" || idxStr === null) return;
-      const idx = parseInt(idxStr, 10);
-      const tpl = customCourseTemplates[idx];
-      if (tpl) {
-        document.getElementById("formTitle").value = tpl.title || "";
-        document.getElementById("formEarlyBirdPrice").value = tpl.earlyBirdPrice || "";
-        document.getElementById("formRegularPrice").value = tpl.regularPrice || "";
-        document.getElementById("formNotes").value = tpl.notes || "";
-      }
-    }
-
-    // 渲染設定頁籤中的「獨立價格一對一範本編輯列表」
-    function renderSettingsTemplateRows() {
-      const container = document.getElementById("templateRowsContainer");
-      if (!container) return;
-      let html = "";
-      customCourseTemplates.forEach((tpl, idx) => {
-        html += `
-          <div class="bg-white p-3 rounded-xl border border-slate-200/90 shadow-sm space-y-2 relative group">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">範本 #${idx + 1}</span>
-              <button type="button" onclick="removeTemplateRow(${idx})" class="text-slate-400 hover:text-rose-600 text-xs transition px-2 py-0.5 rounded" title="刪除此範本">
-                <i class="fa-solid fa-trash-can mr-1"></i>刪除
-              </button>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-              <div class="sm:col-span-4">
-                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程名稱</label>
-                <input type="text" class="template-title-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800" value="${escapeHtmlAttr(tpl.title)}" placeholder="例如：❷ 學習：頌缽入門">
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">早鳥價 (NT$)</label>
-                <input type="number" class="template-early-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-700" value="${escapeHtmlAttr(tpl.earlyBirdPrice || '')}" placeholder="4000">
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">定價 (NT$)</label>
-                <input type="number" class="template-regular-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700" value="${escapeHtmlAttr(tpl.regularPrice || '')}" placeholder="5000">
-              </div>
-              <div class="sm:col-span-4">
-                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程說明備註</label>
-                <input type="text" class="template-notes-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" value="${escapeHtmlAttr(tpl.notes)}" placeholder="想學頌缽，照顧自己">
-              </div>
-            </div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    function escapeHtmlAttr(str) {
-      if (!str) return "";
-      return String(str).replace(/"/g, "&quot;");
-    }
-
-    function addNewTemplateRow() {
-      customCourseTemplates.push({
-        title: "",
-        earlyBirdPrice: "",
-        regularPrice: "",
-        notes: ""
-      });
-      renderSettingsTemplateRows();
-      // 自動聚焦到新一筆的標題輸入框
-      setTimeout(() => {
-        const inputs = document.querySelectorAll(".template-title-input");
-        if (inputs.length > 0) inputs[inputs.length - 1].focus();
-      }, 50);
-    }
-
-    function removeTemplateRow(idx) {
-      if (customCourseTemplates.length <= 1) {
-        alert("至少請保留一組課程範本！");
-        return;
-      }
-      customCourseTemplates.splice(idx, 1);
-      renderSettingsTemplateRows();
-    }
-
-    // 開啟課程 Modal (支援新增與編輯)
-    function openCourseModal(courseId) {
-      const modal = document.getElementById("courseModal");
-      renderPresetOptions();
-      const titleEl = document.getElementById("courseModalTitle");
-
-      if (courseId) {
-        const c = adminCourses.find(item => item.id === courseId);
-        if (!c) return;
-        titleEl.innerText = "編輯課程時段 - " + c.id;
-        document.getElementById("editCourseId").value = c.id;
-        document.getElementById("formTitle").value = c.title;
-        document.getElementById("formInstructor").value = c.instructor;
-        document.getElementById("formCapacity").value = c.capacity;
-        document.getElementById("formDate").value = c.date;
-        document.getElementById("formStartTime").value = c.startTime;
-        document.getElementById("formEndTime").value = c.endTime;
-        // 動態產生並設定教室下拉選單
-        const loc = c.location || (customClassrooms[0] || "A教室");
-        buildLocationSelectOptions(loc);
-        const locSelect = document.getElementById("formLocationSelect");
-        const locCustom = document.getElementById("formLocationCustom");
-        if (customClassrooms.includes(loc)) {
-          locSelect.value = loc;
-          locCustom.classList.add("hidden");
-          locCustom.value = "";
-        } else {
-          locSelect.value = "custom";
-          locCustom.classList.remove("hidden");
-          locCustom.value = loc;
-        }
-        document.getElementById("formLocation").value = loc;
-
-        document.getElementById("formVirtualCount").value = c.virtualCount || 0;
-        document.getElementById("formEarlyBirdPrice").value = c.earlyBirdPrice || "";
-        document.getElementById("formRegularPrice").value = c.regularPrice || "";
-        document.getElementById("formStatus").value = c.status || "開啟報名";
-        document.getElementById("formNotes").value = c.notes || "";
-      } else {
-        titleEl.innerText = "開立新課程時段";
-        document.getElementById("editCourseId").value = "";
-        document.getElementById("formTitle").value = "";
-        document.getElementById("formInstructor").value = "霖霖教練";
-        document.getElementById("formCapacity").value = "8";
-        document.getElementById("formVirtualCount").value = "0";
-        document.getElementById("formStartTime").value = "19:00";
-        document.getElementById("formEndTime").value = "20:00";
-        
-        const defaultLoc = customClassrooms[0] || "A教室";
-        buildLocationSelectOptions(defaultLoc);
-        document.getElementById("formLocationSelect").value = defaultLoc;
-        document.getElementById("formLocationCustom").classList.add("hidden");
-        document.getElementById("formLocationCustom").value = "";
-        document.getElementById("formLocation").value = defaultLoc;
-
-        document.getElementById("formEarlyBirdPrice").value = "";
-        document.getElementById("formRegularPrice").value = "";
-        document.getElementById("formStatus").value = "開啟報名";
-        document.getElementById("formNotes").value = "";
-      }
-
-      modal.classList.remove("hidden");
-    }
-
-    function handleLocationChange(val) {
-      const customInput = document.getElementById("formLocationCustom");
-      const hiddenInput = document.getElementById("formLocation");
-      if (val === "custom") {
-        customInput.classList.remove("hidden");
-        customInput.focus();
-        hiddenInput.value = customInput.value.trim() || "自訂地點";
-      } else {
-        customInput.classList.add("hidden");
-        hiddenInput.value = val;
-      }
-    }
-
-    function closeCourseModal() {
-      document.getElementById("courseModal").classList.add("hidden");
-    }
-
-    // 儲存課程 (新增 / 編輯)
-    async function handleCourseSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById("courseSubmitBtn");
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 儲存同步中...`;
-
-      // 解析教室地點（下拉或自訂）
-      const locSelectVal = document.getElementById("formLocationSelect").value;
-      let finalLocation = locSelectVal;
-      if (locSelectVal === "custom") {
-        finalLocation = document.getElementById("formLocationCustom").value.trim() || "其他教室";
-      }
-
-      const courseId = document.getElementById("editCourseId").value;
-      const courseData = {
-        courseId: courseId,
-        title: document.getElementById("formTitle").value.trim(),
-        instructor: document.getElementById("formInstructor").value.trim(),
-        capacity: Number(document.getElementById("formCapacity").value),
-        virtualCount: Number(document.getElementById("formVirtualCount").value) || 0,
-        earlyBirdPrice: document.getElementById("formEarlyBirdPrice").value.trim(),
-        regularPrice: document.getElementById("formRegularPrice").value.trim(),
-        date: document.getElementById("formDate").value,
-        startTime: document.getElementById("formStartTime").value,
-        endTime: document.getElementById("formEndTime").value,
-        location: finalLocation,
-        status: document.getElementById("formStatus").value,
-        notes: document.getElementById("formNotes").value.trim()
-      };
-
-      // 本地即時更新
-      if (courseId) {
-        const idx = adminCourses.findIndex(c => c.id === courseId);
-        if (idx !== -1) {
-          adminCourses[idx] = { ...adminCourses[idx], ...courseData };
-        }
-      } else {
-        const newId = "C" + Date.now().toString().slice(-4);
-        adminCourses.unshift({
-          ...courseData,
-          id: newId,
-          bookedCount: 0,
-          remaining: courseData.capacity
-        });
-      }
-
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-      closeCourseModal();
-
-      // 若有設定後端 API，發送異動
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "saveCourse",
-              password: ADMIN_PASS,
-              ...courseData
-            })
-          });
-        } catch (err) {
-          console.error("同步至後端失敗：", err);
-        }
-      }
-
-      btn.disabled = false;
-      btn.innerText = "確認儲存並同步";
-      alert("課程儲存成功！已同步至系統。");
-    }
-
-    // 刪除課程
-    async function deleteCourse(courseId) {
-      if (!confirm(`確定要刪除課程編號「${courseId}」嗎？`)) return;
-
-      adminCourses = adminCourses.filter(c => c.id !== courseId);
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "deleteCourse",
-              password: ADMIN_PASS,
-              courseId: courseId
-            })
-          });
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    }
-
-    // 打開編輯學員預約 Modal
-    function openEditBookingModal(bookingId) {
-      const b = adminBookings.find(item => item["預約編號"] === bookingId);
-      if (!b) {
-        alert("找不到此預約記錄！");
-        return;
-      }
-
-      document.getElementById("editBookingId").value = b["預約編號"];
-      document.getElementById("editBookingIdLabel").innerText = `預約編號：${b["預約編號"]}`;
-      document.getElementById("editBookingCourseName").value = b["課程名稱"] || "";
-      document.getElementById("editBookingTime").value = b["報名時間"] || "";
-      document.getElementById("editBookingStudentName").value = b["學員姓名"] || "";
-      document.getElementById("editBookingPhone").value = b["聯絡電話"] || "";
-      document.getElementById("editBookingLineId").value = b["Line ID"] || "";
-      document.getElementById("editBookingPayCode").value = b["匯款五碼"] || "";
-      
-      let st = (b["簽到狀態"] || "待確認").trim();
-      if (st === "已預約") st = "待確認";
-      document.getElementById("editBookingStatus").value = st;
-      document.getElementById("editBookingNotes").value = b["備註需求"] || "";
-      document.getElementById("editBookingAdminNotes").value = b["管理備註"] || "";
-
-      document.getElementById("editBookingModal").classList.remove("hidden");
-    }
-
-    function closeEditBookingModal() {
-      document.getElementById("editBookingModal").classList.add("hidden");
-    }
-
-    // 儲存學員預約欄位修改 (備註需求、管理備註、姓名、電話、付款五碼等全部欄位)
-    function handleSaveBookingEdit(e) {
-      e.preventDefault();
-      const bookingId = document.getElementById("editBookingId").value;
-      const b = adminBookings.find(item => item["預約編號"] === bookingId);
-      if (!b) return;
-
-      const oldStatus = b["簽到狀態"];
-      const newStatus = document.getElementById("editBookingStatus").value;
-
-      b["課程名稱"] = document.getElementById("editBookingCourseName").value.trim();
-      b["報名時間"] = document.getElementById("editBookingTime").value.trim();
-      b["學員姓名"] = document.getElementById("editBookingStudentName").value.trim();
-      b["聯絡電話"] = document.getElementById("editBookingPhone").value.trim();
-      b["Line ID"] = document.getElementById("editBookingLineId").value.trim();
-      b["匯款五碼"] = document.getElementById("editBookingPayCode").value.trim();
-      b["簽到狀態"] = newStatus;
-      b["備註需求"] = document.getElementById("editBookingNotes").value.trim();
-      b["管理備註"] = document.getElementById("editBookingAdminNotes").value.trim();
-
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-
-      closeEditBookingModal();
-      alert("✅ 預約資料與備註已成功更新！");
-    }
-
-    // 更新簽到狀態
-    async function updateBookingStatus(bookingId, newStatus) {
-      const target = adminBookings.find(b => b["預約編號"] === bookingId);
-      if (target) target["簽到狀態"] = newStatus;
-      
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "updateBookingStatus",
-              password: ADMIN_PASS,
-              bookingId: bookingId,
-              newStatus: newStatus
-            })
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    // 永久刪除已取消之預約記錄
-    async function deleteBooking(bookingId) {
-      const target = adminBookings.find(b => b["預約編號"] === bookingId);
-      const studentName = target ? target["學員姓名"] : "";
-      const courseName = target ? target["課程名稱"] : "";
-
-      const confirmMsg = `⚠️ 警告：確定要永久刪除此筆報名資料嗎？\n\n• 學員：${studentName}\n• 課程：${courseName}\n• 預約編號：#${bookingId}\n\n刪除後此筆資料將永久消失，無法再還原！`;
-      if (!confirm(confirmMsg)) return;
-
-      adminBookings = adminBookings.filter(b => b["預約編號"] !== bookingId);
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "deleteBooking",
-              password: ADMIN_PASS,
-              bookingId: bookingId
-            })
-          });
-        } catch (e) {
-          console.error("刪除雲端預約資料錯誤：", e);
-        }
-      }
-    }
-
-    // 管理者確認入帳（報名成功）
-    async function confirmPaymentAction(bookingId) {
-      const target = adminBookings.find(b => b["預約編號"] === bookingId);
-      if (!target) return;
-
-      const isStudentLineNotifyEnabled = document.getElementById("settingStudentLineNotify") 
-        ? document.getElementById("settingStudentLineNotify").checked 
-        : true;
-
-      const confirmMsg = `確定已收到學員「${target["學員姓名"]}」之匯款？\n\n• 課程：${target["課程名稱"]}\n• 備註/末五碼：${target["備註需求"] || "無"}\n\n點選「確定」後，狀態將更新為【報名成功】！`;
-      if (!confirm(confirmMsg)) return;
-
-      target["簽到狀態"] = "報名成功";
-      calculateCourseBookedCounts();
-      localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
-      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
-      renderAll();
-
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          const resp = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "confirmPayment",
-              password: ADMIN_PASS,
-              bookingId: bookingId,
-              sendStudentLine: isStudentLineNotifyEnabled
-            })
-          });
-          const res = await resp.json();
-          if (res.success) {
-            console.log("確認入帳成功：", res);
-          }
-        } catch (e) {
-          console.error("同步確認入帳失敗：", e);
-        }
-      }
-
-      // 如果有填 LINE ID，且開啟了 LINE 通知，詢問是否一鍵開啟 LINE 傳送或複製訊息
-      if (target["Line ID"] && isStudentLineNotifyEnabled) {
-        const msg = `🎉【報名成功確認】\n${target["學員姓名"]} 您好，我們已確認收到您報名【${target["課程名稱"]}】之款項，報名狀態已更新為【報名成功】！\n預約編號：${target["預約編號"]}。期待與您相見！`;
-        if (confirm(`【報名成功已確認】\n是否要立即複製或開啟 LINE 發送確認通知給學員（Line ID: ${target["Line ID"]}）？`)) {
-          navigator.clipboard?.writeText(msg);
-          // 開啟 LINE
-          window.open(`https://line.me/R/ti/p/~${target["Line ID"]}`, "_blank");
-        }
-      } else {
-        alert(`已成功確認「${target["學員姓名"]}」款項收訖，狀態已更新為【報名成功】！`);
-      }
-    }
-
-    // 手動喚起發送 LINE 通知
-    function openLineNoticePrompt(bookingId, name, lineId, courseTitle) {
-      const msg = `🎉【課程報名成功通知】\n${name} 您好！我們已收到您的款項，報名【${courseTitle}】已確認為【報名成功】！\n預約編號：${bookingId}。感謝您的參與！`;
-      navigator.clipboard?.writeText(msg);
-      const action = confirm(`【LINE 通知快捷發送】\n\n已為您複製通知訊息：\n"${msg}"\n\n是否前往學員 LINE ID (@${lineId}) 進行發送？`);
-      if (action) {
-        window.open(`https://line.me/R/ti/p/~${lineId}`, "_blank");
-      }
-    }
-
-    // 通知卡片即時啟用/停用 UI 反映
-    function toggleNotifyCard(type, enabled) {
-      if (type === "line") {
-        const con = document.getElementById("lineDetailsContainer");
-        const lbl = document.getElementById("lineStatusLabel");
-        if (con) con.style.opacity = enabled ? "1" : "0.4";
-        if (lbl) lbl.innerText = enabled ? "已啟用" : "已關閉";
-      } else if (type === "telegram") {
-        const con = document.getElementById("telegramDetailsContainer");
-        const lbl = document.getElementById("telegramStatusLabel");
-        if (con) con.style.opacity = enabled ? "1" : "0.4";
-        if (lbl) lbl.innerText = enabled ? "已啟用" : "已關閉";
-      }
-    }
-
-    // 測試管理者通知管道 (Telegram 或 LINE)
-    async function testNotificationChannel(channelType) {
-      const tgToken = document.getElementById("settingTgBotToken").value.trim();
-      const tgChat = document.getElementById("settingTgChatId").value.trim();
-      const lineToken = document.getElementById("settingLineNotifyToken").value.trim();
-
-      if (channelType === "telegram" && (!tgToken || !tgChat)) {
-        alert("請先輸入 Telegram Bot Token 與 Chat ID 才能測試發送！");
-        return;
-      }
-      if (channelType === "line" && !lineToken) {
-        alert("請先輸入 LINE Notify 權杖 Token 才能測試發送！");
-        return;
-      }
-
-      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
-        alert(`[模擬模式] 已成功發送測試通知至 ${channelType === "telegram" ? "Telegram" : "LINE"}！\n（請串接真實 GAS API 以實現線上真實推播）`);
-        return;
-      }
-
-      try {
-        const resp = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "testNotification",
-            password: ADMIN_PASS,
-            type: channelType,
-            token: channelType === "telegram" ? tgToken : lineToken,
-            chatId: tgChat
-          })
-        });
-        const res = await resp.json();
-        if (res.success) {
-          alert(`測試通知已成功推播至 ${channelType.toUpperCase()}！請查看您的手機。`);
-        } else {
-          alert("測試失敗：" + (res.message || "請檢查 Token 是否正確"));
-        }
-      } catch (err) {
-        alert("發送測試通知時發生錯誤：" + err.message);
-      }
-    }
-
-    // 儲存系統全域設定
-    async function handleSaveSettings(e) {
-      e.preventDefault();
-      const btn = document.getElementById("saveSettingBtn");
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 設定更新中...`;
-
-      const sysName = document.getElementById("settingSysName").value.trim();
-      const notice = document.getElementById("settingNotice").value.trim();
-      const newPass = document.getElementById("settingPassword").value.trim();
-      const rawClassrooms = document.getElementById("settingClassrooms").value;
-      const defaultFontSize = document.getElementById("settingDefaultFontSize").value;
-
-      // 解析常用教室清單
-      const parsedClassrooms = rawClassrooms.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
-      if (parsedClassrooms.length > 0) {
-        customClassrooms = parsedClassrooms;
-        localStorage.setItem("appsheet_classrooms", JSON.stringify(customClassrooms));
-      }
-
-      // 收集並保存一對一開課範本
-      const titleInputs = document.querySelectorAll(".template-title-input");
-      const earlyInputs = document.querySelectorAll(".template-early-input");
-      const regularInputs = document.querySelectorAll(".template-regular-input");
-      const noteInputs = document.querySelectorAll(".template-notes-input");
-      const newTemplates = [];
-      titleInputs.forEach((ti, idx) => {
-        const tVal = ti.value.trim();
-        const ebVal = earlyInputs[idx] ? earlyInputs[idx].value.trim() : "";
-        const rgVal = regularInputs[idx] ? regularInputs[idx].value.trim() : "";
-        const nVal = noteInputs[idx] ? noteInputs[idx].value.trim() : "";
-        if (tVal) {
-          newTemplates.push({
-            title: tVal,
-            earlyBirdPrice: ebVal,
-            regularPrice: rgVal,
-            notes: nVal
-          });
-        }
-      });
-      if (newTemplates.length > 0) {
-        customCourseTemplates = newTemplates;
-        localStorage.setItem("appsheet_course_templates", JSON.stringify(customCourseTemplates));
-      }
-
-      localStorage.setItem("appsheet_default_fontsize", defaultFontSize);
-      // 同步更新管理後台自身字級
-      const currentAdminFont = localStorage.getItem("admin_app_font_size") || "large";
-      if (typeof populatePresetsDropdowns === "function") populatePresetsDropdowns();
-      if (typeof renderSettingsTemplateRows === "function") renderSettingsTemplateRows();
-
-      if (newPass) {
-        ADMIN_PASS = newPass;
-        localStorage.setItem("appsheet_admin_pass", newPass);
-      }
-
-      const lineEnabled = document.getElementById("settingLineEnabled")?.checked ? "開啟" : "關閉";
-      const telegramEnabled = document.getElementById("settingTelegramEnabled")?.checked ? "開啟" : "關閉";
-      const studentLineNotify = document.getElementById("settingStudentLineNotify")?.checked ? "開啟" : "關閉";
-      const tgBotToken = document.getElementById("settingTgBotToken")?.value.trim() || "";
-      const tgChatId = document.getElementById("settingTgChatId")?.value.trim() || "";
-      const lineNotifyToken = document.getElementById("settingLineNotifyToken")?.value.trim() || "";
-      const lineChannelAccessToken = document.getElementById("settingLineChannelToken")?.value.trim() || "";
-
-      // 收款銀行帳號設定
-      const bankName = document.getElementById("settingBankName")?.value.trim() || "822 中國信託";
-      const bankAccount = document.getElementById("settingBankAccount")?.value.trim() || "1234-5678-9012";
-      const bankHolder = document.getElementById("settingBankHolder")?.value.trim() || "霖霖身心靈工坊 (陳霖霖)";
-      localStorage.setItem("appsheet_bank_name", bankName);
-      localStorage.setItem("appsheet_bank_account", bankAccount);
-      localStorage.setItem("appsheet_bank_holder", bankHolder);
-
-      // 暫存於 localStorage
-      localStorage.setItem("appsheet_line_enabled", lineEnabled);
-      localStorage.setItem("appsheet_telegram_enabled", telegramEnabled);
-      localStorage.setItem("appsheet_student_line_notify", studentLineNotify);
-      localStorage.setItem("appsheet_tg_token", tgBotToken);
-      localStorage.setItem("appsheet_tg_chat", tgChatId);
-      localStorage.setItem("appsheet_line_notify_token", lineNotifyToken);
-      localStorage.setItem("appsheet_line_channel_token", lineChannelAccessToken);
-
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "saveSettings",
-              password: ADMIN_PASS,
-              systemName: sysName,
-              notice: notice,
-              newPassword: newPass,
-              classrooms: customClassrooms.join(","),
-              courseTitles: customCourseTitles.join("\n"),
-              courseNotes: customCourseNotes.join("\n"),
-              defaultFontSize: defaultFontSize,
-              lineEnabled: lineEnabled,
-              telegramEnabled: telegramEnabled,
-              studentLineNotify: studentLineNotify,
-              tgBotToken: tgBotToken,
-              tgChatId: tgChatId,
-              lineNotifyToken: lineNotifyToken,
-              lineChannelAccessToken: lineChannelAccessToken
-            })
-          });
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      // 儲存 Google Apps Script 雲端試算表 Web App URL
-      const gasUrl = document.getElementById("settingGasUrl")?.value.trim() || "";
-      API_URL = gasUrl;
-      if (gasUrl) {
-        localStorage.setItem("appsheet_gas_api", gasUrl);
-      } else {
-        localStorage.removeItem("appsheet_gas_api");
-      }
-      updateGasStatusBadge(gasUrl);
-
-      btn.disabled = false;
-      btn.innerText = "儲存所有設定";
-      alert("系統設定已成功儲存！");
-    }
-
-    // 更新 Google 試算表連線狀態標籤
-    function updateGasStatusBadge(url) {
-      const badge = document.getElementById("gasStatusBadge");
-      if (!badge) return;
-      if (url && url.startsWith("http")) {
-        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1";
-        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>已串接 Google 試算表`;
-      } else {
-        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200";
-        badge.innerText = "未連線 (離線展示模式)";
-      }
-    }
-
-    // 測試 Google Apps Script Web App 連線
-    async function testGasConnection() {
-      const urlInput = document.getElementById("settingGasUrl");
-      const url = (urlInput?.value || "").trim();
-      const testBtn = document.getElementById("testGasBtn");
-      if (!url || !url.startsWith("http")) {
-        alert("請先輸入有效的 Google Apps Script 網路應用程式 (Web App) URL！\n通常開頭為：https://script.google.com/macros/s/...");
-        urlInput?.focus();
-        return;
-      }
-
-      if (testBtn) {
-        testBtn.disabled = true;
-        testBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 連線中...`;
-      }
-
-      try {
-        const resp = await fetch(`${url}?action=getCourses`);
-        const json = await resp.json();
-        if (json && (json.success || Array.isArray(json.courses))) {
-          alert("🎉 恭喜！Google 試算表雲端連線測試成功！\n系統已能順利跨手機讀取與同步所有報名資料。");
-          localStorage.setItem("appsheet_gas_api", url);
-          API_URL = url;
-          updateGasStatusBadge(url);
-          loadFullAdminData();
-        } else {
-          alert("⚠️ 已連線至 Apps Script，但回傳格式未符合預期，請確認 Code.gs 程式碼已完整複製並重新部署為「任何人皆可存取」。");
-        }
-      } catch (err) {
-        alert("❌ 連線測試失敗：" + err.message + "\n\n排查提醒：\n1. 部署時「誰可以存取 (Who has access)」請務必選擇「任何人 (Anyone)」\n2. 請確認複製的是「網路應用程式網址 (結尾通常是 /exec)」而非指令碼編輯器網址。");
-      } finally {
-        if (testBtn) {
-          testBtn.disabled = false;
-          testBtn.innerText = "測試連線";
-        }
-      }
-    }
-
-    // 一鍵複製 Google Apps Script 後端程式碼
-    async function copyGasScriptCode() {
-      const btn = document.getElementById("copyScriptBtn");
-      const originalHtml = btn ? btn.innerHTML : "";
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 載入程式碼...`;
-      }
-      try {
-        const resp = await fetch("GoogleAppsScript_Code.js");
-        if (!resp.ok) throw new Error("無法取得程式碼檔案");
-        const codeText = await resp.text();
-        await navigator.clipboard.writeText(codeText);
-        if (btn) {
-          btn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> 已複製到剪貼簿！`;
-        }
-        alert("📋 Google Apps Script 後端程式碼已成功複製！\n\n請前往您的 Google 試算表（擴充功能 ➔ Apps Script），將內容全選貼上 (Ctrl+V) 後儲存並部署即可！");
-      } catch (err) {
-        // Fallback: 開啟新分頁查看程式碼
-        window.open("GoogleAppsScript_Code.js", "_blank");
-        alert("已為您在新分頁開啟程式碼，請按 Ctrl+A 全選並複製 (Ctrl+C)。");
-      } finally {
-        setTimeout(() => {
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-          }
-        }, 3000);
-      }
-    }
-
-    // 更新同步按鈕狀態
-    function updateSyncButtonsState() {
-      const url = (document.getElementById("settingGasUrl")?.value || "").trim();
-      const hasUrl = url.startsWith("http");
-      const copyBtn = document.getElementById("copySyncUrlBtn");
-      const copyStudentBtn = document.getElementById("copyStudentSyncUrlBtn");
-      const qrBtn = document.getElementById("showQrBtn");
-      if (copyBtn) {
-        copyBtn.style.opacity = hasUrl ? "1" : "0.5";
-        copyBtn.disabled = !hasUrl;
-      }
-      if (copyStudentBtn) {
-        copyStudentBtn.style.opacity = hasUrl ? "1" : "0.5";
-        copyStudentBtn.disabled = !hasUrl;
-      }
-      if (qrBtn) {
-        qrBtn.style.opacity = hasUrl ? "1" : "0.5";
-        qrBtn.disabled = !hasUrl;
-      }
-    }
-
-    // 產生專屬同步網址 (支援管理後台與學員報名端)
-    function getDirectSyncUrl(target = "admin") {
-      const gasUrl = (document.getElementById("settingGasUrl")?.value || localStorage.getItem("appsheet_gas_api") || "").trim();
-      if (!gasUrl || !gasUrl.startsWith("http")) return null;
-      let path = window.location.pathname;
-      if (target === "student") {
-        path = path.replace(/admin\.html$/, "index.html");
-        if (!path.endsWith("index.html")) path = path.replace(/\/[^/]*$/, "/index.html");
-      } else {
-        path = path.replace(/index\.html$/, "admin.html");
-        if (!path.endsWith("admin.html")) path = path.replace(/\/[^/]*$/, "/admin.html");
-      }
-      const base = window.location.origin + path;
-      return `${base}?sync=${encodeURIComponent(gasUrl)}`;
-    }
-
-    // 複製專屬同步網址
-    async function copyDirectSyncUrl(target = "admin") {
-      const syncUrl = getDirectSyncUrl(target);
-      if (!syncUrl) {
-        alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
-        return;
-      }
-      const targetLabel = target === "student" ? "學員報名端" : "管理後台";
-      try {
-        await navigator.clipboard.writeText(syncUrl);
-        alert(`🔗 專屬【${targetLabel}】同步網址已複製！\n\n您可以直接將此網址用 LINE 或備忘錄傳送給手機或平板。\n新裝置只要「點開此連結」，就會全自動完成 Google 試算表綁定，連一秒鐘都不用重打！`);
-      } catch (e) {
-        prompt(`請手動複製下方專屬【${targetLabel}】同步網址：`, syncUrl);
-      }
-    }
-
-    // 彈出並渲染同步 QR Code
-    let currentQrTarget = "admin";
-    function showSyncQrModal(target = "admin") {
-      currentQrTarget = target;
-      renderSyncQrCode();
-      const modal = document.getElementById("syncQrModal");
-      if (modal) modal.classList.remove("hidden");
-    }
-
-    function switchSyncQrTarget(target) {
-      currentQrTarget = target;
-      renderSyncQrCode();
-    }
-
-    function renderSyncQrCode() {
-      const syncUrl = getDirectSyncUrl(currentQrTarget);
-      if (!syncUrl) {
-        alert("請先在上方輸入並儲存您的 Google 試算表 Web App 網址！");
-        return;
-      }
-
-      const container = document.getElementById("syncQrContainer");
-      const tabAdmin = document.getElementById("qrTabAdmin");
-      const tabStudent = document.getElementById("qrTabStudent");
-      const desc = document.getElementById("qrTargetDesc");
-      if (!container) return;
-
-      if (tabAdmin && tabStudent) {
-        if (currentQrTarget === "admin") {
-          tabAdmin.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
-          tabStudent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
-          if (desc) desc.innerText = "新手機掃描後，將自動綁定並開啟「管理後台」：";
-        } else {
-          tabStudent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
-          tabAdmin.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
-          if (desc) desc.innerText = "手機/學員掃描後，將自動綁定並開啟「學員預約報名頁」：";
-        }
-      }
-
-      container.innerHTML = "";
-      if (typeof QRCode !== "undefined") {
-        new QRCode(container, {
-          text: syncUrl,
-          width: 190,
-          height: 190,
-          colorDark: "#0f172a",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } else {
-        container.innerHTML = `<p class="text-xs text-rose-500">QR Code 模組載入中，請直接使用「複製專屬同步網址」。</p>`;
-      }
-    }
-
-    function closeSyncQrModal() {
-      const modal = document.getElementById("syncQrModal");
-      if (modal) modal.classList.add("hidden");
-    }
-
-    let currentHistorySubMode = "students"; // "students" 或 "records"
-
-    function setHistorySubMode(mode) {
-      currentHistorySubMode = mode;
-      const btnStudents = document.getElementById("subModeStudentsBtn");
-      const btnRecords = document.getElementById("subModeRecordsBtn");
-      const conStudents = document.getElementById("historyStudentsContainer");
-      const conRecords = document.getElementById("historyRecordsContainer");
-
-      if (mode === "students") {
-        btnStudents.className = "px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition text-center flex items-center justify-center gap-1";
-        btnRecords.className = "px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1";
-        conStudents.classList.remove("hidden");
-        conRecords.classList.add("hidden");
-      } else {
-        btnRecords.className = "px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition text-center flex items-center justify-center gap-1";
-        btnStudents.className = "px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1";
-        conRecords.classList.remove("hidden");
-        conStudents.classList.add("hidden");
-      }
-      renderHistorySection();
-    }
-
-    // 依學員統計誰報名了幾次
-    function getStudentBookingStats() {
-      const stats = {};
-      adminBookings.forEach(b => {
-        const name = b["學員姓名"] || "未具名";
-        const phone = b["聯絡電話"] || "-";
-        const key = name + "_" + phone;
-        if (!stats[key]) {
-          stats[key] = {
-            name: name,
-            phone: phone,
-            line: b["Line ID"] || "-",
-            count: 0,
-            courses: []
-          };
-        }
-        stats[key].count++;
-        stats[key].courses.push({
-          bookingId: b["預約編號"],
-          courseTitle: b["課程名稱"],
-          courseId: b["課程編號"],
-          date: b["報名時間"] ? b["報名時間"].split(" ")[0] : "-",
-          status: b["簽到狀態"],
-          notes: b["備註需求"]
-        });
-      });
-      return Object.values(stats).sort((a, b) => b.count - a.count);
-    }
-
-    // 渲染「過往報名與學員統計」區塊（支援手機專用卡片排版與內容修改功能）
-    function renderHistorySection() {
-      const studentStats = getStudentBookingStats();
-      const query = (document.getElementById("historySearchInput")?.value || "").toLowerCase().trim();
-
-      // 更新頂部指標
-      document.getElementById("statHistoryStudentTotal").innerText = studentStats.length;
-      document.getElementById("statHistoryBookingTotal").innerText = adminBookings.length;
-      document.getElementById("statHistoryRepeatTotal").innerText = studentStats.filter(s => s.count >= 2).length;
-      if (document.getElementById("historyStudentCountBadge")) {
-        document.getElementById("historyStudentCountBadge").innerText = studentStats.length;
-      }
-
-      const noHistoryRow = document.getElementById("noHistoryRow");
-
-      if (currentHistorySubMode === "students") {
-        // 模式 A: 學員報名次數統計
-        const tbodyStudents = document.getElementById("historyStudentsTableBody");
-        const mContainer = document.getElementById("historyStudentsMobileContainer");
-
-        const filteredStudents = studentStats.filter(s => 
-          s.name.toLowerCase().includes(query) ||
-          s.phone.includes(query) ||
-          s.line.toLowerCase().includes(query) ||
-          s.courses.some(c => c.courseTitle.toLowerCase().includes(query))
-        );
-
-        if (filteredStudents.length === 0) {
-          if (tbodyStudents) tbodyStudents.innerHTML = "";
-          if (mContainer) mContainer.innerHTML = "";
-          noHistoryRow.classList.remove("hidden");
-        } else {
-          noHistoryRow.classList.add("hidden");
-          let tHtml = "";
-          let mHtml = "";
-
-          filteredStudents.forEach((s, idx) => {
-            let rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${idx + 1}</span>`;
-            if (idx === 0) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-amber-950 font-black text-xs shadow-sm">🥇</span>`;
-            else if (idx === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-900 font-black text-xs shadow-sm">🥈</span>`;
-            else if (idx === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white font-black text-xs shadow-sm">🥉</span>`;
-
-            const repeatBadge = s.count >= 3
-              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700">★ 核心忠實 (${s.count}次)</span>`
-              : (s.count === 2 ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">回流學員 (2次)</span>` : "");
-
-            // 桌機表格標籤
-            const courseTags = s.courses.map(c => 
-              `<div class="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] mr-1.5 mb-1 transition">
-                <span class="font-bold">${c.courseTitle}</span>
-                <span class="text-slate-400 font-mono">(${c.date})</span>
-                ${c.bookingId ? `<button type="button" onclick="openEditBookingModal('${c.bookingId}')" class="text-blue-600 hover:text-blue-800 ml-1" title="修改此筆預約"><i class="fa-solid fa-pen text-[10px]"></i></button>` : ''}
-              </div>`
-            ).join("");
-
-            // 電腦版 Table Row
-            tHtml += `
-              <tr class="hover:bg-slate-50 transition">
-                <td class="px-4 py-3 text-center">${rankBadge}</td>
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-slate-900">${s.name}</span>
-                    ${repeatBadge}
-                  </div>
-                </td>
-                <td class="px-4 py-3 font-mono font-medium text-slate-700">${s.phone}</td>
-                <td class="px-4 py-3 text-slate-500 font-mono">${s.line}</td>
-                <td class="px-4 py-3 text-center font-black text-base text-blue-600">${s.count} 次</td>
-                <td class="px-4 py-3 max-w-md">${courseTags}</td>
-                <td class="px-4 py-3 text-center">
-                  ${s.courses[0] && s.courses[0].bookingId ? `
-                    <button type="button" onclick="openEditBookingModal('${s.courses[0].bookingId}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="編輯最新預約紀錄">
-                      <i class="fa-solid fa-pen text-blue-600"></i> 修改
-                    </button>
-                  ` : '-'}
-                </td>
-              </tr>
-            `;
-
-            // 手機版專屬統計卡片 (Mobile UI)
-            mHtml += `
-              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2">
-                    ${rankBadge}
-                    <div>
-                      <h4 class="font-black text-slate-900 text-base leading-tight">${s.name}</h4>
-                      <p class="text-xs font-mono text-slate-500 mt-0.5">${s.phone}</p>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <span class="inline-block px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-xs border border-blue-200">
-                      累計 ${s.count} 次
-                    </span>
-                    <div class="mt-1">${repeatBadge}</div>
-                  </div>
-                </div>
-
-                <!-- 聯絡與社群按鈕 + 醒目修改按鈕 -->
-                <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs pt-1">
-                  ${s.phone && s.phone !== "-" ? `
-                    <a href="tel:${s.phone}" class="py-2 px-1 sm:px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1 transition whitespace-nowrap">
-                      <i class="fa-solid fa-phone text-blue-600 shrink-0"></i>
-                      <span>撥打</span>
-                    </a>
-                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl whitespace-nowrap">無電話</div>'}
-
-                  ${s.line && s.line !== "-" ? `
-                    <a href="https://line.me/R/ti/p/~${s.line}" target="_blank" class="py-2 px-1 sm:px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1 transition whitespace-nowrap">
-                      <i class="fa-brands fa-line text-emerald-600 text-sm shrink-0"></i>
-                      <span>LINE</span>
-                    </a>
-                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl whitespace-nowrap">無Line</div>'}
-
-                  ${s.courses[0] && s.courses[0].bookingId ? `
-                    <button type="button" onclick="openEditBookingModal('${s.courses[0].bookingId}')" class="py-2 px-1 sm:px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold flex items-center justify-center gap-1 transition border border-blue-200 whitespace-nowrap">
-                      <i class="fa-solid fa-pen text-blue-600 shrink-0"></i>
-                      <span>修改</span>
-                    </button>
-                  ` : '<div class="py-2 text-center text-slate-400 bg-slate-50 rounded-xl whitespace-nowrap">-</div>'}
-                </div>
-
-                <!-- 參與過的課程時段清單與修改按鈕 -->
-                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
-                  <div class="text-xs font-bold text-slate-700 flex items-center justify-between">
-                    <span><i class="fa-solid fa-clock-rotate-left mr-1 text-slate-400"></i>曾參與之課程歷史</span>
-                    <span class="text-[11px] text-slate-400 font-normal">點擊可直接修改</span>
-                  </div>
-                  <div class="space-y-1.5">
-                    ${s.courses.map(c => `
-                      <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/70 text-xs">
-                        <div class="min-w-0 pr-2">
-                          <p class="font-bold text-slate-800 truncate">${c.courseTitle}</p>
-                          <p class="text-[10px] text-slate-400 font-mono mt-0.5">${c.date || ""}</p>
-                        </div>
-                        ${c.bookingId ? `
-                          <button type="button" onclick="openEditBookingModal('${c.bookingId}')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0">
-                            <i class="fa-solid fa-pen text-blue-600 text-[10px]"></i>
-                            <span>修改</span>
-                          </button>
-                        ` : ''}
-                      </div>
-                    `).join("")}
-                  </div>
-                </div>
-              </div>
-            `;
-          });
-
-          if (tbodyStudents) tbodyStudents.innerHTML = tHtml;
-          if (mContainer) mContainer.innerHTML = mHtml;
-        }
-      } else {
-        // 模式 B: 完整過往報名明細
-        const tbodyRecords = document.getElementById("historyRecordsTableBody");
-        const mRecordsContainer = document.getElementById("historyRecordsMobileContainer");
-
-        const filteredRecords = adminBookings.filter(b => 
-          (b["學員姓名"] || "").toLowerCase().includes(query) ||
-          (b["聯絡電話"] || "").includes(query) ||
-          (b["課程名稱"] || "").toLowerCase().includes(query) ||
-          (b["預約編號"] || "").toLowerCase().includes(query) ||
-          (b["備註需求"] || "").toLowerCase().includes(query) ||
-          (b["管理備註"] || "").toLowerCase().includes(query)
-        );
-
-        if (filteredRecords.length === 0) {
-          if (tbodyRecords) tbodyRecords.innerHTML = "";
-          if (mRecordsContainer) mRecordsContainer.innerHTML = "";
-          noHistoryRow.classList.remove("hidden");
-        } else {
-          noHistoryRow.classList.add("hidden");
-          let tHtml = "";
-          let mHtml = "";
-
-          filteredRecords.forEach(b => {
-            const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
-            const classDate = course ? course.date : "-";
-            const classTime = course ? `${course.startTime} - ${course.endTime}` : "";
-
-            const payCode = b["匯款五碼"] || "-";
-            let payBadge = `<span class="text-slate-300">-</span>`;
-            if (String(payCode).includes("LINE") || String(payCode).includes("line")) {
-              payBadge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold font-mono"><i class="fa-brands fa-line mr-1"></i>LINE轉帳</span>`;
-            } else if (String(payCode).includes("現")) {
-              payBadge = `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded text-[11px] font-bold font-mono">現場付現</span>`;
-            } else if (payCode !== "-" && payCode) {
-              payBadge = `<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded text-[11px] font-mono font-black border border-blue-200 tracking-wider">${payCode}</span>`;
-            }
-
-            // 電腦版 Table Row (第一欄: 開課時間, 第二欄: 課程名稱, 第三欄: 報名日期時間)
-            tHtml += `
-              <tr class="hover:bg-slate-50 transition">
-                <td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">
-                  <div class="font-bold text-slate-900 leading-tight flex items-center gap-1.5">
-                    <i class="fa-regular fa-calendar-days text-blue-600 text-xs"></i>
-                    <span class="font-mono">${classDate}</span>
-                  </div>
-                  <div class="text-[11px] text-blue-700 font-mono leading-tight mt-0.5">${classTime}</div>
-                </td>
-                <td class="px-3.5 py-2.5 font-semibold text-slate-900">${b["課程名稱"]} <span class="text-slate-400 font-mono text-[11px]">(${b["課程編號"] || ""})</span></td>
-                <td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600 leading-tight">${(b["報名時間"] || "").split(" ")[0]}<div class="text-[11px] text-slate-400 font-normal">${(b["報名時間"] || "").split(" ")[1] || ""}</div></td>
-                <td class="px-3.5 py-2.5 font-bold text-slate-800">${b["學員姓名"]}</td>
-                <td class="px-3.5 py-2.5 font-mono text-slate-600">${b["聯絡電話"]}</td>
-                <td class="px-3.5 py-2.5 text-slate-500 font-mono">${b["Line ID"] || "-"}</td>
-                <td class="px-3.5 py-2.5 text-center whitespace-nowrap">${payBadge}</td>
-                <td class="px-3.5 py-2.5 text-slate-600 max-w-[130px] truncate" title="${b["備註需求"] || ""}">${b["備註需求"] || "-"}</td>
-                <td class="px-3.5 py-2.5 text-amber-800 bg-amber-50/40 max-w-[130px] truncate font-medium" title="${b["管理備註"] || ""}">${b["管理備註"] ? `<i class="fa-solid fa-lock text-[10px] text-amber-600 mr-1"></i>${b["管理備註"]}` : "-"}</td>
-                <td class="px-3.5 py-2.5 text-center"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">${b["簽到狀態"]}</span></td>
-                <td class="px-3.5 py-2.5 text-center sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">
-                  <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1" title="修改此筆資料">
-                    <i class="fa-solid fa-pen text-blue-600"></i> 修改
-                  </button>
-                </td>
-              </tr>
-            `;
-
-            // 手機版專屬明細卡片 (Mobile UI)
-            mHtml += `
-              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
-                <!-- 頂部開課時間標籤與狀態 -->
-                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-1.5 font-mono font-bold text-xs text-blue-900">
-                      <i class="fa-regular fa-calendar-days text-blue-600"></i>
-                      <span>${classDate}</span>
-                    </div>
-                    <div class="font-mono text-[11px] text-blue-600 font-medium pl-4">
-                      ${classTime}
-                    </div>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">${b["簽到狀態"]}</span>
-                </div>
-
-                <!-- 學員姓名與五碼同行，課程名稱獨立整行寬度 -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between gap-2">
-                    <h4 class="font-black text-slate-900 text-base">${b["學員姓名"]}</h4>
-                    <div class="shrink-0 text-right">
-                      ${payBadge}
-                    </div>
-                  </div>
-                  <!-- 課程名稱 (享有整行 100% 寬度) -->
-                  <p class="text-xs font-bold text-slate-800 leading-snug">${b["課程名稱"]}</p>
-                  <!-- 報名時間 (在課程名稱後面) -->
-                  <p class="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                    <i class="fa-regular fa-clock text-[10px]"></i>
-                    <span>報名時間：${b["報名時間"] || "-"}</span>
-                  </p>
-                </div>
-
-                <!-- 聯絡電話與 Line ID -->
-                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
-                  ${b["聯絡電話"] ? `
-                    <a href="tel:${b["聯絡電話"]}" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition">
-                      <i class="fa-solid fa-phone text-blue-600"></i>
-                      <span>${b["聯絡電話"]}</span>
-                    </a>
-                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無電話</div>'}
-
-                  ${b["Line ID"] ? `
-                    <a href="https://line.me/R/ti/p/~${b["Line ID"]}" target="_blank" class="py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-1.5 transition">
-                      <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
-                      <span class="truncate">${b["Line ID"]}</span>
-                    </a>
-                  ` : '<div class="py-1.5 text-center text-slate-400 bg-slate-50 rounded-xl">無 Line</div>'}
-                </div>
-
-                <!-- 備註需求與管理備註 -->
-                ${b["備註需求"] ? `
-                  <div class="text-xs bg-slate-50 rounded-xl p-2.5 text-slate-600 border border-slate-100">
-                    <span class="font-bold text-slate-700"><i class="fa-solid fa-comment-dots text-slate-400 mr-1"></i>備註需求：</span>${b["備註需求"]}
-                  </div>
-                ` : ''}
-
-                ${b["管理備註"] ? `
-                  <div class="text-xs bg-amber-50/80 rounded-xl p-2.5 text-amber-900 border border-amber-200/80">
-                    <span class="font-bold text-amber-800"><i class="fa-solid fa-lock text-amber-600 mr-1"></i>管理備註：</span>${b["管理備註"]}
-                  </div>
-                ` : ''}
-
-                <!-- 手機修改按鈕 -->
-                <div class="pt-2 border-t border-slate-100 flex justify-end">
-                  <button type="button" onclick="openEditBookingModal('${b["預約編號"]}')" class="w-full py-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap">
-                    <i class="fa-solid fa-pen text-blue-600 shrink-0"></i>
-                    <span>修改預約記錄</span>
-                  </button>
-                </div>
-              </div>
-            `;
-          });
-
-          if (tbodyRecords) tbodyRecords.innerHTML = tHtml;
-          if (mRecordsContainer) mRecordsContainer.innerHTML = mHtml;
-        }
-      }
-    }
-
-    // 頁籤切換
     function switchTab(tab) {
       const tabs = ['courses', 'bookings', 'history', 'settings'];
       tabs.forEach(t => {
@@ -3482,26 +2173,23 @@
       }
     }
 
-
-
     function formatDate(val) {
       if (!val) return "";
       return String(val).split("T")[0];
     }
 
-    // 匯出學員名冊為 CSV (包含 UTF-8 BOM，Excel 雙擊打開絕不亂碼)
     function exportBookingsToCSV() {
       if (!adminBookings || adminBookings.length === 0) {
         alert("目前名冊中無任何學員資料可匯出！");
         return;
       }
       const headers = ["開課時間", "課程名稱", "報名時間", "學員姓名", "聯絡電話", "Line ID", "付款方式/五碼", "備註需求", "管理備註", "簽到狀態"];
-      let csvContent = "\uFEFF"; // 加入 UTF-8 BOM
+      let csvContent = "\uFEFF"; 
       csvContent += headers.join(",") + "\r\n";
 
       adminBookings.forEach(b => {
         const course = adminCourses.find(c => String(c.id) === String(b["課程編號"]));
-        const classDate = course ? `${course.date} ${course.startTime}-${course.endTime}` : "-";
+        const classDate = course ? `${formatDisplayDate(course.date)} ${course.startTime}-${course.endTime}` : "-";
         const row = [
           `"${classDate.replace(/"/g, '""')}"`,
           `"${(b["課程名稱"] || "").replace(/"/g, '""')}"`,
@@ -3528,7 +2216,6 @@
       document.body.removeChild(link);
     }
 
-    // 備份完整系統資料庫為 JSON
     function exportFullDatabaseJSON() {
       const backupData = {
         exportedAt: new Date().toISOString(),
@@ -3548,7 +2235,6 @@
       document.body.removeChild(link);
     }
 
-    // 還原備份 JSON
     function importFullDatabaseJSON(e) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
