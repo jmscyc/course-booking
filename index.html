@@ -109,9 +109,9 @@
           <button type="button" onclick="changeFontSize('large')" id="clientFontLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="放大字級">A+</button>
           <button type="button" onclick="changeFontSize('xlarge')" id="clientFontXLarge" class="px-2 py-0.5 rounded text-slate-400 font-bold hover:text-blue-600 transition" title="特大字級">A++</button>
         </div>
-        <button onclick="openMyBookingsModal()" class="px-2 sm:px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer whitespace-nowrap" title="查詢預約進度">
+        <button onclick="openMyBookingsModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-xs transition flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer whitespace-nowrap" title="查詢預約進度">
           <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
-          <span class="hidden xs:inline sm:inline">查詢</span><span class="hidden sm:inline">預約</span>
+          <span>查詢預約進度</span>
         </button>
         <button onclick="loadCourses()" title="重新整理" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
           <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
@@ -121,44 +121,7 @@
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-4 sm:space-y-5">
-
-    <!-- 🌟 專屬大器主標題區 (Hero Title Section)：精練緊湊展示，一目了然 -->
-    <div class="pt-0 pb-0">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-        <div>
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> 即時線上登記
-            </span>
-            <span class="text-xs text-slate-400 font-medium">官方即時更新</span>
-          </div>
-          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight">
-            霖霖的頌缽課程預約
-          </h1>
-          <p class="text-xs text-slate-500 mt-0.5">
-            專業頌缽聲音療癒入門、進階與師資培訓課程，選擇時段即刻為自己保留名額。
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 顯眼醒目：學員預約進度與對帳查詢快捷橫幅 (精巧版) -->
-    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-xl px-3.5 py-2.5 text-white shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center text-white text-sm shrink-0">
-          <i class="fa-solid fa-ticket"></i>
-        </div>
-        <div class="min-w-0">
-          <h2 class="text-xs sm:text-sm font-bold leading-tight truncate">已報名課程？查詢對帳進度</h2>
-          <p class="text-[10px] sm:text-xs text-blue-100 truncate">輸入手機號碼即可查看您的報名狀態與上課資訊</p>
-        </div>
-      </div>
-      <button type="button" onclick="openMyBookingsModal()" class="w-full sm:w-auto px-3.5 py-1.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-800 font-black rounded-lg text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
-        <i class="fa-solid fa-magnifying-glass text-blue-600 text-[11px]"></i>
-        <span>查詢預約進度</span>
-      </button>
-    </div>
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-3 sm:pt-4 space-y-3 sm:space-y-4">
 
     <!-- 日期篩選 Tab (含漸層滾動提示) -->
     <div class="relative">
@@ -297,9 +260,9 @@
                 </button>
               </div>
               <div class="font-mono text-[11px] sm:text-xs space-y-1 pt-1 border-t border-blue-200/60">
-                <div class="flex items-center justify-between"><span class="text-blue-700">銀行機構</span><span class="font-bold">822 中國信託</span></div>
+                <div class="flex items-center justify-between"><span class="text-blue-700">銀行機構</span><span id="bankOrgName" class="font-bold">822 中國信託</span></div>
                 <div class="flex items-center justify-between"><span class="text-blue-700">收款帳號</span><span id="bankAccountNum" class="font-black text-sm tracking-wider text-blue-950">1234-5678-9012</span></div>
-                <div class="flex items-center justify-between"><span class="text-blue-700">戶　　名</span><span class="font-bold">霖霖身心靈工坊 (陳霖霖)</span></div>
+                <div class="flex items-center justify-between"><span class="text-blue-700">戶　　名</span><span id="bankAccountHolder" class="font-bold">霖霖身心靈工坊 (陳霖霖)</span></div>
               </div>
             </div>
 
@@ -685,6 +648,7 @@
         if (savedApi) API_URL = savedApi;
       }
 
+      syncBankSettings();
       loadCourses();
     });
 
@@ -951,11 +915,27 @@
     }
 
 
-    // 付款方式選擇 (bank / line / cash)
+    // 付款方式選擇 (bank / line)
     let currentPayMethod = "bank";
 
+    // 同步讀取管理者設定之銀行帳戶資訊
+    function syncBankSettings() {
+      const bankName = localStorage.getItem("appsheet_bank_name") || "822 中國信託";
+      const bankAccount = localStorage.getItem("appsheet_bank_account") || "1234-5678-9012";
+      const bankHolder = localStorage.getItem("appsheet_bank_holder") || "霖霖身心靈工坊 (陳霖霖)";
+
+      const elName = document.getElementById("bankOrgName");
+      const elAcc = document.getElementById("bankAccountNum");
+      const elHolder = document.getElementById("bankAccountHolder");
+
+      if (elName) elName.innerText = bankName;
+      if (elAcc) elAcc.innerText = bankAccount;
+      if (elHolder) elHolder.innerText = bankHolder;
+    }
+
     function copyBankAccount() {
-      const bankNum = "123456789012";
+      const elAcc = document.getElementById("bankAccountNum");
+      const bankNum = elAcc ? elAcc.innerText.replace(/[^0-9]/g, '') : "123456789012";
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(bankNum).then(() => {
           showCopySuccess();
@@ -1054,6 +1034,9 @@
       // 預設選擇銀行匯款，但不自動將畫面焦點跳至五碼，確保視角維持在頂部
       if (typeof selectPayMethod === "function") {
         selectPayMethod("bank", false);
+      }
+      if (typeof syncBankSettings === "function") {
+        syncBankSettings();
       }
 
       const modal = document.getElementById("bookingModal");

@@ -104,27 +104,7 @@
   </header>
 
   <!-- 主內容容器 -->
-  <main class="max-w-7xl mx-auto px-3.5 sm:px-4 pt-4 sm:pt-6 space-y-4 sm:space-y-6">
-
-    <!-- 數據概覽卡片 (手機版緊湊精緻化) -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
-      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">總開課時段</p>
-        <p class="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1" id="statCourseTotal">0</p>
-      </div>
-      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">有效預約人次</p>
-        <p class="text-xl sm:text-2xl font-black text-blue-600 mt-0.5 sm:mt-1" id="statBookingTotal">0</p>
-      </div>
-      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">已額滿時段</p>
-        <p class="text-xl sm:text-2xl font-black text-rose-500 mt-0.5 sm:mt-1" id="statFullTotal">0</p>
-      </div>
-      <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-        <p class="text-[11px] sm:text-xs text-slate-500 font-medium">出席簽到率</p>
-        <p class="text-xl sm:text-2xl font-black text-emerald-600 mt-0.5 sm:mt-1" id="statCheckinRate">100%</p>
-      </div>
-    </div>
+  <main class="max-w-7xl mx-auto px-3.5 sm:px-4 pt-3 sm:pt-5 space-y-4 sm:space-y-6">
 
     <!-- 頁籤切換：課程維護 / 學員預約名冊 / 統計 / 設定 (手機橫向滑動貼心排版) -->
     <div class="flex border-b border-slate-200 gap-2 sm:gap-6 overflow-x-auto custom-scrollbar pb-1">
@@ -393,6 +373,31 @@
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">系統前台名稱</label>
             <input type="text" id="settingSysName" value="霖霖的課程預約系統" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <!-- 匯款收款銀行帳號設定 (供學員預約時匯款與複製帳號) -->
+          <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 space-y-3">
+            <div>
+              <h4 class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                <i class="fa-solid fa-building-columns text-blue-600"></i>
+                <span>匯款繳費收款帳號設定 (前台預約時自動展示並支援一鍵複製)</span>
+              </h4>
+              <p class="text-[11px] text-blue-700/80 mt-0.5">在此設定您的銀行代碼機構、帳號與戶名，未來可隨時彈性調整。</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">銀行機構代碼與名稱</label>
+                <input type="text" id="settingBankName" placeholder="例如：822 中國信託" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">收款銀行帳號</label>
+                <input type="text" id="settingBankAccount" placeholder="例如：1234-5678-9012" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">戶名</label>
+                <input type="text" id="settingBankHolder" placeholder="例如：霖霖身心靈工坊 (陳霖霖)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              </div>
+            </div>
           </div>
 
           <!-- 課程範本快速下拉選單整併設定 (一對一綁定) -->
@@ -1970,7 +1975,8 @@
                 document.getElementById("settingDefaultFontSize").value = json.config["前台預設字體大小"];
                 localStorage.setItem("appsheet_default_fontsize", json.config["前台預設字體大小"]);
               }
-              populatePresetsDropdowns();
+              if (typeof populatePresetsDropdowns === "function") populatePresetsDropdowns();
+              if (typeof renderSettingsTemplateRows === "function") renderSettingsTemplateRows();
               if (json.config["LINE通知開關"] && document.getElementById("settingLineEnabled")) {
                 const isEn = json.config["LINE通知開關"] === "開啟";
                 document.getElementById("settingLineEnabled").checked = isEn;
@@ -2003,11 +2009,17 @@
         }
       }
 
-      // 初始化設定頁面的教室輸入框
+      // 初始化設定頁面的教室輸入框與銀行帳號設定
       const settingClassroomsEl = document.getElementById("settingClassrooms");
       if (settingClassroomsEl) {
         settingClassroomsEl.value = customClassrooms.join("\n");
       }
+      const savedBankName = localStorage.getItem("appsheet_bank_name") || "822 中國信託";
+      const savedBankAccount = localStorage.getItem("appsheet_bank_account") || "1234-5678-9012";
+      const savedBankHolder = localStorage.getItem("appsheet_bank_holder") || "霖霖身心靈工坊 (陳霖霖)";
+      if (document.getElementById("settingBankName")) document.getElementById("settingBankName").value = savedBankName;
+      if (document.getElementById("settingBankAccount")) document.getElementById("settingBankAccount").value = savedBankAccount;
+      if (document.getElementById("settingBankHolder")) document.getElementById("settingBankHolder").value = savedBankHolder;
 
       calculateCourseBookedCounts();
       renderAll();
@@ -2081,18 +2093,10 @@
     }
 
     function renderAll() {
-      // 統計數據
-      document.getElementById("statCourseTotal").innerText = adminCourses.length;
+      // 頁籤計數更新
+      document.getElementById("courseCountBadge").innerText = adminCourses.length;
       // 預約名冊只計算未過期且未取消之有效預約
       const unexpiredBookings = adminBookings.filter(b => !isBookingExpired(b) && b["簽到狀態"] !== "已取消");
-      document.getElementById("statBookingTotal").innerText = unexpiredBookings.length;
-      document.getElementById("statFullTotal").innerText = adminCourses.filter(c => (c.remaining || 0) <= 0).length;
-
-      const checkedCount = unexpiredBookings.filter(b => b["簽到狀態"] === "已簽到").length;
-      const rate = unexpiredBookings.length > 0 ? Math.round((checkedCount / unexpiredBookings.length) * 100) : 100;
-      document.getElementById("statCheckinRate").innerText = rate + "%";
-
-      document.getElementById("courseCountBadge").innerText = adminCourses.length;
       // 頁籤「預約名冊」計數更新為尚未過期的預約數量
       const activeBookings = adminBookings.filter(b => !isBookingExpired(b));
       document.getElementById("bookingCountBadge").innerText = activeBookings.length;
@@ -3092,8 +3096,8 @@
       localStorage.setItem("appsheet_default_fontsize", defaultFontSize);
       // 同步更新管理後台自身字級
       const currentAdminFont = localStorage.getItem("admin_app_font_size") || "large";
-      setAppFontSize(currentAdminFont, true);
-      populatePresetsDropdowns();
+      if (typeof populatePresetsDropdowns === "function") populatePresetsDropdowns();
+      if (typeof renderSettingsTemplateRows === "function") renderSettingsTemplateRows();
 
       if (newPass) {
         ADMIN_PASS = newPass;
@@ -3107,6 +3111,14 @@
       const tgChatId = document.getElementById("settingTgChatId")?.value.trim() || "";
       const lineNotifyToken = document.getElementById("settingLineNotifyToken")?.value.trim() || "";
       const lineChannelAccessToken = document.getElementById("settingLineChannelToken")?.value.trim() || "";
+
+      // 收款銀行帳號設定
+      const bankName = document.getElementById("settingBankName")?.value.trim() || "822 中國信託";
+      const bankAccount = document.getElementById("settingBankAccount")?.value.trim() || "1234-5678-9012";
+      const bankHolder = document.getElementById("settingBankHolder")?.value.trim() || "霖霖身心靈工坊 (陳霖霖)";
+      localStorage.setItem("appsheet_bank_name", bankName);
+      localStorage.setItem("appsheet_bank_account", bankAccount);
+      localStorage.setItem("appsheet_bank_holder", bankHolder);
 
       // 暫存於 localStorage
       localStorage.setItem("appsheet_line_enabled", lineEnabled);
