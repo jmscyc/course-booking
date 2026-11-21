@@ -70,14 +70,15 @@
       document.documentElement.style.fontSize = fs;
     })();
 
-    // 🔐 管理後台安全登入處理 (支援 888、0921 或自訂密碼)
+    // 🔐 管理後台安全登入處理 (支援 admin888、0921 或自訂密碼)
     function handleAdminLogin() {
       const inputEl = document.getElementById("adminLoginInput");
       const input = (inputEl ? inputEl.value : "").trim().toLowerCase();
-      const storedPass = (localStorage.getItem("appsheet_admin_pass") || "888").trim().toLowerCase();
+      // ✅ 修正 Bug 1：預設密碼與後端一致改為 admin888
+      const storedPass = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
 
-      if (input === storedPass || input === "888" || input === "admin888" || input === "0921") {
+      if (input === storedPass || input === "admin888" || input === "0921") {
         sessionStorage.setItem("admin_authenticated", "true");
         const overlay = document.getElementById("loginOverlay");
         if (overlay) {
@@ -713,7 +714,8 @@
 
             <div>
               <div class="relative max-w-sm">
-                <input type="text" id="settingPassword" value="888" placeholder="設定您的新後台密碼..." class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- ✅ 修正 Bug 1：預設顯示管理密碼修改為 admin888 -->
+                <input type="text" id="settingPassword" value="admin888" placeholder="設定您的新後台密碼..." class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
             </div>
           </div>
@@ -1073,34 +1075,8 @@
       }
     }
 
-    function handleAdminLogin(e) {
-      if (e && typeof e.preventDefault === "function") {
-        e.preventDefault();
-      }
-      const inputEl = document.getElementById("adminLoginInput");
-      const input = (inputEl?.value || "").trim().toLowerCase();
-      const rawCurrentPass = (localStorage.getItem("appsheet_admin_pass") || "888").trim().toLowerCase();
-      const errorMsg = document.getElementById("loginErrorMsg");
-
-      // 支援 888、0921、相容原密碼或自訂密碼
-      if (input === rawCurrentPass || input === "888" || input === "admin888" || input === "0921") {
-        sessionStorage.setItem("admin_authenticated", "true");
-        const overlay = document.getElementById("loginOverlay");
-        if (overlay) {
-          overlay.style.setProperty("display", "none", "important");
-          overlay.classList.add("hidden");
-        }
-        if (errorMsg) errorMsg.classList.add("hidden");
-        return false;
-      } else {
-        if (errorMsg) errorMsg.classList.remove("hidden");
-        if (inputEl) {
-          inputEl.value = "";
-          inputEl.focus();
-        }
-        return false;
-      }
-    }
+    // ✅ 修正 Bug 1：統一後端密碼全域變數為 admin888
+    let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
 
     // 管理後台字級設定 (手機版標準 21px，提供 21, 22, 23 縮放選項)
     function setAppFontSize(size, save = true) {
@@ -1187,8 +1163,6 @@
       });
       localStorage.setItem("appsheet_default_fontsize", size);
     }
-
-    let ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "888";
 
     // 常用教室設定（支援管理者動態維護）
     let customClassrooms = [
@@ -1736,7 +1710,11 @@
     // 判斷課程是否已過期 (依日期與結束時間，相較於當前時間)
     function isCourseExpired(course) {
       if (!course || !course.date) return false;
-      const dateStr = String(course.date).trim();
+      const dateStr = String(course.date).trim().replace(/\//g, "-");
+      
+      // 🛡️ 【終極防護盾】如果後端因為沒更新而傳來 1899 年的錯誤時間，強制判定為「未過期」，保護名單不消失！
+      if (dateStr.startsWith("1899")) return false;
+
       const endStr = course.endTime ? String(course.endTime).trim() : "23:59";
       const courseDateTime = new Date(`${dateStr}T${endStr.length === 5 ? endStr + ":00" : endStr}`);
       if (isNaN(courseDateTime.getTime())) {
