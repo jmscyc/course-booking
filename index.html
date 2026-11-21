@@ -141,28 +141,29 @@
       <span class="text-xs text-slate-400">點擊卡片即可預約</span>
     </div>
 
-    <!-- 載入中骨架屏 (響應式多欄) -->
-    <div id="loadingSkeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/70 shadow-sm animate-pulse space-y-3">
-        <div class="h-4 bg-slate-200 rounded w-2/3"></div>
-        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
-        <div class="h-10 bg-slate-100 rounded-xl"></div>
+    <!-- 載入中骨架屏 (響應式雙欄/單欄極簡卡) -->
+    <div id="loadingSkeleton" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+      <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs animate-pulse flex items-center justify-between gap-3">
+        <div class="space-y-2 flex-1">
+          <div class="h-3.5 bg-slate-200 rounded w-1/3"></div>
+          <div class="h-4 bg-slate-200 rounded w-2/3"></div>
+          <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+        </div>
+        <div class="w-16 h-8 bg-slate-200 rounded-xl"></div>
       </div>
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/70 shadow-sm animate-pulse space-y-3">
-        <div class="h-4 bg-slate-200 rounded w-1/2"></div>
-        <div class="h-3 bg-slate-100 rounded w-1/3"></div>
-        <div class="h-10 bg-slate-100 rounded-xl"></div>
-      </div>
-      <div class="hidden lg:block bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/70 shadow-sm animate-pulse space-y-3">
-        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-        <div class="h-3 bg-slate-100 rounded w-2/5"></div>
-        <div class="h-10 bg-slate-100 rounded-xl"></div>
+      <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs animate-pulse flex items-center justify-between gap-3">
+        <div class="space-y-2 flex-1">
+          <div class="h-3.5 bg-slate-200 rounded w-1/3"></div>
+          <div class="h-4 bg-slate-200 rounded w-2/3"></div>
+          <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+        </div>
+        <div class="w-16 h-8 bg-slate-200 rounded-xl"></div>
       </div>
     </div>
 
-    <!-- 課程卡片容器 -->
-    <div id="courseContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 hidden">
-      <!-- 課程卡片由 JavaScript 動態生成 -->
+    <!-- 課程清單容器 (方案 A：極簡緊湊橫向卡，手機一屏看 4~5 門) -->
+    <div id="courseContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3 hidden">
+      <!-- 課程項目由 JavaScript 動態生成 -->
     </div>
 
     <!-- 無課程提示 -->
@@ -819,85 +820,65 @@
       document.getElementById("noCoursesState").classList.add("hidden");
       container.classList.remove("hidden");
 
-      // 產生卡片列表 (AppSheet Deck/Card View)
+      // 產生課程列表 (方案 A：極簡緊湊橫向卡，手機一屏看 4~5 門，一目了然)
       let cardsHtml = "";
       filtered.forEach(c => {
         const isFull = c.isFull || c.remaining <= 0;
-        const remainingPercent = Math.min(100, Math.round((c.bookedCount / c.capacity) * 100));
+        const price = Number(c.earlyBirdPrice || c.regularPrice);
+        const priceText = price ? `NT$ ${price.toLocaleString()}` : '';
+
+        // 簡短日期格式，例如 11/21 (六)
+        const dateParts = c.date.split("-");
+        const wDay = (getWeekDay(c.date) || "").replace("週", "");
+        const shortDate = (dateParts.length === 3) 
+          ? `${Number(dateParts[1])}/${Number(dateParts[2])} (${wDay})` 
+          : `${c.date} (${wDay})`;
 
         cardsHtml += `
-          <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between ${isFull ? 'opacity-85 bg-slate-50/60' : ''}">
-            <div class="space-y-2">
-              <!-- 頂部資訊列：教練、狀態、價格 -->
-              <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                <div class="flex items-center gap-1.5">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                    <i class="fa-solid fa-chalkboard-user text-[10px]"></i>
-                    ${c.instructor || '霖霖老師'}
+          <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-150 flex items-center justify-between gap-3 ${isFull ? 'opacity-80 bg-slate-50/70' : ''}">
+            <!-- 左側/中間：課程核心資訊 -->
+            <div class="min-w-0 flex-1 space-y-1">
+              <!-- 日期時間與價格標籤 -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold ${isFull ? 'text-slate-600 bg-slate-100' : 'text-blue-700 bg-blue-50'} px-2 py-0.5 rounded-md border ${isFull ? 'border-slate-200' : 'border-blue-100'}">
+                  <i class="fa-regular fa-clock text-[10px]"></i>
+                  <span>${shortDate} ${c.startTime}</span>
+                </span>
+                ${priceText ? `
+                  <span class="inline-flex items-center gap-0.5 text-[11px] font-black ${isFull ? 'text-slate-500 bg-slate-100 border-slate-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} px-2 py-0.5 rounded-md border">
+                    <i class="fa-solid fa-tag text-[9px]"></i> ${priceText}
                   </span>
-                  ${(c.earlyBirdPrice || c.regularPrice) ? `
-                    <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <i class="fa-solid fa-tag text-[9px]"></i> NT$ ${Number(c.earlyBirdPrice || c.regularPrice).toLocaleString()}
-                    </span>
-                  ` : ''}
-                </div>
-                <div>
-                  ${isFull 
-                    ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 inline-flex items-center gap-1">
-                        <i class="fa-solid fa-lock text-[9px]"></i> 額滿
-                      </span>`
-                    : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
-                        <i class="fa-solid fa-user-check text-[9px]"></i> 剩 ${c.remaining} 名
-                      </span>`
-                  }
-                </div>
+                ` : ''}
               </div>
 
               <!-- 課程標題 -->
-              <h3 class="text-sm sm:text-base font-black text-slate-900 leading-snug hover:text-blue-600 transition-colors">${c.title}</h3>
+              <h3 class="text-xs sm:text-sm font-black text-slate-900 leading-snug truncate" title="${c.title}">
+                ${c.title}
+              </h3>
 
-              <!-- 時間、地點 (緊湊一體式灰底框) -->
-              <div class="bg-slate-50 rounded-xl px-2.5 py-2 text-xs text-slate-600 border border-slate-100 space-y-1">
-                <div class="flex items-center justify-between gap-1 flex-wrap font-bold text-slate-800">
-                  <div class="flex items-center gap-1.5">
-                    <i class="fa-regular fa-calendar-days text-blue-500 text-xs shrink-0"></i>
-                    <span>${c.date} (${getWeekDay(c.date)})</span>
-                  </div>
-                  <span class="text-slate-600 font-mono text-[11px]">${c.startTime} - ${c.endTime}</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-slate-600 text-[11px]">
-                  <i class="fa-solid fa-location-dot text-rose-500 text-xs shrink-0"></i>
-                  <span class="truncate font-medium text-slate-700">${c.location || '待定教室'}</span>
-                </div>
-                ${c.notes ? `
-                  <div class="flex items-start gap-1.5 pt-1 text-slate-500 border-t border-slate-200/50 text-[10px] leading-tight line-clamp-1">
-                    <i class="fa-regular fa-note-sticky text-slate-400 shrink-0 mt-0.5"></i>
-                    <span class="truncate">${c.notes}</span>
-                  </div>
-                ` : ''}
+              <!-- 地點與名額狀態 -->
+              <div class="flex items-center gap-2 text-[11px] text-slate-500 truncate">
+                <span class="truncate flex items-center gap-1">
+                  <i class="fa-solid fa-location-dot ${isFull ? 'text-slate-400' : 'text-rose-500'} text-[10px] shrink-0"></i>
+                  <span class="truncate text-slate-700 font-medium">${c.location || '待定教室'}</span>
+                </span>
+                <span class="text-slate-300 shrink-0">|</span>
+                ${isFull 
+                  ? `<span class="text-rose-500 font-bold shrink-0 inline-flex items-center gap-0.5"><i class="fa-solid fa-lock text-[9px]"></i> 額滿</span>`
+                  : `<span class="text-emerald-600 font-bold shrink-0 inline-flex items-center gap-0.5"><i class="fa-solid fa-user-check text-[9px]"></i> 剩 ${c.remaining} 名</span>`
+                }
               </div>
             </div>
 
-            <div class="pt-2">
-              <!-- 名額進度條 (緊湊精美) -->
-              <div class="mb-2">
-                <div class="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-0.5">
-                  <span>報名進度</span>
-                  <span>已報 ${c.bookedCount || 0} / 上限 ${c.capacity}</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                  <div class="h-1.5 rounded-full transition-all duration-500 ${isFull ? 'bg-rose-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}" style="width: ${remainingPercent}%"></div>
-                </div>
-              </div>
-
-              <!-- 動作按鈕 -->
+            <!-- 右側：動作按鈕 -->
+            <div class="shrink-0 flex flex-col items-end justify-center">
               ${isFull 
-                ? `<button disabled class="w-full py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed">
-                    此時段已額滿
+                ? `<button disabled class="px-3.5 sm:px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed border border-slate-200">
+                    額滿
                   </button>`
-                : `<button onclick="openBookingModal('${c.id}')" class="w-full py-2 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm active:scale-[0.99] cursor-pointer">
-                    <i class="fa-regular fa-pen-to-square"></i>
-                    <span>立即預約登記</span>
+                : `<button onclick="openBookingModal('${c.id}')" class="px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow-sm shadow-blue-500/20 active:scale-95 transition cursor-pointer">
+                    <i class="fa-regular fa-pen-to-square text-[11px]"></i>
+                    <span>預約</span>
                   </button>`
               }
             </div>
