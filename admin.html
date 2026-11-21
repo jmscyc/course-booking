@@ -2433,8 +2433,11 @@
                     取消
                   </button>
                 ` : `
-                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">
+                  <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition" title="還原預約為待確認狀態">
                     還原
+                  </button>
+                  <button type="button" onclick="deleteBooking('${b["預約編號"]}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1 shadow-2xs" title="永久刪除此筆報名資料（不可復原）">
+                    <i class="fa-regular fa-trash-can"></i> 刪除
                   </button>
                 `}
               </div>
@@ -2556,8 +2559,12 @@
                   取消
                 </button>
               ` : `
-                <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="flex-1 py-2 px-1 sm:px-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold transition whitespace-nowrap">
+                <button type="button" onclick="updateBookingStatus('${b["預約編號"]}', '待確認')" class="flex-1 py-2 px-1 sm:px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition whitespace-nowrap">
                   還原為待確認
+                </button>
+                <button type="button" onclick="deleteBooking('${b["預約編號"]}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shrink-0 shadow-2xs whitespace-nowrap" title="永久刪除此筆報名資料（不可復原）">
+                  <i class="fa-regular fa-trash-can"></i>
+                  <span>刪除</span>
                 </button>
               `}
             </div>
@@ -2924,6 +2931,38 @@
           });
         } catch (e) {
           console.error(e);
+        }
+      }
+    }
+
+    // 永久刪除已取消之預約記錄
+    async function deleteBooking(bookingId) {
+      const target = adminBookings.find(b => b["預約編號"] === bookingId);
+      const studentName = target ? target["學員姓名"] : "";
+      const courseName = target ? target["課程名稱"] : "";
+
+      const confirmMsg = `⚠️ 警告：確定要永久刪除此筆報名資料嗎？\n\n• 學員：${studentName}\n• 課程：${courseName}\n• 預約編號：#${bookingId}\n\n刪除後此筆資料將永久消失，無法再還原！`;
+      if (!confirm(confirmMsg)) return;
+
+      adminBookings = adminBookings.filter(b => b["預約編號"] !== bookingId);
+      calculateCourseBookedCounts();
+      localStorage.setItem("appsheet_shared_bookings", JSON.stringify(adminBookings));
+      localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
+      renderAll();
+
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "deleteBooking",
+              password: ADMIN_PASS,
+              bookingId: bookingId
+            })
+          });
+        } catch (e) {
+          console.error("刪除雲端預約資料錯誤：", e);
         }
       }
     }
