@@ -1557,10 +1557,32 @@
       if (document.getElementById("settingGasUrl")) {
         document.getElementById("settingGasUrl").value = savedGas;
       }
-      updateGasStatusBadge(savedGas);
-      updateSyncButtonsState();
-
       loadFullAdminData();
+
+      // 多視窗 / 多角色本機即時自動同步監聽 (當在隔壁分頁以學員身份報名時，後台無感秒級同步顯示)
+      window.addEventListener("storage", (e) => {
+        if (e.key === "appsheet_shared_bookings" || e.key === "appsheet_shared_courses" || e.key === "appsheet_gas_api") {
+          if (e.key === "appsheet_gas_api") {
+            API_URL = e.newValue || "";
+            if (document.getElementById("settingGasUrl")) {
+              document.getElementById("settingGasUrl").value = API_URL;
+            }
+            updateGasStatusBadge(API_URL);
+            updateSyncButtonsState();
+          }
+          loadFullAdminData();
+        }
+      });
+
+      // 當視窗重新獲得焦點（例如切換回管理後台分頁）時自動重新整理
+      window.addEventListener("focus", () => {
+        loadFullAdminData();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          loadFullAdminData();
+        }
+      });
     });
 
     async function loadFullAdminData() {
@@ -1651,7 +1673,12 @@
           }
         } catch (err) {
           console.warn("無法取得真實 API 資料，保留展示模式：", err);
+          // 若遠端 API 連線失敗，回退從本地快取讀取最新預約與課程
+          loadLocalSharedData();
         }
+      } else {
+        // 展示 / 本地模式：每次重新整理皆重新讀取最新共享預約與課程資料
+        loadLocalSharedData();
       }
 
       // 初始化設定頁面的教室輸入框與銀行帳號設定
@@ -1669,6 +1696,28 @@
       calculateCourseBookedCounts();
       renderAll();
       if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+    }
+
+    // 從 localStorage 重新加載本機共享課程與預約紀錄（供多視窗、多角色即時同步）
+    function loadLocalSharedData() {
+      try {
+        const sharedCourses = localStorage.getItem("appsheet_shared_courses");
+        if (sharedCourses) {
+          const parsedC = JSON.parse(sharedCourses);
+          if (Array.isArray(parsedC) && parsedC.length > 0) {
+            adminCourses = normalizeCoursePrices(parsedC);
+          }
+        }
+        const sharedBookings = localStorage.getItem("appsheet_shared_bookings");
+        if (sharedBookings) {
+          const parsedB = JSON.parse(sharedBookings);
+          if (Array.isArray(parsedB)) {
+            adminBookings = parsedB;
+          }
+        }
+      } catch (e) {
+        console.warn("重新載入本地共享資料庫失敗：", e);
+      }
     }
 
     // 重新建立教室下拉選單的 Option
@@ -1928,7 +1977,9 @@
                            (b["預約編號"] || "").toLowerCase().includes(query) ||
                            (b["報名時間"] || "").includes(query) ||
                            courseDate.includes(query);
-        const matchStatus = status === "all" || b["簽到狀態"] === status;
+        const rawSt = (b["簽到狀態"] || "待確認").trim();
+        const normSt = rawSt === "已預約" || !rawSt ? "待確認" : rawSt;
+        const matchStatus = status === "all" || normSt === status || rawSt === status;
         return matchQuery && matchStatus;
       });
 

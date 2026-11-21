@@ -668,6 +668,28 @@
 
       syncBankSettings();
       loadCourses();
+
+      // 多視窗即時同步：當管理者在後台開課、刪課、或修改銀行帳號時，學員端視窗即時自動更新
+      window.addEventListener("storage", (e) => {
+        if (e.key === "appsheet_shared_courses" || e.key === "appsheet_shared_bookings" || e.key === "appsheet_gas_api") {
+          if (e.key === "appsheet_gas_api") {
+            API_URL = e.newValue || "";
+          }
+          loadCourses();
+        }
+        if (e.key === "appsheet_bank_name" || e.key === "appsheet_bank_account" || e.key === "appsheet_bank_holder") {
+          syncBankSettings();
+        }
+      });
+
+      window.addEventListener("focus", () => {
+        loadCourses();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          loadCourses();
+        }
+      });
     });
 
     // 載入課程資料
