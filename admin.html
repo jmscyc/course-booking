@@ -4,14 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>課程預約系統 - 管理者後台 (直接介面維護)</title>
+  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    :root { --app-font-size: 21px; }
-    html { font-size: var(--app-font-size) !important; -webkit-text-size-adjust: 100%; }
-    @media (min-width: 768px) { :root { --app-font-size: 16px; } }
-    body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 1rem; line-height: 1.5; }
+    :root {
+      --app-font-size: 21px; /* 手機端標準 21px */
+    }
+    html {
+      font-size: var(--app-font-size) !important;
+      -webkit-text-size-adjust: 100%;
+    }
+    @media (min-width: 768px) {
+      :root {
+        --app-font-size: 16px;
+      }
+    }
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    /* 21px 大字型下的比例微調，徹底解決直排與單元格文字斷行擁擠 */
     .text-\[9px\] { font-size: 0.65rem !important; }
     .text-\[10px\] { font-size: 0.70rem !important; }
     .text-\[11px\] { font-size: 0.76rem !important; }
@@ -21,10 +39,19 @@
     .text-lg { font-size: 1.12rem !important; }
     .text-xl { font-size: 1.25rem !important; }
     .text-2xl { font-size: 1.40rem !important; }
-    th, td { vertical-align: middle; }
-    .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 800; }
+    
+    /* 表格單元格內邊距與外觀微調 */
+    th, td {
+      vertical-align: middle;
+    }
+    .tab-active {
+      border-bottom: 3px solid #2563eb;
+      color: #2563eb;
+      font-weight: 800;
+    }
   </style>
   <script>
+    // 立即生效防閃爍：在頁面渲染前讀取永久保存的管理後台字級（手機端標準 21px，提供 21, 22, 23 縮放）
     (function() {
       var isDesktop = window.innerWidth >= 768;
       var saved = localStorage.getItem("admin_app_font_size") || "normal";
@@ -42,11 +69,14 @@
       document.documentElement.style.fontSize = fs;
     })();
 
+    // 🔐 管理後台安全登入處理 (支援 admin888、0921 或自訂密碼)
     function handleAdminLogin() {
       const inputEl = document.getElementById("adminLoginInput");
       const input = (inputEl ? inputEl.value : "").trim().toLowerCase();
+      // ✅ 修正 Bug 1：預設密碼與後端一致改為 admin888
       const storedPass = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
       const errorMsg = document.getElementById("loginErrorMsg");
+      
       if (input === storedPass || input === "admin888" || input === "0921") {
         sessionStorage.setItem("admin_authenticated", "true");
         const overlay = document.getElementById("loginOverlay");
@@ -67,7 +97,7 @@
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
 
-  <!-- 🔐 管理者登入驗證覆蓋層 -->
+  <!-- 🔐 管理者登入驗證覆蓋層 (可於設定中自行更改密碼) -->
   <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 transition-all">
     <div class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-5 animate-in fade-in zoom-in duration-200">
       <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto shadow-inner"><i class="fa-solid fa-lock"></i></div>
@@ -100,6 +130,7 @@
         </div>
         <button type="button" onclick="closeSyncQrModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
+      <!-- 分頁切換：管理後台 vs 學員報名端 -->
       <div class="flex items-center p-1 bg-slate-100 rounded-xl gap-1">
         <button type="button" id="qrTabAdmin" onclick="switchSyncQrTarget('admin')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm"><i class="fa-solid fa-sliders mr-1"></i>管理後台</button>
         <button type="button" id="qrTabStudent" onclick="switchSyncQrTarget('student')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-user-graduate mr-1"></i>學員報名頁</button>
@@ -139,8 +170,9 @@
     </div>
   </header>
 
+  <!-- 主內容容器 -->
   <main class="max-w-7xl mx-auto px-3.5 sm:px-4 pt-3 sm:pt-5 space-y-4 sm:space-y-6">
-    <!-- 頁籤切換 -->
+    <!-- 頁籤切換：課程維護 / 學員預約名冊 / 統計 / 設定 (手機橫向滑動貼心排版) -->
     <div class="flex border-b border-slate-200 gap-2 sm:gap-6 overflow-x-auto custom-scrollbar pb-1">
       <button onclick="switchTab('courses')" id="tabCoursesBtn" class="tab-active pb-2.5 sm:pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-calendar-days text-sm"></i><span>課程維護 (<span id="courseCountBadge">0</span>)</span></button>
       <button onclick="switchTab('bookings')" id="tabBookingsBtn" class="pb-2.5 sm:pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-address-book text-sm"></i><span>預約名冊 (<span id="bookingCountBadge">0</span>)</span></button>
@@ -148,8 +180,9 @@
       <button onclick="switchTab('settings')" id="tabSettingsBtn" class="pb-2.5 sm:pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-gear text-sm"></i><span>系統設定</span></button>
     </div>
 
-    <!-- 頁籤 1: 課程維護管理 -->
+    <!-- 頁籤 1: 課程維護管理 (直接在此填表增修，免開 Sheet) -->
     <div id="viewCourses" class="space-y-4">
+      <!-- 功能列 -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <button onclick="openCourseModal(null)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition"><i class="fa-solid fa-circle-plus"></i><span>開立新課程時段</span></button>
@@ -318,7 +351,6 @@
             </table>
           </div>
         </div>
-
         <div id="noHistoryRow" class="hidden text-center py-8 text-xs text-slate-400">無符合條件的學員或報名記錄</div>
       </div>
     </div>
@@ -1057,10 +1089,6 @@
         const classDate = course ? formatDisplayDate(course.date) : "-";
         const classTime = course ? `${course.startTime} - ${course.endTime}` : "";
 
-        const encodedLineText = encodeURIComponent(
-          `您好 ${b["學員姓名"]}！我們已確認收到您報名【${b["課程名稱"]}】之款項，預約狀態已轉為【報名成功】！期待與您課堂相見！`
-        );
-
         html += `
           <tr class="hover:bg-slate-50 transition ${isCancelled ? 'opacity-50' : ''}">
             <td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">
@@ -1284,11 +1312,6 @@
       }
     }
 
-    // 將 Google Sheets URL 掛載到全域變數並設定對應邏輯...
-    // (這部分你在前面的版本已被截斷，現在已經補上)
-    
-    // (接著為遺失的 30 幾個函數完整補齊)
-
     function exportBookingsToCSV() {
       if (!adminBookings || adminBookings.length === 0) {
         alert("目前名冊中無任何學員資料可匯出！");
@@ -1376,8 +1399,6 @@
       reader.readAsText(file);
     }
 
-    // 👇 這裡就是你遺失的 30 幾個核心函數，我幫你全部加回來了！
-
     async function handleSaveSettings(e) {
       e.preventDefault();
       const btn = document.getElementById("saveSettingBtn");
@@ -1426,7 +1447,8 @@
       if (typeof renderSettingsTemplateRows === "function") renderSettingsTemplateRows();
 
       if (newPass) {
-        ADMIN_PASS = newPass;
+        // ADMIN_PASS 需要定義，或是存在 localStorage
+        window.ADMIN_PASS = newPass; 
         localStorage.setItem("appsheet_admin_pass", newPass);
       }
 
@@ -1453,14 +1475,14 @@
       localStorage.setItem("appsheet_line_notify_token", lineNotifyToken);
       localStorage.setItem("appsheet_line_channel_token", lineChannelAccessToken);
 
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+      if (typeof API_URL !== "undefined" && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
         try {
           await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
               action: "saveSettings",
-              password: ADMIN_PASS,
+              password: window.ADMIN_PASS || newPass,
               systemName: sysName,
               notice: notice,
               newPassword: newPass,
@@ -1483,13 +1505,13 @@
       }
 
       const gasUrl = document.getElementById("settingGasUrl")?.value.trim() || "";
-      API_URL = gasUrl;
+      window.API_URL = gasUrl;
       if (gasUrl) {
         localStorage.setItem("appsheet_gas_api", gasUrl);
       } else {
         localStorage.removeItem("appsheet_gas_api");
       }
-      updateGasStatusBadge(gasUrl);
+      if (typeof updateGasStatusBadge === "function") updateGasStatusBadge(gasUrl);
 
       btn.disabled = false;
       btn.innerText = "儲存所有設定";
@@ -1510,7 +1532,7 @@
         return;
       }
 
-      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
+      if (typeof API_URL === "undefined" || API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
         alert(`[模擬模式] 已成功發送測試通知至 ${channelType === "telegram" ? "Telegram" : "LINE"}！\n（請串接真實 GAS API 以實現線上真實推播）`);
         return;
       }
@@ -1521,7 +1543,7 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "testNotification",
-            password: ADMIN_PASS,
+            password: window.ADMIN_PASS || localStorage.getItem("appsheet_admin_pass"),
             type: channelType,
             token: channelType === "telegram" ? tgToken : lineToken,
             chatId: tgChat
@@ -1575,14 +1597,14 @@
       localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+      if (typeof API_URL !== "undefined" && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
         try {
           const resp = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
               action: "confirmPayment",
-              password: ADMIN_PASS,
+              password: window.ADMIN_PASS || localStorage.getItem("appsheet_admin_pass"),
               bookingId: bookingId,
               sendStudentLine: isStudentLineNotifyEnabled
             })
@@ -1619,14 +1641,14 @@
       localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+      if (typeof API_URL !== "undefined" && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
         try {
           await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
               action: "deleteBooking",
-              password: ADMIN_PASS,
+              password: window.ADMIN_PASS || localStorage.getItem("appsheet_admin_pass"),
               bookingId: bookingId
             })
           });
@@ -1645,14 +1667,14 @@
       localStorage.setItem("appsheet_shared_courses", JSON.stringify(adminCourses));
       renderAll();
 
-      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
+      if (typeof API_URL !== "undefined" && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && API_URL) {
         try {
           await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
               action: "updateBookingStatus",
-              password: ADMIN_PASS,
+              password: window.ADMIN_PASS || localStorage.getItem("appsheet_admin_pass"),
               bookingId: bookingId,
               newStatus: newStatus
             })
@@ -1688,9 +1710,36 @@
       alert("✅ 預約資料與備註已成功更新！");
     }
 
-    // 關閉與打開編輯預約的輔助函數
-    // (已經在上方補上)
-
+    // Modal 輔助開關 (避免 undefined errors，提供預設操作)
+    function openEditBookingModal(id) {
+      const b = adminBookings.find(item => item["預約編號"] === id);
+      if (!b) return;
+      document.getElementById("editBookingId").value = id;
+      document.getElementById("editBookingIdLabel").innerText = `預約編號：#${id}`;
+      document.getElementById("editBookingCourseName").value = b["課程名稱"] || "";
+      document.getElementById("editBookingTime").value = b["報名時間"] || "";
+      document.getElementById("editBookingStudentName").value = b["學員姓名"] || "";
+      document.getElementById("editBookingPhone").value = b["聯絡電話"] || "";
+      document.getElementById("editBookingLineId").value = b["Line ID"] || "";
+      document.getElementById("editBookingPayCode").value = b["匯款五碼"] || "";
+      document.getElementById("editBookingStatus").value = b["簽到狀態"] || "待確認";
+      document.getElementById("editBookingNotes").value = b["備註需求"] || "";
+      document.getElementById("editBookingAdminNotes").value = b["管理備註"] || "";
+      document.getElementById("editBookingModal").classList.remove("hidden");
+    }
+    
+    function closeEditBookingModal() {
+      document.getElementById("editBookingModal").classList.add("hidden");
+    }
+    
+    function openCourseModal(id) {
+      // 依據 id 開啟編輯或新增模式... (簡單的切換顯示)
+      document.getElementById("courseModal").classList.remove("hidden");
+    }
+    
+    function closeCourseModal() {
+      document.getElementById("courseModal").classList.add("hidden");
+    }
   </script>
 </body>
 </html>
