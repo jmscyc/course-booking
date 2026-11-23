@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>課程預約系統 - 管理者後台</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="tailwind.css?v=3.6.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
@@ -48,7 +48,7 @@
     }
   </style>
   <script>
-    const APP_VERSION = "3.3.2";
+    const APP_VERSION = "3.6.0";
     // 防閃爍字體
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -56,22 +56,6 @@
       document.documentElement.style.setProperty("--app-font-size", saved+"px");
       document.documentElement.style.fontSize = saved+"px";
     })();
-
-    function handleAdminLogin() {
-      var inputEl  = document.getElementById("adminLoginInput");
-      var input    = (inputEl ? inputEl.value : "").trim().toLowerCase();
-      var stored   = (localStorage.getItem("appsheet_admin_pass") || "admin888").trim().toLowerCase();
-      var errorMsg = document.getElementById("loginErrorMsg");
-      if (input === stored || input === "admin888" || input === "0921") {
-        sessionStorage.setItem("admin_authenticated","true");
-        var overlay = document.getElementById("loginOverlay");
-        if (overlay) { overlay.style.setProperty("display","none","important"); overlay.classList.add("hidden"); }
-        if (errorMsg) errorMsg.classList.add("hidden");
-      } else {
-        if (errorMsg) errorMsg.classList.remove("hidden");
-        if (inputEl)  { inputEl.value=""; inputEl.focus(); }
-      }
-    }
   </script>
 </head>
 <body class="min-h-screen text-slate-800 pb-20">
@@ -166,7 +150,7 @@
         <span class="font-size-display" id="fontSizeDisplay">21px</span>
         <button type="button" onclick="adjustFontSize(+1)" class="font-ctrl-btn" title="放大字體">A<sup style="font-size:.6em;vertical-align:super">+</sup></button>
       </div>
-      <button onclick="loadFullAdminData()" class="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
+      <button onclick="loadFullAdminData(true)" class="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="重新整理">
         <i class="fa-solid fa-rotate-right text-xs" id="adminRefreshIcon"></i>
       </button>
     </div>
@@ -466,7 +450,7 @@
               <p class="text-[11px] text-slate-500 mt-0.5">進入管理後台時所須輸入的安全密碼</p>
             </div>
           </div>
-          <input type="text" id="settingPassword" value="admin888" placeholder="設定您的新後台密碼..."
+          <input type="password" id="settingPassword" value="" autocomplete="new-password" placeholder="留空代表不變更；輸入新密碼即可修改"
             class="w-full text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-sm">
         </div>
 
@@ -781,9 +765,11 @@ function checkVersionAndShowBanner() {
   if (saved && saved !== APP_VERSION) {
     var banner = document.getElementById("updateBanner");
     if (banner) banner.style.display = "flex";
-  } else {
-    localStorage.setItem("app_version", APP_VERSION);
   }
+  // ✅ Bug Fix：原本只有「版本相同」才會寫回 app_version，導致版本不同時
+  // 橫幅會在每次重新整理都跳出來（即使你已經看過、已經是最新檔案）。
+  // 改成不論相同或不同都立即記錄本次版本，橫幅只會在剛好升版那一次出現。
+  localStorage.setItem("app_version", APP_VERSION);
 }
 
 function doForceRefresh() {
@@ -813,15 +799,6 @@ function applyFontPx(px, save) {
 }
 
 function adjustFontSize(delta) { applyFontPx(getCurrentFontPx() + delta); }
-
-// ══════════════════════════════════════════════
-// 前台預設字級
-// ══════════════════════════════════════════════
-function setClientDefaultFont(size) {
-  var el = document.getElementById("settingDefaultFontSize");
-  if (el) el.value = size;
-  localStorage.setItem("appsheet_default_fontsize", size);
-}
 
 // ══════════════════════════════════════════════
 // 時間格式標準化（前端版，對應 GAS 的 sanitizeTime）
@@ -859,7 +836,81 @@ function sanitizeTimeForInput(val) {
 // 核心資料
 // ══════════════════════════════════════════════
 var API_URL    = localStorage.getItem("appsheet_gas_api") || "";
-var ADMIN_PASS = localStorage.getItem("appsheet_admin_pass") || "admin888";
+// 密碼只存在本次分頁工作階段（關閉分頁即清除），不再明文長期存在 localStorage
+var ADMIN_PASS = sessionStorage.getItem("admin_pass") || "";
+localStorage.removeItem("appsheet_admin_pass"); // 清除舊版殘留的明文密碼
+["appsheet_tg_token","appsheet_tg_chat","appsheet_admin_email","appsheet_sender_name",
+ "appsheet_telegram_enabled","appsheet_email_enabled","appsheet_student_email_enabled",
+ "appsheet_default_fontsize","appsheet_bank_name","appsheet_bank_account","appsheet_bank_holder"
+].forEach(function(k){ localStorage.removeItem(k); }); // 這些設定一律以試算表為準
+var lastAdminLoadAt = 0, adminLoading = false, settingsFormLoaded = false;
+var courseMap = {};
+function courseById(id) { return courseMap[String(id)] || null; }
+function hasApi() { return !!(API_URL && API_URL.startsWith("http")); }
+
+/** 呼叫 GAS（POST）。回傳 JSON；網路錯誤或 success=false 時丟出 Error（含 res） */
+async function apiPost(payload) {
+  var resp = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify(Object.assign({ password: ADMIN_PASS }, payload)) });
+  if (!resp.ok) throw new Error("HTTP " + resp.status);
+  var res = await resp.json();
+  if (!res.success) {
+    var err = new Error(res.message || "伺服器回應失敗"); err.res = res;
+    if (res.authError) handleAuthLost();
+    throw err;
+  }
+  return res;
+}
+/** 寫入失敗時：提示原因並重新從試算表抓資料，讓畫面回到真實狀態 */
+function reportSyncError(actionLabel, err) {
+  console.warn(actionLabel + " 失敗：", err);
+  alert("❌ " + actionLabel + "失敗：" + (err && err.message ? err.message : err) + "\n\n畫面將重新載入試算表的最新資料。");
+  loadFullAdminData(true);
+}
+
+// ══════════════════════════════════════════════
+// 登入（由 GAS 驗證密碼；未設定 GAS 時為離線展示模式）
+// ══════════════════════════════════════════════
+async function handleAdminLogin() {
+  var inputEl  = document.getElementById("adminLoginInput");
+  var input    = (inputEl ? inputEl.value : "").trim();
+  var errorMsg = document.getElementById("loginErrorMsg");
+  if (!input) return;
+  var ok = false;
+  if (hasApi()) {
+    try {
+      var resp = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({ action:"verifyPassword", password:input }) });
+      var res = await resp.json();
+      ok = !!res.success;
+      if (!ok && !res.authError) { alert("登入驗證失敗：" + (res.message || "伺服器錯誤")); return; }
+    } catch (e) { alert("無法連線到 Google 試算表，請確認網路後再試一次。"); return; }
+  } else {
+    ok = input === (localStorage.getItem("appsheet_offline_pass") || "admin888");
+  }
+  if (ok) {
+    ADMIN_PASS = input;
+    sessionStorage.setItem("admin_pass", input);
+    sessionStorage.setItem("admin_authenticated", "true");
+    var overlay = document.getElementById("loginOverlay");
+    if (overlay) { overlay.style.setProperty("display","none","important"); overlay.classList.add("hidden"); }
+    if (errorMsg) errorMsg.classList.add("hidden");
+    window.__passMismatchNotified = false;
+    loadFullAdminData(true);
+  } else {
+    if (errorMsg) errorMsg.classList.remove("hidden");
+    if (inputEl)  { inputEl.value=""; inputEl.focus(); }
+  }
+}
+function handleAuthLost() {
+  if (window.__passMismatchNotified) return;
+  window.__passMismatchNotified = true;
+  ADMIN_PASS = "";
+  sessionStorage.removeItem("admin_pass");
+  sessionStorage.removeItem("admin_authenticated");
+  alert("⚠️ 管理密碼驗證失敗（可能已在其他裝置變更），請重新登入。");
+  checkAdminAuth();
+}
 
 // 預設展示課程資料（含完整欄位，包含 virtualCount）
 var adminCourses = [
@@ -894,8 +945,16 @@ var customCourseTemplates = [
 // ══════════════════════════════════════════════
 // 工具函式
 // ══════════════════════════════════════════════
-function escapeHtmlAttr(str) {
-  return str ? String(str).replace(/"/g,"&quot;").replace(/'/g,"&#39;") : "";
+function escapeHtml(str) {
+  return (str===null||str===undefined) ? "" : String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+var escapeHtmlAttr = escapeHtml;
+/** 回傳所有字串欄位都已 HTML 跳脫的副本（只用於畫面顯示，避免學員輸入的內容被當成 HTML 執行） */
+function escObj(o) {
+  var r = {};
+  Object.keys(o||{}).forEach(function(k){ var v=o[k]; r[k] = (typeof v==="string") ? escapeHtml(v) : v; });
+  return r;
 }
 
 // ✅ Bug Fix：改用與 index.html 相同的 Date.UTC(+8 轉換) 明確時區運算，
@@ -924,8 +983,7 @@ function isCourseExpired(course) {
 
 function isBookingExpired(booking) {
   if (!booking) return false;
-  var course = null;
-  for (var i=0;i<adminCourses.length;i++) { if(String(adminCourses[i].id)===String(booking["課程編號"])){ course=adminCourses[i]; break; } }
+  var course = courseById(booking["課程編號"]);
   if (course) return isCourseExpired(course);
   if (booking["簽到狀態"]==="已完成") return true;
   if (booking["報名時間"]) {
@@ -1003,7 +1061,9 @@ function calculateCourseBookedCounts() {
       counts[cid] = (counts[cid]||0) + 1;
     }
   });
+  courseMap = {};
   adminCourses.forEach(function(c) {
+    courseMap[String(c.id)] = c;
     var real = counts[c.id] || 0;
     // ✅ 保留原有 virtualCount，只在 undefined/null 時才設為 0
     var virt = (c.virtualCount !== undefined && c.virtualCount !== null)
@@ -1077,7 +1137,8 @@ function renderCoursesTable() {
 
   var html="", mHtml="";
 
-  function buildRow(c, isEnded) {
+  function buildRow(rawC, isEnded) {
+    var c = escObj(rawC);
     var isFull = (c.remaining||0) <= 0;
     var displayDate = formatDisplayDate(c.date);
     var shortDate   = formatShortDate(c.date);
@@ -1179,8 +1240,7 @@ function renderBookingsTable() {
   var actives = adminBookings.filter(function(b){ return !isBookingExpired(b); });
 
   var filtered = actives.filter(function(b) {
-    var course = null;
-    for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(b["課程編號"])){course=adminCourses[i];break;}}
+    var course = courseById(b["課程編號"]);
     var cd = course ? course.date+" "+course.startTime+"-"+course.endTime : "";
     var mq = (b["學員姓名"]||"").toLowerCase().indexOf(q)!==-1||
              (b["聯絡電話"]||"").indexOf(q)!==-1||
@@ -1193,9 +1253,7 @@ function renderBookingsTable() {
     var ms=sf==="all"||normSt===sf||rawSt===sf;
     return mq&&ms;
   }).sort(function(a,b_){
-    var ca=null,cb=null;
-    for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(a["課程編號"])){ca=adminCourses[i];break;}}
-    for(var j=0;j<adminCourses.length;j++){if(String(adminCourses[j].id)===String(b_["課程編號"])){cb=adminCourses[j];break;}}
+    var ca=courseById(a["課程編號"]),cb=courseById(b_["課程編號"]);
     var da=ca?new Date(String(ca.date).replace(/\//g,"-")+"T"+(sanitizeTimeForInput(ca.startTime)||"00:00")+":00"):new Date(0);
     var db=cb?new Date(String(cb.date).replace(/\//g,"-")+"T"+(sanitizeTimeForInput(cb.startTime)||"00:00")+":00"):new Date(0);
     return da-db;
@@ -1213,15 +1271,15 @@ function renderBookingsTable() {
   noRow&&noRow.classList.add("hidden");
 
   var html="", mHtml="";
-  filtered.forEach(function(b) {
+  filtered.forEach(function(rawB) {
+    var b = escObj(rawB); // 顯示前跳脫，防止 XSS
     var rawSt=(b["簽到狀態"]||"待確認").trim();
     var st=rawSt==="已預約"?"待確認":rawSt;
     var isCancelled=st==="已取消", isChecked=st==="已簽到";
     var isCompleted=st==="已完成", isSuccess=st==="報名成功", isPending=st==="待確認"||!st;
     var sBadge=makeStatusBadge(st);
 
-    var course=null;
-    for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(b["課程編號"])){course=adminCourses[i];break;}}
+    var course=courseById(b["課程編號"]);
     var classDate=course?formatDisplayDate(course.date):"-";
     var classTime=course?(sanitizeTimeForInput(course.startTime)||course.startTime||"")+" - "+(sanitizeTimeForInput(course.endTime)||course.endTime||""):"";
 
@@ -1236,7 +1294,7 @@ function renderBookingsTable() {
       (isSuccess?'<button onclick="updateBookingStatus(\''+bId+'\',\'已簽到\')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1"><i class="fa-solid fa-clipboard-check"></i> 現場簽到</button>':"") +
       (isChecked?'<button onclick="updateBookingStatus(\''+bId+'\',\'報名成功\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-rotate-left"></i> 取消簽到</button>':"") +
       (isCompleted?'<button onclick="updateBookingStatus(\''+bId+'\',\'報名成功\')" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> 標記成功</button>':"") +
-      (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\',\''+escapeHtmlAttr(bName)+'\',\''+escapeHtmlAttr(bLine)+'\',\''+escapeHtmlAttr(bCourse)+'\')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition" title="喚起 LINE"><i class="fa-brands fa-line text-sm"></i></button>':"") +
+      (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition" title="喚起 LINE"><i class="fa-brands fa-line text-sm"></i></button>':"") +
       (!isCancelled
         ?'<button onclick="updateBookingStatus(\''+bId+'\',\'已取消\')" class="px-2 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-medium transition">取消</button>'
         :'<button onclick="updateBookingStatus(\''+bId+'\',\'待確認\')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">還原</button>' +
@@ -1280,7 +1338,7 @@ function renderBookingsTable() {
           '</div>' +
           '<div class="shrink-0 flex items-center gap-1">' +
             (b["聯絡電話"]?'<a href="tel:'+b["聯絡電話"]+'" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 flex items-center justify-center transition"><i class="fa-solid fa-phone text-xs"></i></a>':"") +
-            (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\',\''+escapeHtmlAttr(bName)+'\',\''+escapeHtmlAttr(bLine)+'\',\''+escapeHtmlAttr(bCourse)+'\')" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition"><i class="fa-brands fa-line text-sm"></i></button>':"") +
+            (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\')" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition"><i class="fa-brands fa-line text-sm"></i></button>':"") +
           '</div>' +
         '</div>' +
         '<div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-100 flex-wrap">' +
@@ -1305,7 +1363,8 @@ function renderBookingsTable() {
 // ══════════════════════════════════════════════
 function getStudentBookingStats() {
   var stats={};
-  adminBookings.forEach(function(b){
+  adminBookings.forEach(function(rawB){
+    var b=escObj(rawB); // 僅供畫面顯示，先跳脫
     var name=b["學員姓名"]||"未具名", phone=b["聯絡電話"]||"-", key=name+"_"+phone;
     if (!stats[key]) stats[key]={name:name,phone:phone,line:b["Line ID"]||"-",count:0,courses:[]};
     stats[key].count++;
@@ -1359,17 +1418,15 @@ function renderHistorySection() {
     var tbody2=document.getElementById("historyRecordsTableBody");
     var mCon2=document.getElementById("historyRecordsMobileContainer");
     var filtered2=adminBookings.filter(function(b){ return (b["學員姓名"]||"").toLowerCase().indexOf(q)!==-1||(b["聯絡電話"]||"").indexOf(q)!==-1||(b["課程名稱"]||"").toLowerCase().indexOf(q)!==-1||(b["預約編號"]||"").toLowerCase().indexOf(q)!==-1||(b["備註需求"]||"").toLowerCase().indexOf(q)!==-1||(b["管理備註"]||"").toLowerCase().indexOf(q)!==-1; }).sort(function(a,b_){
-      var ca=null,cb=null;
-      for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(a["課程編號"])){ca=adminCourses[i];break;}}
-      for(var j=0;j<adminCourses.length;j++){if(String(adminCourses[j].id)===String(b_["課程編號"])){cb=adminCourses[j];break;}}
+      var ca=courseById(a["課程編號"]),cb=courseById(b_["課程編號"]);
       return new Date(String((ca&&ca.date)||"").replace(/\//g,"-"))-new Date(String((cb&&cb.date)||"").replace(/\//g,"-"));
     });
     if (!filtered2.length){ if(tbody2)tbody2.innerHTML=""; if(mCon2)mCon2.innerHTML=""; noRow&&noRow.classList.remove("hidden"); return; }
     noRow&&noRow.classList.add("hidden");
     var tHtml2="", mHtml2="";
-    filtered2.forEach(function(b){
-      var course=null;
-      for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(b["課程編號"])){course=adminCourses[i];break;}}
+    filtered2.forEach(function(rawB){
+      var b = escObj(rawB);
+      var course=courseById(b["課程編號"]);
       var classDate=course?formatDisplayDate(course.date):"-";
       var classTime=course?(sanitizeTimeForInput(course.startTime)||course.startTime||"")+" - "+(sanitizeTimeForInput(course.endTime)||course.endTime||""):"";
       var pBadge=makePayBadge(b["匯款五碼"]);
@@ -1493,34 +1550,51 @@ async function handleCourseSubmit(e) {
     status:document.getElementById("formStatus").value,
     notes:document.getElementById("formNotes").value.trim()
   };
-  if (courseId) {
-    for(var i=0;i<adminCourses.length;i++){
-      if(adminCourses[i].id===courseId){
-        // ✅ Bug Fix：用 Object.assign 更新，明確保留所有欄位並更新 virtualCount
-        adminCourses[i]=Object.assign({},adminCourses[i],courseData);
-        break;
-      }
+  if (!courseData.date){ alert("請選擇上課日期！"); btn.disabled=false; btn.innerText="確認儲存並同步"; return; }
+  if (!(courseData.capacity>0)){ alert("人數上限必須大於 0！"); btn.disabled=false; btn.innerText="確認儲存並同步"; return; }
+
+  // 有連線：先等試算表確認成功，再更新畫面（新課程使用 GAS 產生的正式編號）
+  var finalId = courseId;
+  if (hasApi()) {
+    try {
+      var res = await apiPost(Object.assign({action:"saveCourse"}, courseData));
+      finalId = res.courseId || courseId;
+    } catch (err) {
+      btn.disabled=false; btn.innerText="確認儲存並同步";
+      alert("❌ 課程儲存失敗："+err.message);
+      return;
     }
-  } else {
-    adminCourses.unshift(Object.assign({},courseData,{id:"C"+Date.now().toString().slice(-4),bookedCount:0,remaining:courseData.capacity}));
+  } else if (!finalId) {
+    finalId = "C"+Date.now().toString().slice(-8);
   }
+
+  var existing = courseById(finalId);
+  if (existing) Object.assign(existing, courseData, {id:finalId});
+  else adminCourses.unshift(Object.assign({}, courseData, {id:finalId, bookedCount:0, remaining:courseData.capacity}));
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll(); closeCourseModal();
-  if (API_URL&&API_URL.startsWith("http")) {
-    try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({action:"saveCourse",password:ADMIN_PASS},courseData))}); }catch(err){}
-  }
   btn.disabled=false; btn.innerText="確認儲存並同步";
-  alert("課程儲存成功！");
+  alert(courseId ? "✅ 課程已更新！" : "✅ 新課程已上架！（編號 "+finalId+"）");
 }
 
 async function deleteCourse(courseId) {
   if (!confirm("確定要刪除課程編號「"+courseId+"」嗎？")) return;
+  if (hasApi()) {
+    try {
+      await apiPost({action:"deleteCourse", courseId:courseId});
+    } catch (err) {
+      if (err.res && err.res.needForce) {
+        if (!confirm("⚠️ 此課程仍有 "+err.res.activeCount+" 筆有效預約！\n刪除課程後，這些預約會變成找不到對應課程。\n\n仍要強制刪除嗎？")) return;
+        try { await apiPost({action:"deleteCourse", courseId:courseId, force:true}); }
+        catch (err2) { reportSyncError("刪除課程", err2); return; }
+      } else { reportSyncError("刪除課程", err); return; }
+    }
+  }
   adminCourses=adminCourses.filter(function(c){return c.id!==courseId;});
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (API_URL&&API_URL.startsWith("http")){ try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"deleteCourse",password:ADMIN_PASS,courseId:courseId})}); }catch(e){} }
 }
 
 // ══════════════════════════════════════════════
@@ -1553,6 +1627,12 @@ async function handleSaveBookingEdit(e) {
   var b=null;
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){b=adminBookings[i];break;}}
   if (!b) return;
+  var newEmail=document.getElementById("editBookingEmail").value.trim();
+  if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    alert("Email 格式不正確，請重新確認或清空不填！");
+    document.getElementById("editBookingEmail").focus();
+    return;
+  }
   b["課程名稱"]=document.getElementById("editBookingCourseName").value.trim();
   b["報名時間"]=document.getElementById("editBookingTime").value.trim();
   b["學員姓名"]=document.getElementById("editBookingStudentName").value.trim();
@@ -1563,19 +1643,16 @@ async function handleSaveBookingEdit(e) {
   b["簽到狀態"]=document.getElementById("editBookingStatus").value;
   b["備註需求"]=document.getElementById("editBookingNotes").value.trim();
   b["管理備註"]=document.getElementById("editBookingAdminNotes").value.trim();
-  if (b["Email"] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b["Email"])) {
-    alert("Email 格式不正確，請重新確認或清空不填！");
-    document.getElementById("editBookingEmail").focus();
-    return;
-  }
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (API_URL&&API_URL.startsWith("http")) {
-    try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"updateBooking",password:ADMIN_PASS,bookingId:bookingId,courseName:b["課程名稱"],studentName:b["學員姓名"],phone:b["聯絡電話"],lineId:b["Line ID"],email:b["Email"],payCode:b["匯款五碼"],notes:b["備註需求"],adminNotes:b["管理備註"],status:b["簽到狀態"]})}); }catch(err){}
+  closeEditBookingModal();
+  if (hasApi()) {
+    try{ await apiPost({action:"updateBooking",bookingId:bookingId,courseName:b["課程名稱"],studentName:b["學員姓名"],phone:b["聯絡電話"],lineId:b["Line ID"],email:b["Email"],payCode:b["匯款五碼"],notes:b["備註需求"],adminNotes:b["管理備註"],status:b["簽到狀態"]}); }
+    catch(err){ reportSyncError("更新預約資料", err); return; }
   }
-  closeEditBookingModal(); alert("✅ 預約資料已成功更新！");
+  alert("✅ 預約資料已成功更新！");
 }
 
 async function updateBookingStatus(bookingId, newStatus) {
@@ -1584,7 +1661,7 @@ async function updateBookingStatus(bookingId, newStatus) {
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (API_URL&&API_URL.startsWith("http")){ try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"updateBookingStatus",password:ADMIN_PASS,bookingId:bookingId,newStatus:newStatus})}); }catch(e){} }
+  if (hasApi()){ try{ await apiPost({action:"updateBookingStatus",bookingId:bookingId,newStatus:newStatus}); }catch(err){ reportSyncError("更新狀態", err); } }
 }
 
 async function deleteBooking(bookingId) {
@@ -1596,7 +1673,7 @@ async function deleteBooking(bookingId) {
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (API_URL&&API_URL.startsWith("http")){ try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"deleteBooking",password:ADMIN_PASS,bookingId:bookingId})}); }catch(e){} }
+  if (hasApi()){ try{ await apiPost({action:"deleteBooking",bookingId:bookingId}); }catch(err){ reportSyncError("刪除預約", err); } }
 }
 
 async function confirmPaymentAction(bookingId) {
@@ -1610,16 +1687,27 @@ async function confirmPaymentAction(bookingId) {
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (API_URL&&API_URL.startsWith("http")){ try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"confirmPayment",password:ADMIN_PASS,bookingId:bookingId,studentEmail:target["Email"]||"",sendStudentEmail:isStudentEmailEnabled})}); }catch(e){} }
+  var mailNote = "";
+  if (hasApi()){
+    try{
+      var res = await apiPost({action:"confirmPayment",bookingId:bookingId,studentEmail:target["Email"]||"",sendStudentEmail:isStudentEmailEnabled});
+      if (res.notificationResult) mailNote = "\n📧 " + res.notificationResult;
+    }catch(err){ reportSyncError("確認入帳", err); return; }
+  }
   if (target["Line ID"]) {
+    if (mailNote) alert("✅ 已確認入帳！" + mailNote);
     var msg="🎉【報名成功確認】\n"+target["學員姓名"]+" 您好！\n已確認收到您報名【"+target["課程名稱"]+"】之款項！\n• 預約編號："+target["預約編號"]+"\n• 狀態：【報名成功】\n期待在課堂上相見！";
     if (confirm("是否複製並開啟 LINE 通知學員（Line ID: "+target["Line ID"]+"）？")){ navigator.clipboard&&navigator.clipboard.writeText(msg); window.open("https://line.me/R/ti/p/~"+target["Line ID"],"_blank"); }
   } else {
-    alert("已確認「"+target["學員姓名"]+"」款項收訖，狀態更新為【報名成功】！");
+    alert("已確認「"+target["學員姓名"]+"」款項收訖，狀態更新為【報名成功】！"+mailNote);
   }
 }
 
-function openLineNoticePrompt(bookingId,name,lineId,courseTitle) {
+function openLineNoticePrompt(bookingId) {
+  var b=null;
+  for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){b=adminBookings[i];break;}}
+  if (!b||!b["Line ID"]) return;
+  var name=b["學員姓名"]||"", lineId=b["Line ID"], courseTitle=b["課程名稱"]||"";
   var msg="🎉【課程報名成功通知】\n"+name+" 您好！我們已收到您的款項，報名【"+courseTitle+"】已確認為【報名成功】！\n預約編號："+bookingId+"。";
   navigator.clipboard&&navigator.clipboard.writeText(msg);
   if (confirm("LINE 通知快捷\n\n已複製通知訊息，是否前往學員 LINE（@"+lineId+"）發送？")){ window.open("https://line.me/R/ti/p/~"+lineId,"_blank"); }
@@ -1644,10 +1732,9 @@ async function testNotificationChannel(channelType) {
   if (channelType==="email"&&!adminEmail){ alert("請先填寫管理員 Email！"); return; }
   if (!API_URL||!API_URL.startsWith("http")){ alert("[模擬模式] 測試通知已模擬發送至 "+channelType+"！"); return; }
   try{
-    var resp=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"testNotification",password:ADMIN_PASS,type:channelType,token:tgToken,chatId:tgChat,adminEmail:adminEmail})});
-    var res=await resp.json();
-    alert(res.success?"測試通知已成功發送！"+res.message:"測試失敗："+(res.message||"請檢查設定"));
-  }catch(err){ alert("發送測試通知時發生錯誤："+err.message); }
+    var res=await apiPost({action:"testNotification",type:channelType,token:tgToken,chatId:tgChat,adminEmail:adminEmail});
+    alert("✅ "+res.message);
+  }catch(err){ alert("測試失敗："+err.message); }
 }
 
 // ══════════════════════════════════════════════
@@ -1718,30 +1805,38 @@ async function handleSaveSettings(e) {
   });
   if (newTemplates.length>0){ customCourseTemplates=newTemplates; localStorage.setItem("appsheet_course_templates",JSON.stringify(customCourseTemplates)); }
 
-  if (newPass){ ADMIN_PASS=newPass; localStorage.setItem("appsheet_admin_pass",newPass); }
-  localStorage.setItem("appsheet_bank_name",bankName);
-  localStorage.setItem("appsheet_bank_account",bankAccount);
-  localStorage.setItem("appsheet_bank_holder",bankHolder);
-  localStorage.setItem("appsheet_telegram_enabled",telegramEnabled);
-  localStorage.setItem("appsheet_tg_token",tgBotToken);
-  localStorage.setItem("appsheet_tg_chat",tgChatId);
-  localStorage.setItem("appsheet_email_enabled",emailEnabled);
-  localStorage.setItem("appsheet_admin_email",adminEmail);
-  localStorage.setItem("appsheet_sender_name",senderName);
-  localStorage.setItem("appsheet_student_email_enabled",studentEmailEnabled);
+  // 用「目前仍有效」的密碼驗證這次存檔；GAS 確認成功後才把新密碼套用到本機
+  var authPass = ADMIN_PASS;
 
   var gasUrl=document.getElementById("settingGasUrl")?document.getElementById("settingGasUrl").value.trim():"";
   API_URL=gasUrl;
   if (gasUrl) localStorage.setItem("appsheet_gas_api",gasUrl); else localStorage.removeItem("appsheet_gas_api");
   updateGasStatusBadge(gasUrl);
 
-  if (API_URL&&API_URL.startsWith("http")) {
-    try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveSettings",password:ADMIN_PASS,systemName:sysName,notice:notice,newPassword:newPass,classrooms:customClassrooms.join(","),telegramEnabled:telegramEnabled,tgBotToken:tgBotToken,tgChatId:tgChatId,emailEnabled:emailEnabled,adminEmail:adminEmail,senderName:senderName,studentEmailEnabled:studentEmailEnabled,bankName:bankName,bankAccount:bankAccount,bankHolder:bankHolder})}); }catch(err){}
-  }
+  function finishSave(){ renderSettingsTemplateRows(); btn.disabled=false; btn.innerText="儲存所有設定"; }
 
-  renderSettingsTemplateRows();
-  btn.disabled=false; btn.innerText="儲存所有設定";
-  alert("✅ 系統設定已成功儲存！");
+  if (API_URL&&API_URL.startsWith("http")) {
+    try{
+      var resp=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveSettings",password:authPass,systemName:sysName,notice:notice,newPassword:newPass,classrooms:customClassrooms.join(","),telegramEnabled:telegramEnabled,tgBotToken:tgBotToken,tgChatId:tgChatId,emailEnabled:emailEnabled,adminEmail:adminEmail,senderName:senderName,studentEmailEnabled:studentEmailEnabled,bankName:bankName,bankAccount:bankAccount,bankHolder:bankHolder})});
+      var res=await resp.json();
+      finishSave();
+      if (res&&res.success){
+        if (newPass && newPass!==authPass){ ADMIN_PASS=newPass; sessionStorage.setItem("admin_pass",newPass); }
+        document.getElementById("settingPassword").value="";
+        alert("✅ 系統設定已成功儲存！"+((newPass&&newPass!==authPass)?"（密碼已更新，其他裝置需用新密碼重新登入）":""));
+      } else {
+        alert("❌ 設定儲存失敗："+(res&&res.message?res.message:"未知錯誤")+"\n\n密碼未被變更，請確認目前密碼正確後再試一次。");
+      }
+    }catch(err){
+      finishSave();
+      alert("❌ 連線失敗，設定未儲存："+err.message);
+    }
+  } else {
+    // 離線展示模式：沒有真正的後端可驗證，直接套用在本機
+    if (newPass){ ADMIN_PASS=newPass; localStorage.setItem("appsheet_offline_pass",newPass); }
+    finishSave();
+    alert("✅ 系統設定已成功儲存！（目前為離線展示模式，僅儲存在本機）");
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1768,7 +1863,7 @@ async function testGasConnection() {
   try{
     var resp=await fetch(url+"?action=getCourses");
     var json=await resp.json();
-    if (json&&(json.success||Array.isArray(json.courses))){ alert("🎉 Google 試算表雲端連線測試成功！"); localStorage.setItem("appsheet_gas_api",url); API_URL=url; updateGasStatusBadge(url); loadFullAdminData(); }
+    if (json&&(json.success||Array.isArray(json.courses))){ alert("🎉 Google 試算表雲端連線測試成功！"); localStorage.setItem("appsheet_gas_api",url); API_URL=url; updateGasStatusBadge(url); loadFullAdminData(true); }
     else{ alert("⚠️ 已連線但回傳格式未符合預期，請確認程式碼已正確部署。"); }
   }catch(err){ alert("❌ 連線測試失敗："+err.message); }
   finally{ if(testBtn){testBtn.disabled=false;testBtn.innerText="測試連線";} }
@@ -1814,8 +1909,7 @@ function exportBookingsToCSV() {
   var headers=["開課時間","課程名稱","報名時間","學員姓名","聯絡電話","Line ID","付款方式/五碼","備註需求","管理備註","簽到狀態"];
   var csv="\uFEFF"+headers.join(",")+"\r\n";
   adminBookings.forEach(function(b){
-    var course=null;
-    for(var i=0;i<adminCourses.length;i++){if(String(adminCourses[i].id)===String(b["課程編號"])){course=adminCourses[i];break;}}
+    var course=courseById(b["課程編號"]);
     var classDate=course?formatDisplayDate(course.date)+" "+(sanitizeTimeForInput(course.startTime)||course.startTime||"")+"-"+(sanitizeTimeForInput(course.endTime)||course.endTime||""):"-";
     csv+=[classDate,b["課程名稱"],b["報名時間"],b["學員姓名"],b["聯絡電話"],b["Line ID"],b["匯款五碼"],b["備註需求"],b["管理備註"],b["簽到狀態"]].map(function(v){return '"'+String(v||"").replace(/"/g,'""')+'"';}).join(",")+"\r\n";
   });
@@ -1855,7 +1949,7 @@ function importFullDatabaseJSON(e) {
 function checkAdminAuth() {
   var isAuth=sessionStorage.getItem("admin_authenticated");
   var overlay=document.getElementById("loginOverlay"); if(!overlay) return;
-  if (isAuth==="true"){ overlay.style.display="none"; overlay.classList.add("hidden"); }
+  if (isAuth==="true" && (ADMIN_PASS || !hasApi())){ overlay.style.display="none"; overlay.classList.add("hidden"); }
   else{ overlay.style.display="flex"; overlay.classList.remove("hidden"); setTimeout(function(){var el=document.getElementById("adminLoginInput");if(el)el.focus();},100); }
 }
 
@@ -1871,100 +1965,76 @@ function loadLocalSharedData() {
   }catch(e){ console.warn("載入本地資料失敗：",e); }
 }
 
-async function loadFullAdminData() {
+async function loadFullAdminData(force) {
+  if (adminLoading) return;
+  if (!force && Date.now()-lastAdminLoadAt < 30000) return; // 切回分頁時 30 秒內不重複抓
+  if (hasApi() && !ADMIN_PASS) { loadLocalSharedData(); calculateCourseBookedCounts(); renderAll(); return; } // 尚未登入
+  adminLoading = true;
   var refreshIcon=document.getElementById("adminRefreshIcon");
   if (refreshIcon) refreshIcon.classList.add("fa-spin");
 
-  if (API_URL&&API_URL.startsWith("http")) {
+  if (hasApi()) {
     try{
-      var resp=await fetch(API_URL+"?action=getFullAdminData&password="+encodeURIComponent(ADMIN_PASS));
+      // 密碼改用 POST 傳送，不再出現在網址列 / 伺服器紀錄
+      var resp=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"getFullAdminData",password:ADMIN_PASS})});
       var json=await resp.json();
       if (json.success) {
-        // 版本比較
         if (json.version&&json.version!==APP_VERSION){ var banner=document.getElementById("updateBanner"); if(banner) banner.style.display="flex"; }
-
-        if (json.courses&&json.courses.length>0) {
-          // ✅ Bug Fix：GAS 已回傳標準化物件（含 virtualCount、earlyBirdPrice、regularPrice、startTime、endTime）
-          // 直接使用，不需再次 map 轉換欄位名稱
-          adminCourses = normalizeCoursePrices(json.courses);
-          // 確保每個課程的 virtualCount 為數字
-          adminCourses.forEach(function(c){
-            if (c.virtualCount===undefined||c.virtualCount===null||isNaN(Number(c.virtualCount))) c.virtualCount=0;
-            else c.virtualCount=Number(c.virtualCount);
-          });
-          localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
-        }
-
-        if (json.bookings) {
-          adminBookings=json.bookings;
-          localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
-        }
-
-        if (json.config) {
-          var cfg=json.config;
-          if(cfg["系統名稱"]&&document.getElementById("settingSysName")) document.getElementById("settingSysName").value=cfg["系統名稱"];
-          if(cfg["預約提醒事項"]&&document.getElementById("settingNotice")) document.getElementById("settingNotice").value=cfg["預約提醒事項"];
-          if(cfg["常用教室清單"]){ var list=cfg["常用教室清單"].split(",").map(function(s){return s.trim();}).filter(Boolean); if(list.length>0){customClassrooms=list;localStorage.setItem("appsheet_classrooms",JSON.stringify(list));if(document.getElementById("settingClassrooms"))document.getElementById("settingClassrooms").value=customClassrooms.join("\n");} }
-          if(cfg["Telegram通知開關"]&&document.getElementById("settingTelegramEnabled")){var en=cfg["Telegram通知開關"]==="開啟";document.getElementById("settingTelegramEnabled").checked=en;toggleNotifyCard("telegram",en);}
-          if(cfg["TelegramBotToken"]&&document.getElementById("settingTgBotToken")) document.getElementById("settingTgBotToken").value=cfg["TelegramBotToken"];
-          if(cfg["TelegramChatId"]&&document.getElementById("settingTgChatId")) document.getElementById("settingTgChatId").value=cfg["TelegramChatId"];
-          if(cfg["Email通知開關"]&&document.getElementById("settingEmailEnabled")){var en2=cfg["Email通知開關"]==="開啟";document.getElementById("settingEmailEnabled").checked=en2;toggleNotifyCard("email",en2);}
-          if(cfg["管理員Email"]&&document.getElementById("settingAdminEmail")) document.getElementById("settingAdminEmail").value=cfg["管理員Email"];
-          if(cfg["寄件者名稱"]&&document.getElementById("settingSenderName")) document.getElementById("settingSenderName").value=cfg["寄件者名稱"];
-          if(cfg["學員Email通知開關"]&&document.getElementById("settingStudentEmailEnabled")) document.getElementById("settingStudentEmailEnabled").checked=cfg["學員Email通知開關"]==="開啟";
-          if(cfg["銀行名稱"]&&document.getElementById("settingBankName")) document.getElementById("settingBankName").value=cfg["銀行名稱"];
-          if(cfg["銀行帳號"]&&document.getElementById("settingBankAccount")) document.getElementById("settingBankAccount").value=cfg["銀行帳號"];
-          if(cfg["戶名"]&&document.getElementById("settingBankHolder")) document.getElementById("settingBankHolder").value=cfg["戶名"];
-        }
+        adminCourses = Array.isArray(json.courses) ? normalizeCoursePrices(json.courses) : [];
+        adminBookings = Array.isArray(json.bookings) ? json.bookings : [];
+        localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
+        localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
+        // 設定表單只在第一次載入時填入，避免切換視窗回來時把正在編輯的內容洗掉
+        if (json.config && !settingsFormLoaded) { fillSettingsForm(json.config); settingsFormLoaded = true; }
+      } else {
+        console.warn("getFullAdminData 失敗：", json.message);
+        if (json.authError) handleAuthLost();
+        loadLocalSharedData();
       }
     }catch(err){ console.warn("API 連線失敗，回退本地快取：",err); loadLocalSharedData(); }
   } else {
     loadLocalSharedData();
   }
 
-  // 設定頁面欄位
   if (document.getElementById("settingGasUrl")) document.getElementById("settingGasUrl").value=API_URL||"";
   if (document.getElementById("settingClassrooms")) document.getElementById("settingClassrooms").value=customClassrooms.join("\n");
-  var savedBankName=localStorage.getItem("appsheet_bank_name")||"822 中國信託";
-  var savedBankAccount=localStorage.getItem("appsheet_bank_account")||"1234-5678-9012";
-  var savedBankHolder=localStorage.getItem("appsheet_bank_holder")||"霖霖身心靈工坊";
-  if(document.getElementById("settingBankName")&&!document.getElementById("settingBankName").value) document.getElementById("settingBankName").value=savedBankName;
-  if(document.getElementById("settingBankAccount")&&!document.getElementById("settingBankAccount").value) document.getElementById("settingBankAccount").value=savedBankAccount;
-  if(document.getElementById("settingBankHolder")&&!document.getElementById("settingBankHolder").value) document.getElementById("settingBankHolder").value=savedBankHolder;
-  var savedAdminEmail=localStorage.getItem("appsheet_admin_email")||"";
-  var savedSenderName=localStorage.getItem("appsheet_sender_name")||"";
-  if(document.getElementById("settingAdminEmail")&&savedAdminEmail&&!document.getElementById("settingAdminEmail").value) document.getElementById("settingAdminEmail").value=savedAdminEmail;
-  if(document.getElementById("settingSenderName")&&savedSenderName&&!document.getElementById("settingSenderName").value) document.getElementById("settingSenderName").value=savedSenderName;
-  if(localStorage.getItem("appsheet_tg_token")&&document.getElementById("settingTgBotToken")&&!document.getElementById("settingTgBotToken").value) document.getElementById("settingTgBotToken").value=localStorage.getItem("appsheet_tg_token");
-  if(localStorage.getItem("appsheet_tg_chat")&&document.getElementById("settingTgChatId")&&!document.getElementById("settingTgChatId").value) document.getElementById("settingTgChatId").value=localStorage.getItem("appsheet_tg_chat");
-
   updateGasStatusBadge(API_URL);
   updateSyncButtonsState();
   calculateCourseBookedCounts();
   renderAll();
+  lastAdminLoadAt = Date.now();
+  adminLoading = false;
   if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+}
+
+function fillSettingsForm(cfg) {
+  function setVal(id, v){ var el=document.getElementById(id); if(el && v!==undefined && v!==null) el.value=v; }
+  function setChk(id, v){ var el=document.getElementById(id); if(el && v) el.checked = v==="開啟"; return el?el.checked:false; }
+  setVal("settingSysName", cfg["系統名稱"]);
+  setVal("settingNotice", cfg["預約提醒事項"]);
+  if (cfg["常用教室清單"]) {
+    var list=cfg["常用教室清單"].split(",").map(function(s){return s.trim();}).filter(Boolean);
+    if (list.length>0){ customClassrooms=list; localStorage.setItem("appsheet_classrooms",JSON.stringify(list)); }
+  }
+  if (cfg["Telegram通知開關"]) toggleNotifyCard("telegram", setChk("settingTelegramEnabled", cfg["Telegram通知開關"]));
+  setVal("settingTgBotToken", cfg["TelegramBotToken"]);
+  setVal("settingTgChatId", cfg["TelegramChatId"]);
+  if (cfg["Email通知開關"]) toggleNotifyCard("email", setChk("settingEmailEnabled", cfg["Email通知開關"]));
+  setVal("settingAdminEmail", cfg["管理員Email"]);
+  setVal("settingSenderName", cfg["寄件者名稱"]);
+  setChk("settingStudentEmailEnabled", cfg["學員Email通知開關"]);
+  setVal("settingBankName", cfg["銀行名稱"]);
+  setVal("settingBankAccount", cfg["銀行帳號"]);
+  setVal("settingBankHolder", cfg["戶名"]);
 }
 
 // ══════════════════════════════════════════════
 // DOMContentLoaded
 // ══════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", function() {
-  // 清理舊格式字體快取
-  (function(){ var s=localStorage.getItem("admin_app_font_size"); if(s) localStorage.removeItem("admin_app_font_size"); })();
-
-  // 套用儲存的字體大小
+  localStorage.removeItem("admin_app_font_size"); // 清理舊格式字體快取
   applyFontPx(parseFloat(localStorage.getItem("admin_font_px"))||(window.innerWidth>=768?16:21), false);
-
-  // 版本檢查
   checkVersionAndShowBanner();
-
-  // 通知設定讀取
-  var savedTgEn=localStorage.getItem("appsheet_telegram_enabled");
-  if (savedTgEn!==null&&document.getElementById("settingTelegramEnabled")){var en=savedTgEn==="開啟";document.getElementById("settingTelegramEnabled").checked=en;toggleNotifyCard("telegram",en);}
-  var savedEmailEn=localStorage.getItem("appsheet_email_enabled");
-  if (savedEmailEn!==null&&document.getElementById("settingEmailEnabled")){var en2=savedEmailEn==="開啟";document.getElementById("settingEmailEnabled").checked=en2;toggleNotifyCard("email",en2);}
-  var savedSEEn=localStorage.getItem("appsheet_student_email_enabled");
-  if(savedSEEn!==null&&document.getElementById("settingStudentEmailEnabled")) document.getElementById("settingStudentEmailEnabled").checked=savedSEEn==="開啟";
 
   // 範本初始化
   renderSettingsTemplateRows();
@@ -1984,17 +2054,19 @@ document.addEventListener("DOMContentLoaded", function() {
     try{ window.history.replaceState({},document.title,window.location.origin+window.location.pathname); }catch(e){}
   }
 
-  loadFullAdminData();
+  loadFullAdminData(true);
 
-  // 多視窗即時同步
+  // 多視窗同步：其他分頁更新了快取 → 直接用快取重繪（不再互相觸發重抓）
   window.addEventListener("storage",function(e){
-    if (["appsheet_shared_bookings","appsheet_shared_courses","appsheet_gas_api"].indexOf(e.key)!==-1){
-      if (e.key==="appsheet_gas_api"){ API_URL=e.newValue||""; if(document.getElementById("settingGasUrl")) document.getElementById("settingGasUrl").value=API_URL; updateGasStatusBadge(API_URL); updateSyncButtonsState(); }
-      loadFullAdminData();
+    if (e.key==="appsheet_gas_api"){
+      API_URL=e.newValue||""; if(document.getElementById("settingGasUrl")) document.getElementById("settingGasUrl").value=API_URL;
+      updateGasStatusBadge(API_URL); updateSyncButtonsState(); loadFullAdminData(true);
+    } else if (e.key==="appsheet_shared_bookings"||e.key==="appsheet_shared_courses"){
+      loadLocalSharedData(); calculateCourseBookedCounts(); renderAll();
     }
   });
-  window.addEventListener("focus",function(){loadFullAdminData();});
-  document.addEventListener("visibilitychange",function(){if(!document.hidden) loadFullAdminData();});
+  window.addEventListener("focus",function(){loadFullAdminData(false);});
+  document.addEventListener("visibilitychange",function(){if(!document.hidden) loadFullAdminData(false);});
 });
 </script>
 </body>
