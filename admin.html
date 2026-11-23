@@ -1709,7 +1709,7 @@ function openLineNoticePrompt(bookingId) {
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){b=adminBookings[i];break;}}
   if (!b||!b["Line ID"]) return;
   var name=b["學員姓名"]||"", lineId=b["Line ID"], courseTitle=b["課程名稱"]||"";
-  var msg="🎉【課程報名成功通知】\n"+name+" 您好！我們已收到您的款項，報名【"+courseTitle+"】已確認為【報名成功】！\n預約編號："+bookingId+"。";
+  var msg="🎉【課程報名成功】\n"+name+" 您好！我們已收到您的款項，【"+courseTitle+"】已確認報名成功囉！";
   navigator.clipboard&&navigator.clipboard.writeText(msg);
   if (confirm("LINE 通知快捷\n\n已複製通知訊息，是否前往學員 LINE（@"+lineId+"）發送？")){ window.open("https://line.me/R/ti/p/~"+lineId,"_blank"); }
 }
