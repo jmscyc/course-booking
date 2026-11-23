@@ -75,7 +75,7 @@
 
     // ── 版本號強制更新機制（與 admin.html / GAS 統一為 3.2.0）──
     (function () {
-      var APP_VERSION  = "3.2.0";
+      var APP_VERSION  = "3.3.2";
       var savedVersion = localStorage.getItem("app_version");
 
       if (savedVersion && savedVersion !== APP_VERSION) {
@@ -241,6 +241,11 @@
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-location-dot text-blue-500 w-4 text-center"></i>
           <span id="modalLocation"></span>
+        </div>
+        <div id="modalPriceRow" class="flex items-center gap-2 pt-1.5 border-t border-slate-200/70 mt-1.5 hidden">
+          <i class="fa-solid fa-tag text-emerald-500 w-4 text-center"></i>
+          <span id="modalPriceText" class="font-black text-sm"></span>
+          <span id="modalPriceCountdown" class="text-[11px] font-bold text-rose-600"></span>
         </div>
       </div>
 
@@ -539,13 +544,13 @@
   // Demo 資料（與 GAS 欄位完全一致）
   // ══════════════════════════════════════════════
   const DEMO_COURSES = [
-    { id:"260428", title:"❷ 學習：頌缽入門",    instructor:"霖霖", date:"2026-11-22", startTime:"08:30", endTime:"12:30", capacity:4,  bookedCount:4, virtualCount:0, remaining:0, location:"高雄-近高美館", earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:true  },
-    { id:"260430", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2026-11-21", startTime:"09:00", endTime:"17:30", capacity:1,  bookedCount:0, virtualCount:0, remaining:1, location:"台南安南醫院", earlyBirdPrice:"9000",  regularPrice:"12000", status:"開啟報名", isFull:false },
-    { id:"260435", title:"❸ 學習：頌缽進階",    instructor:"霖霖", date:"2027-01-24", startTime:"11:00", endTime:"15:00", capacity:8,  bookedCount:6, virtualCount:0, remaining:2, location:"台北場地",     earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:false },
-    { id:"260436", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2027-01-17", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:0, virtualCount:0, remaining:8, location:"高雄-近高美館", earlyBirdPrice:"8000",  regularPrice:"12000", status:"開啟報名", isFull:false },
-    { id:"260437", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2026-12-27", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:5, virtualCount:0, remaining:3, location:"高雄-近高美館", earlyBirdPrice:"8000",  regularPrice:"10000", status:"開啟報名", isFull:false },
-    { id:"260438", title:"❸ 學習：頌缽進階",    instructor:"霖霖", date:"2026-11-22", startTime:"14:00", endTime:"18:00", capacity:7,  bookedCount:5, virtualCount:0, remaining:2, location:"高雄-近高美館", earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:false },
-    { id:"260439", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2027-01-23", startTime:"09:00", endTime:"17:30", capacity:5,  bookedCount:0, virtualCount:0, remaining:5, location:"台北場地",     earlyBirdPrice:"8000",  regularPrice:"12000", status:"開啟報名", isFull:false }
+    { id:"260428", title:"❷ 學習：頌缽入門",    instructor:"霖霖", date:"2026-11-22", startTime:"08:30", endTime:"12:30", capacity:4,  bookedCount:4, virtualCount:0, remaining:0, location:"高雄-近高美館", earlyBirdPrice:"4000",  regularPrice:"5000",  earlyBirdDeadline:"",           status:"開啟報名", isFull:true  },
+    { id:"260430", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2026-11-21", startTime:"09:00", endTime:"17:30", capacity:1,  bookedCount:0, virtualCount:0, remaining:1, location:"台南安南醫院", earlyBirdPrice:"9000",  regularPrice:"12000", earlyBirdDeadline:"",           status:"開啟報名", isFull:false },
+    { id:"260435", title:"❸ 學習：頌缽進階",    instructor:"霖霖", date:"2027-01-24", startTime:"11:00", endTime:"15:00", capacity:8,  bookedCount:6, virtualCount:0, remaining:2, location:"台北場地",     earlyBirdPrice:"4000",  regularPrice:"5000",  earlyBirdDeadline:"2026-12-15", status:"開啟報名", isFull:false },
+    { id:"260436", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2027-01-17", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:0, virtualCount:0, remaining:8, location:"高雄-近高美館", earlyBirdPrice:"8000",  regularPrice:"12000", earlyBirdDeadline:"2026-12-20", status:"開啟報名", isFull:false },
+    { id:"260437", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2026-12-27", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:5, virtualCount:0, remaining:3, location:"高雄-近高美館", earlyBirdPrice:"8000",  regularPrice:"10000", earlyBirdDeadline:"",           status:"開啟報名", isFull:false },
+    { id:"260438", title:"❸ 學習：頌缽進階",    instructor:"霖霖", date:"2026-11-22", startTime:"14:00", endTime:"18:00", capacity:7,  bookedCount:5, virtualCount:0, remaining:2, location:"高雄-近高美館", earlyBirdPrice:"4000",  regularPrice:"5000",  earlyBirdDeadline:"",           status:"開啟報名", isFull:false },
+    { id:"260439", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2027-01-23", startTime:"09:00", endTime:"17:30", capacity:5,  bookedCount:0, virtualCount:0, remaining:5, location:"台北場地",     earlyBirdPrice:"8000",  regularPrice:"12000", earlyBirdDeadline:"",           status:"開啟報名", isFull:false }
   ];
 
   // ══════════════════════════════════════════════
@@ -569,6 +574,50 @@
   }
 
   // ══════════════════════════════════════════════
+  // 早鳥價截止判斷與倒數計時
+  // 截止日當天台灣時間 23:59:59（= UTC 15:59:59）前早鳥價仍有效
+  // ══════════════════════════════════════════════
+  function earlyBirdDeadlineMs(deadlineStr) {
+    if (!deadlineStr) return null;
+    const p = String(deadlineStr).trim().replace(/\//g, "-").split("-");
+    if (p.length !== 3) return null;
+    const y = parseInt(p[0], 10), m = parseInt(p[1], 10), d = parseInt(p[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+    return Date.UTC(y, m - 1, d, 15, 59, 59);
+  }
+
+  // 回傳此課程目前應顯示的價格與早鳥狀態
+  function getEffectivePrice(course) {
+    const eb = Number(course.earlyBirdPrice) || 0;
+    const rg = Number(course.regularPrice)   || 0;
+    const deadlineMs = earlyBirdDeadlineMs(course.earlyBirdDeadline);
+    const now = Date.now();
+    const earlyBirdActive = eb > 0 && (deadlineMs === null || now <= deadlineMs);
+    let price = 0, isEarlyBird = false;
+    if (earlyBirdActive)      { price = eb; isEarlyBird = true; }
+    else if (rg > 0)          { price = rg; isEarlyBird = false; }
+    else if (eb > 0)          { price = eb; isEarlyBird = true; } // 早鳥已過但無定價可退，仍顯示早鳥價
+    return {
+      price, isEarlyBird,
+      hasDeadline: deadlineMs !== null,
+      showCountdown: isEarlyBird && deadlineMs !== null && deadlineMs > now,
+      remainMs: deadlineMs !== null ? deadlineMs - now : null
+    };
+  }
+
+  // 將剩餘毫秒數格式化為倒數文字
+  function formatCountdown(ms) {
+    if (ms === null || ms <= 0) return "";
+    const totalMin = Math.floor(ms / 60000);
+    const days  = Math.floor(totalMin / 1440);
+    const hours = Math.floor((totalMin % 1440) / 60);
+    const mins  = totalMin % 60;
+    if (days > 0)  return `倒數 ${days}天${hours}時`;
+    if (hours > 0) return `倒數 ${hours}時${mins}分`;
+    return `倒數 ${mins}分`;
+  }
+
+  // ══════════════════════════════════════════════
   // 判斷課程是否已過期
   // 使用 split 拼接避免 Safari new Date("yyyy-MM-ddTHH:MM") 解析失敗
   // 加入 1899 年 GAS 快取異常防護
@@ -576,12 +625,17 @@
   function isCourseExpired(course) {
     if (!course || !course.date) return false;
     try {
-      const dateStr = String(course.date).trim();
+      // ✅ Bug Fix：補上與 earlyBirdDeadlineMs()/admin.html 一致的 "/" → "-" 正規化，
+      // 避免試算表若以斜線格式顯示日期時，split("-") 失敗而誤判為「永不過期」
+      const dateStr = String(course.date).trim().replace(/\//g, "-");
       // GAS getDisplayValues 快取異常防護
       if (dateStr.startsWith("1899")) return false;
       const endStr  = String(course.endTime || "23:59").trim();
       const parts   = dateStr.split("-");
-      const tparts  = endStr.replace(/:\d{2}$/, "").split(":");  // 移除秒數
+      // ✅ Bug Fix：舊版正規式 /:\d{2}$/ 會把正常的 "HH:MM"（如 "12:30"）誤判成帶秒數格式，
+      // 把分鐘誤刪成只剩小時，導致 tparts.length<2 永遠回傳 false（永不過期），
+      // 讓已結束的課程仍顯示在報名頁上。改為只取前兩段（小時、分鐘），忽略多出的秒數。
+      const tparts  = endStr.split(":").slice(0, 2);
       if (parts.length < 3 || tparts.length < 2) return false;
       // 用 Date.UTC 避免時區問題（+8 小時轉台灣時間）
       const utcMs = Date.UTC(
@@ -616,6 +670,20 @@
 
     syncBankSettings();
     loadCourses();
+
+    // 早鳥倒數計時：每 30 秒更新一次畫面上的倒數文字
+    // 倒數歸零時觸發一次 renderUI() 重新計算正確價格（早鳥→定價）
+    setInterval(() => {
+      let expiredSeen = false;
+      document.querySelectorAll(".eb-countdown[data-eb-deadline]").forEach(el => {
+        const dl = earlyBirdDeadlineMs(el.getAttribute("data-eb-deadline"));
+        if (dl === null) return;
+        const remain = dl - Date.now();
+        if (remain <= 0) { expiredSeen = true; return; }
+        el.innerHTML = `<i class="fa-solid fa-hourglass-half text-[9px]"></i> ${formatCountdown(remain)}`;
+      });
+      if (expiredSeen) renderUI();
+    }, 30000);
 
     // 跨分頁同步
     window.addEventListener("storage", e => {
@@ -781,8 +849,8 @@
 
     container.innerHTML = filtered.map(c => {
       const isFull    = c.isFull || c.remaining <= 0;
-      const price     = Number(c.earlyBirdPrice || c.regularPrice);
-      const priceText = price ? `NT$ ${price.toLocaleString()}` : "";
+      const eff       = getEffectivePrice(c);
+      const priceText = eff.price ? `NT$ ${eff.price.toLocaleString()}` : "";
       const shortDate = formatFullDate(c.date);
 
       return `
@@ -801,9 +869,13 @@
                 <span class="inline-flex items-center gap-0.5 text-[11px] font-black ${
                   isFull
                     ? "text-slate-500 bg-slate-100 border-slate-200"
-                    : "text-emerald-800 bg-emerald-50 border-emerald-200"
+                    : (eff.isEarlyBird ? "text-emerald-800 bg-emerald-50 border-emerald-200" : "text-blue-800 bg-blue-50 border-blue-200")
                 } px-2 py-0.5 rounded-md border">
-                  <i class="fa-solid fa-tag text-[9px]"></i> ${priceText}
+                  <i class="fa-solid fa-tag text-[9px]"></i> ${priceText}${eff.isEarlyBird ? "" : " (定價)"}
+                </span>` : ""}
+              ${(!isFull && eff.showCountdown) ? `
+                <span class="eb-countdown inline-flex items-center gap-0.5 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md animate-pulse" data-eb-deadline="${c.earlyBirdDeadline}">
+                  <i class="fa-solid fa-hourglass-half text-[9px]"></i> ${formatCountdown(eff.remainMs)}
                 </span>` : ""}
             </div>
             <h3 class="text-xs sm:text-sm font-black text-slate-900 leading-snug truncate" title="${c.title}">${c.title}</h3>
@@ -932,6 +1004,20 @@
     document.getElementById("modalDateTime").innerText    = `${formatFullDate(course.date)} ${course.startTime} - ${course.endTime}`;
     document.getElementById("modalInstructor").innerText  = `授課教練：${course.instructor || "霖霖"}`;
     document.getElementById("modalLocation").innerText    = `地點：${course.location || "待定"}`;
+
+    // 價格（早鳥有效顯示早鳥價＋倒數，過期自動切換定價）
+    const eff = getEffectivePrice(course);
+    const priceRow = document.getElementById("modalPriceRow");
+    const priceText = document.getElementById("modalPriceText");
+    const priceCountdown = document.getElementById("modalPriceCountdown");
+    if (eff.price) {
+      priceRow.classList.remove("hidden");
+      priceText.innerText = `NT$ ${eff.price.toLocaleString()}` + (eff.isEarlyBird ? "（早鳥價）" : "（定價）");
+      priceText.className = "font-black text-sm " + (eff.isEarlyBird ? "text-emerald-700" : "text-blue-700");
+      priceCountdown.innerText = eff.showCountdown ? "⏳ " + formatCountdown(eff.remainMs) + "內有效" : "";
+    } else {
+      priceRow.classList.add("hidden");
+    }
 
     // 自動填入上次儲存的資料
     document.getElementById("studentName").value  = localStorage.getItem("saved_name")  || "";
