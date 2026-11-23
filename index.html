@@ -3,35 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- 防止瀏覽器快取舊版 HTML/JS -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <title>霖霖的課程預約系統</title>
-  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --client-font-size: 21px; /* 手機端標準 21px */
-    }
-    html {
-      font-size: var(--client-font-size) !important;
-    }
-    /* 平板與桌機筆電端 (>= 768px)：字級自動維持舒適適中比例 */
+    :root { --client-font-size: 21px; }
+    html  { font-size: var(--client-font-size) !important; }
+
     @media (min-width: 768px) {
-      :root {
-        --client-font-size: 16.5px;
-      }
-      /* 強制覆蓋確保多欄網格不受任何 Tailwind 快取影響 */
+      :root { --client-font-size: 16.5px; }
       #courseContainer {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 1.25rem !important;
       }
     }
-    /* 桌上型電腦大螢幕 (>= 1024px)：自動切換為三欄 (3 欄) 寬版視野 */
     @media (min-width: 1024px) {
-      :root {
-        --client-font-size: 17px;
-      }
+      :root { --client-font-size: 17px; }
       #courseContainer {
         display: grid !important;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -47,51 +41,75 @@
       line-height: 1.5;
     }
 
-    /* 21px 大字型下的比例微調，確保手機版排版優雅不擠壓折行 */
-    .text-\[9px\] { font-size: 0.65rem !important; }
+    .text-\[9px\]  { font-size: 0.65rem !important; }
     .text-\[10px\] { font-size: 0.70rem !important; }
     .text-\[11px\] { font-size: 0.76rem !important; }
-    .text-xs { font-size: 0.82rem !important; }
-    .text-sm { font-size: 0.90rem !important; }
-    .text-base { font-size: 1.00rem !important; }
-    .text-lg { font-size: 1.12rem !important; }
-    .text-xl { font-size: 1.25rem !important; }
-    .text-2xl { font-size: 1.40rem !important; }
-    .text-3xl { font-size: 1.65rem !important; }
+    .text-xs       { font-size: 0.82rem !important; }
+    .text-sm       { font-size: 0.90rem !important; }
+    .text-base     { font-size: 1.00rem !important; }
+    .text-lg       { font-size: 1.12rem !important; }
+    .text-xl       { font-size: 1.25rem !important; }
+    .text-2xl      { font-size: 1.40rem !important; }
+    .text-3xl      { font-size: 1.65rem !important; }
 
-    .custom-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
+    .custom-scrollbar::-webkit-scrollbar { display: none; }
     .glass-nav {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255,255,255,0.95);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateX(-50%) translateY(12px); }
+      to   { opacity:1; transform:translateX(-50%) translateY(0); }
+    }
   </style>
+
   <script>
-    // 立即生效防閃爍：支援數字型無限縮放字體
-    window.currentFontSize = 21; // 預設全域變數
-    (function() {
-      var isDesktop = window.innerWidth >= 768;
+    // ── 防閃爍字型 ──
+    window.currentFontSize = 21;
+    (function () {
+      var isDesktop   = window.innerWidth >= 768;
       var defaultSize = isDesktop ? 16.5 : 21;
-      var saved = localStorage.getItem("custom_font_size"); // 使用新 key 避免與舊的字串設定衝突
-      
-      if (saved && !isNaN(saved)) {
-        window.currentFontSize = parseFloat(saved);
-      } else {
-        window.currentFontSize = defaultSize;
-      }
+      var saved       = localStorage.getItem("custom_font_size");
+      window.currentFontSize = (saved && !isNaN(saved)) ? parseFloat(saved) : defaultSize;
       document.documentElement.style.setProperty("--client-font-size", window.currentFontSize + "px");
       document.documentElement.style.fontSize = window.currentFontSize + "px";
+    })();
+
+    // ── 版本號強制更新機制 ──
+    (function () {
+      var APP_VERSION  = "2.1.0"; // ⬅ 每次改版只需修改這個數字
+      var savedVersion = localStorage.getItem("app_version");
+
+      if (savedVersion && savedVersion !== APP_VERSION) {
+        var keysToPreserve = [
+          "custom_font_size", "saved_name", "saved_phone", "saved_line",
+          "appsheet_gas_api", "appsheet_bank_name",
+          "appsheet_bank_account", "appsheet_bank_holder"
+        ];
+        var preserved = {};
+        keysToPreserve.forEach(function (k) {
+          var v = localStorage.getItem(k);
+          if (v !== null) preserved[k] = v;
+        });
+        localStorage.removeItem("appsheet_shared_courses");
+        localStorage.removeItem("appsheet_shared_bookings");
+        Object.keys(preserved).forEach(function (k) { localStorage.setItem(k, preserved[k]); });
+        localStorage.setItem("app_version", APP_VERSION);
+        window.__showUpdateBanner = true;
+        window.__updateVersion    = APP_VERSION;
+      } else if (!savedVersion) {
+        localStorage.setItem("app_version", APP_VERSION);
+      }
     })();
   </script>
 </head>
 <body class="min-h-screen text-slate-800 pb-20 overflow-x-hidden">
 
-  <!-- 頂部精簡導航列 (吸頂黏性導航，完美適配手機與桌面，零溢出) -->
+  <!-- 頂部導航 -->
   <header class="sticky top-0 z-30 glass-nav border-b border-slate-200/80 px-2.5 sm:px-6 py-2 sm:py-2.5 transition-all">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
-      <!-- 導航列左側：品牌徽章標籤 (保證文字完整不截斷) -->
+
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
           <i class="fa-solid fa-spa text-xs sm:text-sm"></i>
@@ -99,68 +117,71 @@
         <span class="font-extrabold text-xs sm:text-base text-slate-800 tracking-tight whitespace-nowrap">霖霖頌缽教學</span>
       </div>
 
-      <!-- 導航列右側：查詢按鈕 + 字級調整 + 重新整理 + 管理員 -->
       <div class="flex items-center gap-1 sm:gap-2 shrink-0">
         <!-- 桌機版查詢按鈕 -->
-        <button onclick="openMyBookingsModal()" class="hidden sm:inline-flex px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-xs transition items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer whitespace-nowrap" title="查詢預約進度">
-          <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
-          <span>查詢預約進度</span>
+        <button onclick="openMyBookingsModal()"
+          class="hidden sm:inline-flex px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-xs transition items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer whitespace-nowrap">
+          <i class="fa-solid fa-magnifying-glass text-[11px]"></i><span>查詢預約進度</span>
         </button>
 
-        <!-- 字級調整 (無段增減) -->
+        <!-- 字級調整 -->
         <div class="flex items-center bg-slate-100/90 rounded-lg p-0.5 border border-slate-200 text-xs">
-          <button type="button" onclick="adjustFontSize(-1)" class="px-2 py-1 rounded text-slate-500 font-bold hover:text-blue-600 hover:bg-slate-200 transition cursor-pointer" title="縮小字型">
+          <button type="button" onclick="adjustFontSize(-1)"
+            class="px-2 py-1 rounded text-slate-500 font-bold hover:text-blue-600 hover:bg-slate-200 transition cursor-pointer">
             <i class="fa-solid fa-minus text-[10px]"></i>
           </button>
           <span class="px-1.5 font-bold text-slate-600 select-none text-[11px]">字型</span>
-          <button type="button" onclick="adjustFontSize(1)" class="px-2 py-1 rounded text-slate-500 font-bold hover:text-blue-600 hover:bg-slate-200 transition cursor-pointer" title="放大字型">
+          <button type="button" onclick="adjustFontSize(1)"
+            class="px-2 py-1 rounded text-slate-500 font-bold hover:text-blue-600 hover:bg-slate-200 transition cursor-pointer">
             <i class="fa-solid fa-plus text-[10px]"></i>
           </button>
         </div>
 
-        <!-- 重新整理按鈕 -->
-        <button onclick="loadCourses()" title="重新整理" class="p-1 sm:p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
+        <!-- 重新整理 -->
+        <button onclick="loadCourses()" title="重新整理"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer shrink-0">
           <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
         </button>
 
-        <!-- 管理員跳轉按鈕 -->
-        <a href="https://jmscyc.github.io/course-booking/admin.html?sync=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzLqx6a2HqyKRqTuXkWGc9AvAMa3SBe8vRqfCU-P7nVJT3sSaKLj1mirabS1mBRO0dPYQ%2Fexec" target="_blank" title="管理後台" class="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer shrink-0">
+        <!-- 管理後台 -->
+        <a href="https://jmscyc.github.io/course-booking/admin.html?sync=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzLqx6a2HqyKRqTuXkWGc9AvAMa3SBe8vRqfCU-P7nVJT3sSaKLj1mirabS1mBRO0dPYQ%2Fexec"
+          target="_blank" title="管理後台"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer shrink-0">
           <i class="fa-solid fa-gear text-xs"></i>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- 主內容容器 -->
+  <!-- 主內容 -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-3 sm:pt-4 space-y-3 sm:space-y-4">
 
-    <!-- 日期篩選 Tab (含漸層滾動提示) -->
+    <!-- 日期篩選 Tab -->
     <div class="relative">
       <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 mb-2 pr-4" id="dateFilterTabs">
-        <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-600 text-white shadow-sm transition" data-date="all">
-          全部時段
-        </button>
-        <!-- 動態載入日期標籤 -->
+        <button onclick="filterByDate('all')"
+          class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-600 text-white shadow-sm transition"
+          data-date="all">全部時段</button>
       </div>
-      <!-- 右側向右滾動微光漸層遮罩提示 -->
       <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent"></div>
     </div>
 
-    <!-- 課程清單標題列 + 手機版專屬明亮「查詢進度」按鈕 -->
+    <!-- 標題列 -->
     <div class="flex items-center justify-between mb-2.5 px-0.5">
       <div class="flex items-baseline gap-2">
-        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">開放報名課程 (<span id="courseCount">0</span>)</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">
+          開放報名課程 (<span id="courseCount">0</span>)
+        </span>
         <span class="text-[11px] text-slate-400 hidden xs:inline">點擊卡片預約</span>
       </div>
-
-      <!-- 手機版專屬查詢按鈕 -->
-      <button onclick="openMyBookingsModal()" class="sm:hidden px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1.5 border border-blue-200 cursor-pointer shadow-2xs whitespace-nowrap" title="查詢預約進度">
-        <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
-        <span>查詢進度</span>
+      <!-- 手機版查詢按鈕 -->
+      <button onclick="openMyBookingsModal()"
+        class="sm:hidden px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition flex items-center gap-1.5 border border-blue-200 cursor-pointer shadow-2xs whitespace-nowrap">
+        <i class="fa-solid fa-magnifying-glass text-[10px]"></i><span>查詢進度</span>
       </button>
     </div>
 
-    <!-- 載入中骨架屏 -->
+    <!-- 骨架屏 -->
     <div id="loadingSkeleton" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
       <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs animate-pulse flex items-center justify-between gap-3">
         <div class="space-y-2 flex-1">
@@ -180,10 +201,8 @@
       </div>
     </div>
 
-    <!-- 課程清單容器 -->
-    <div id="courseContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3 hidden">
-      <!-- 課程項目由 JavaScript 動態生成 -->
-    </div>
+    <!-- 課程卡片容器 -->
+    <div id="courseContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3 hidden"></div>
 
     <!-- 無課程提示 -->
     <div id="noCoursesState" class="hidden text-center py-12 px-4">
@@ -196,22 +215,23 @@
 
   </main>
 
-  <!-- 報名表單彈出視窗 (Modal) -->
-  <div id="bookingModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity p-0 sm:p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl transform transition-transform border border-slate-100 max-h-[92vh] sm:max-h-[88vh] overflow-y-auto my-auto">
-      
-      <!-- Modal 標題列 -->
+  <!-- 報名 Modal -->
+  <div id="bookingModal"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity p-0 sm:p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-100 max-h-[92vh] sm:max-h-[88vh] overflow-y-auto my-auto">
+
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
         <div>
           <span class="text-[11px] font-bold tracking-wider text-blue-600 uppercase">COURSE BOOKING</span>
           <h2 class="text-lg font-bold text-slate-900 leading-tight" id="modalCourseTitle">預約課程</h2>
         </div>
-        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
+        <button onclick="closeModal()"
+          class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- 課程摘要資訊 -->
+      <!-- 課程摘要 -->
       <div class="bg-slate-50 rounded-xl p-3.5 mb-4 text-xs text-slate-600 space-y-1.5 border border-slate-100">
         <div class="flex items-center gap-2">
           <i class="fa-regular fa-clock text-blue-500 w-4 text-center"></i>
@@ -227,65 +247,76 @@
         </div>
       </div>
 
-      <!-- 填寫資料表單 -->
       <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="space-y-3.5">
         <input type="hidden" id="modalCourseId" name="courseId">
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">學員姓名 <span class="text-rose-500">*</span></label>
-          <input type="text" id="studentName" required placeholder="請輸入姓名" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          <input type="text" id="studentName" required placeholder="請輸入姓名"
+            class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">聯絡電話 <span class="text-rose-500">*</span></label>
-          <input type="tel" id="studentPhone" required placeholder="例如：0912345678" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          <input type="tel" id="studentPhone" required placeholder="例如：0912345678"
+            class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Line ID <span class="text-slate-400 font-normal">(用於確認報名成功通知)</span></label>
-          <input type="text" id="studentLine" placeholder="請輸入您的 Line ID" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            Line ID <span class="text-slate-400 font-normal">(用於確認報名成功通知)</span>
+          </label>
+          <input type="text" id="studentLine" placeholder="請輸入您的 Line ID"
+            class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
 
-        <!-- 付款方式選擇 (銀行匯款 / LINE轉帳 二選一) -->
+        <!-- 付款方式 -->
         <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-3">
           <div>
-            <label class="block text-xs font-bold text-slate-800 mb-1.5">
-              <span>付款方式</span>
-              <span class="text-rose-500">*</span>
-            </label>
+            <label class="block text-xs font-bold text-slate-800 mb-1.5">付款方式 <span class="text-rose-500">*</span></label>
             <div class="grid grid-cols-2 gap-2.5">
-              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')" class="py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer">
+              <button type="button" id="payMethodBank" onclick="selectPayMethod('bank')"
+                class="py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer">
                 <i class="fa-solid fa-building-columns text-blue-600 text-sm"></i>
                 <span class="whitespace-nowrap">銀行匯款</span>
               </button>
-              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')" class="py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer">
+              <button type="button" id="payMethodLine" onclick="selectPayMethod('line')"
+                class="py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer">
                 <i class="fa-brands fa-line text-emerald-500 text-base"></i>
                 <span class="whitespace-nowrap">LINE 轉帳</span>
               </button>
             </div>
           </div>
 
-          <!-- 1. 銀行匯款專用：匯款帳號資訊卡 (支援一鍵複製) 與五碼輸入框 -->
+          <!-- 銀行匯款資訊 -->
           <div id="bankCodeContainer" class="space-y-2.5 pt-1">
-            <!-- 匯款帳號展示卡 -->
             <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-xs text-blue-950 space-y-1.5">
               <div class="flex items-center justify-between gap-1 flex-wrap">
                 <span class="font-bold text-blue-900 flex items-center gap-1.5 text-xs">
                   <i class="fa-solid fa-building-columns text-blue-600"></i>
                   <span>收款帳戶資訊</span>
                 </span>
-                <button type="button" onclick="copyBankAccount()" id="copyBankBtn" class="px-2 py-0.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer shrink-0">
+                <button type="button" onclick="copyBankAccount()" id="copyBankBtn"
+                  class="px-2 py-0.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer shrink-0">
                   <i class="fa-regular fa-copy"></i>
                   <span id="copyBankText">一鍵複製帳號</span>
                 </button>
               </div>
               <div class="font-mono text-[11px] sm:text-xs space-y-1 pt-1 border-t border-blue-200/60">
-                <div class="flex items-center justify-between"><span class="text-blue-700">銀行機構</span><span id="bankOrgName" class="font-bold">822 中國信託</span></div>
-                <div class="flex items-center justify-between"><span class="text-blue-700">收款帳號</span><span id="bankAccountNum" class="font-black text-sm tracking-wider text-blue-950">1234-5678-9012</span></div>
-                <div class="flex items-center justify-between"><span class="text-blue-700">戶  名</span><span id="bankAccountHolder" class="font-bold">霖霖身心靈工坊 (陳霖霖)</span></div>
+                <div class="flex items-center justify-between">
+                  <span class="text-blue-700">銀行機構</span>
+                  <span id="bankOrgName" class="font-bold">822 中國信託</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-blue-700">收款帳號</span>
+                  <span id="bankAccountNum" class="font-black text-sm tracking-wider text-blue-950">1234-5678-9012</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-blue-700">戶　名</span>
+                  <span id="bankAccountHolder" class="font-bold">霖霖身心靈工坊 (陳霖霖)</span>
+                </div>
               </div>
             </div>
-
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -295,29 +326,41 @@
                 </label>
                 <span class="text-[11px] text-slate-400">必須剛好 5 碼數字</span>
               </div>
-              <input type="text" id="studentPaymentCode" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="請輸入 5 碼純數字 (例如：42919)" class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
+              <input type="text" id="studentPaymentCode" inputmode="numeric"
+                pattern="[0-9]{5}" maxlength="5"
+                placeholder="請輸入 5 碼純數字 (例如：42919)"
+                class="w-full text-base px-3.5 py-2 rounded-xl border border-blue-300 bg-white font-mono font-black tracking-widest text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
               <p class="text-[11px] text-slate-500 mt-1">管理者將以此 5 位數核對您的銀行入帳</p>
             </div>
           </div>
 
-          <!-- 2. LINE 轉帳提示 -->
-          <div id="linePayContainer" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
+          <!-- LINE 轉帳提示 -->
+          <div id="linePayContainer"
+            class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
             <p class="font-bold flex items-center gap-1.5 text-emerald-900">
               <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
               <span>已選擇 LINE 轉帳付款</span>
             </p>
-            <p class="text-[11px] leading-relaxed">請確認上方已填寫正確的 <b>Line ID</b>，送出後我們將透過 LINE 與您核對款項並發送報名成功通知！</p>
+            <p class="text-[11px] leading-relaxed">
+              請確認上方已填寫正確的 <b>Line ID</b>，送出後我們將透過 LINE 與您核對款項並發送報名成功通知！
+            </p>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">特殊需求 / 其他備註 <span class="text-slate-400 font-normal">(選填)</span></label>
-          <textarea id="studentNotes" rows="2" placeholder="如自備頌缽、特殊身體狀況需留意等..." class="w-full text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            特殊需求 / 其他備註 <span class="text-slate-400 font-normal">(選填)</span>
+          </label>
+          <textarea id="studentNotes" rows="2"
+            placeholder="如自備頌缽、特殊身體狀況需留意等..."
+            class="w-full text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
         </div>
 
-        <!-- 🌟 吸底操作列 (Sticky Bottom Submit Bar) 提升手機預約體驗 -->
+        <!-- 吸底送出 -->
         <div class="sticky bottom-0 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 p-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 rounded-b-3xl sm:rounded-b-2xl">
-          <button type="submit" id="submitBtn" class="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition cursor-pointer">
+          <button type="submit" id="submitBtn"
+            class="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition cursor-pointer">
             <span>確認預約報名</span>
             <i class="fa-solid fa-arrow-right text-xs"></i>
           </button>
@@ -326,243 +369,232 @@
     </div>
   </div>
 
-  <!-- 預約成功彈跳通知 -->
-  <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
+  <!-- 預約成功 Modal -->
+  <div id="successModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
         <i class="fa-solid fa-check"></i>
       </div>
       <h3 class="text-lg font-bold text-slate-900 mb-1">預約資料已送出！</h3>
-      <p class="text-xs text-slate-500 mb-4" id="successMessageDetail">管理員將核對匯款款項，核對無誤後狀態將轉為【報名成功】並向您發送 LINE 確認通知！</p>
-      
+      <p class="text-xs text-slate-500 mb-4" id="successMessageDetail">
+        管理員將核對匯款款項，核對無誤後狀態將轉為【報名成功】並向您發送 LINE 確認通知！
+      </p>
       <div class="bg-slate-50 rounded-xl p-3 text-left text-xs text-slate-600 mb-5 space-y-1 border border-slate-100">
         <p><span class="text-slate-400">報名時間：</span><span id="succBookingId" class="font-mono font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">課程名稱：</span><span id="succCourseTitle" class="font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">時段地點：</span><span id="succDateTime" class="text-slate-800"></span></p>
       </div>
-
-      <button onclick="closeSuccessModal()" class="w-full py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition">
+      <button onclick="closeSuccessModal()"
+        class="w-full py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition">
         完成
       </button>
     </div>
   </div>
 
-  <script>
-    /**
-- 後端 API 連線設定
-- 支援讀取 Google Apps Script Web App API
-     */
-    let API_URL = localStorage.getItem("appsheet_gas_api") || ""; 
+  <!-- 學員查詢預約 Modal -->
+  <div id="myBookingsModal"
+    class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">查詢我的預約課程</h3>
+            <p class="text-[11px] text-slate-400">輸入手機號碼即可查看報名狀態</p>
+          </div>
+        </div>
+        <button onclick="closeMyBookingsModal()"
+          class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
 
-    // 本地暫存課程資料
-    let allCourses = [];
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="tel" id="queryPhoneInput" placeholder="請輸入報名時的手機號碼"
+            class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            onkeydown="if(event.key==='Enter') queryMyBookings()">
+        </div>
+        <button type="button" onclick="queryMyBookings()"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer">
+          查詢
+        </button>
+      </div>
+
+      <div id="myBookingsList" class="flex-1 overflow-y-auto space-y-2.5 max-h-72 pr-1">
+        <div class="text-center py-6 text-slate-400 text-xs">請於上方輸入報名手機號碼開始查詢</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       JavaScript
+  ════════════════════════════════ -->
+  <script>
+    // ══════════════════════════════════════════════════
+    // 全域狀態
+    // ══════════════════════════════════════════════════
+    let API_URL      = localStorage.getItem("appsheet_gas_api") || "";
+    let allCourses   = [];
     let selectedDate = "all";
 
-    // 增減字型大小 (無段縮放)
+    // ══════════════════════════════════════════════════
+    // 字型調整
+    // ══════════════════════════════════════════════════
     function adjustFontSize(delta) {
-      window.currentFontSize += delta;
-      
-      // 設定合理的上下限，避免縮放過頭
-      if (window.currentFontSize < 10) window.currentFontSize = 10;
-      if (window.currentFontSize > 50) window.currentFontSize = 50;
-
+      window.currentFontSize = Math.min(50, Math.max(10, window.currentFontSize + delta));
       document.documentElement.style.setProperty("--client-font-size", window.currentFontSize + "px");
       document.documentElement.style.fontSize = window.currentFontSize + "px";
-      
       localStorage.setItem("custom_font_size", window.currentFontSize);
     }
 
-    // 內建示範資料
+    // ══════════════════════════════════════════════════
+    // 版本更新橫幅
+    // ══════════════════════════════════════════════════
+    function showUpdateBanner(version) {
+      var banner = document.createElement("div");
+      banner.style.cssText = [
+        "position:fixed","bottom:5rem","left:50%","transform:translateX(-50%)",
+        "z-index:9999","background:#1e40af","color:#fff",
+        "padding:0.6rem 1.2rem","border-radius:999px",
+        "font-size:0.78rem","font-weight:700",
+        "box-shadow:0 4px 24px rgba(30,64,175,0.35)",
+        "display:flex","align-items:center","gap:0.6rem",
+        "white-space:nowrap","pointer-events:none",
+        "animation:fadeInUp 0.35s ease"
+      ].join(";");
+      banner.innerHTML =
+        '<i class="fa-solid fa-rotate-right"></i>' +
+        '<span>系統已更新至 v' + version + '，課程資料將重新載入</span>';
+      document.body.appendChild(banner);
+      setTimeout(function () {
+        banner.style.transition = "opacity 0.5s";
+        banner.style.opacity    = "0";
+        setTimeout(function () { banner.parentNode && banner.parentNode.removeChild(banner); }, 500);
+      }, 5000);
+    }
+
+    // ══════════════════════════════════════════════════
+    // localStorage 資料結構遷移
+    // ══════════════════════════════════════════════════
+    function migrateLocalStorageData() {
+      try {
+        var raw = localStorage.getItem("appsheet_shared_courses");
+        if (!raw) return;
+        var courses = JSON.parse(raw);
+        if (!Array.isArray(courses)) return;
+        var migrated = false;
+        courses = courses.map(function (c) {
+          var u = Object.assign({}, c);
+          if (typeof u.virtualCount  === "undefined") { u.virtualCount  = 0;     migrated = true; }
+          if (typeof u.isFull        === "undefined") { u.isFull        = (u.remaining !== undefined) ? u.remaining <= 0 : false; migrated = true; }
+          if (!u.earlyBirdPrice && !u.regularPrice && u.price) { u.regularPrice = u.price; migrated = true; }
+          return u;
+        });
+        if (migrated) localStorage.setItem("appsheet_shared_courses", JSON.stringify(courses));
+      } catch (e) { /* 靜默忽略，loadCourses 會 fallback */ }
+    }
+
+    // ══════════════════════════════════════════════════
+    // Demo 資料
+    // ══════════════════════════════════════════════════
     const DEMO_COURSES = [
-      {
-        id: "260428",
-        title: "❷ 學習：頌缽入門",
-        instructor: "霖霖老師",
-        date: "2026-11-22",
-        startTime: "08:30",
-        endTime: "12:30",
-        capacity: 4,
-        bookedCount: 4,
-        virtualCount: 0,
-        remaining: 0,
-        location: "高雄-近高美館",
-        notes: "想學頌缽，照顧自己",
-        earlyBirdPrice: "4000",
-        regularPrice: "5000",
-        status: "開啟報名",
-        isFull: true
-      },
-      {
-        id: "260430",
-        title: "❷ 學習：初進階整日班",
-        instructor: "霖霖老師",
-        date: "2026-11-21",
-        startTime: "09:00",
-        endTime: "17:30",
-        capacity: 1,
-        bookedCount: 0,
-        remaining: 1,
-        location: "台南安南醫院",
-        notes: "想學頌缽，照顧自己，幫助他人",
-        earlyBirdPrice: "9000",
-        regularPrice: "12000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260435",
-        title: "❸ 學習：頌缽進階",
-        instructor: "霖霖老師",
-        date: "2027-01-24",
-        startTime: "11:00",
-        endTime: "15:00",
-        capacity: 8,
-        bookedCount: 6,
-        remaining: 2,
-        location: "台北場地",
-        notes: "想進階技能，運用頌缽",
-        earlyBirdPrice: "4000",
-        regularPrice: "5000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260436",
-        title: "❷ 學習：初進階整日班",
-        instructor: "霖霖老師",
-        date: "2027-01-17",
-        startTime: "09:00",
-        endTime: "18:00",
-        capacity: 8,
-        bookedCount: 0,
-        remaining: 8,
-        location: "高雄-近高美館",
-        notes: "學習整套頌缽使用方式",
-        earlyBirdPrice: "8000",
-        regularPrice: "12000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260437",
-        title: "❷ 學習：初進階整日班",
-        instructor: "霖霖老師",
-        date: "2026-12-27",
-        startTime: "09:00",
-        endTime: "18:00",
-        capacity: 8,
-        bookedCount: 5,
-        remaining: 3,
-        location: "高雄-近高美館",
-        notes: "學習整套頌缽使用方式",
-        earlyBirdPrice: "8000",
-        regularPrice: "10000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260438",
-        title: "❸ 學習：頌缽進階",
-        instructor: "霖霖老師",
-        date: "2026-11-22",
-        startTime: "14:00",
-        endTime: "18:00",
-        capacity: 7,
-        bookedCount: 5,
-        remaining: 2,
-        location: "高雄-近高美館",
-        notes: "想進階技能，運用頌缽",
-        earlyBirdPrice: "4000",
-        regularPrice: "5000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260439",
-        title: "❷ 學習：初進階整日班",
-        instructor: "霖霖老師",
-        date: "2027-01-23",
-        startTime: "09:00",
-        endTime: "17:30",
-        capacity: 5,
-        bookedCount: 0,
-        remaining: 5,
-        location: "台北場地",
-        notes: "想學頌缽，照顧自己",
-        earlyBirdPrice: "8000",
-        regularPrice: "12000",
-        status: "開啟報名",
-        isFull: false
-      },
-      {
-        id: "260420",
-        title: "❷ 學習：頌缽入門",
-        date: "2026-10-18",
-        startTime: "09:00",
-        endTime: "13:00",
-        location: "高雄-近高美館",
-        capacity: 10,
-        instructor: "霖霖老師",
-        notes: "想學頌缽，照顧自己",
-        earlyBirdPrice: "4000",
-        regularPrice: "5000",
-        status: "已結束"
-      }
+      { id:"260428", title:"❷ 學習：頌缽入門",    instructor:"霖霖老師", date:"2026-11-22", startTime:"08:30", endTime:"12:30", capacity:4,  bookedCount:4, virtualCount:0, remaining:0, location:"高雄-近高美館",  earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:true  },
+      { id:"260430", title:"❷ 學習：初進階整日班", instructor:"霖霖老師", date:"2026-11-21", startTime:"09:00", endTime:"17:30", capacity:1,  bookedCount:0, virtualCount:0, remaining:1, location:"台南安南醫院",  earlyBirdPrice:"9000",  regularPrice:"12000", status:"開啟報名", isFull:false },
+      { id:"260435", title:"❸ 學習：頌缽進階",    instructor:"霖霖老師", date:"2027-01-24", startTime:"11:00", endTime:"15:00", capacity:8,  bookedCount:6, virtualCount:0, remaining:2, location:"台北場地",      earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:false },
+      { id:"260436", title:"❷ 學習：初進階整日班", instructor:"霖霖老師", date:"2027-01-17", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:0, virtualCount:0, remaining:8, location:"高雄-近高美館",  earlyBirdPrice:"8000",  regularPrice:"12000", status:"開啟報名", isFull:false },
+      { id:"260437", title:"❷ 學習：初進階整日班", instructor:"霖霖老師", date:"2026-12-27", startTime:"09:00", endTime:"18:00", capacity:8,  bookedCount:5, virtualCount:0, remaining:3, location:"高雄-近高美館",  earlyBirdPrice:"8000",  regularPrice:"10000", status:"開啟報名", isFull:false },
+      { id:"260438", title:"❸ 學習：頌缽進階",    instructor:"霖霖老師", date:"2026-11-22", startTime:"14:00", endTime:"18:00", capacity:7,  bookedCount:5, virtualCount:0, remaining:2, location:"高雄-近高美館",  earlyBirdPrice:"4000",  regularPrice:"5000",  status:"開啟報名", isFull:false },
+      { id:"260439", title:"❷ 學習：初進階整日班", instructor:"霖霖老師", date:"2027-01-23", startTime:"09:00", endTime:"17:30", capacity:5,  bookedCount:0, virtualCount:0, remaining:5, location:"台北場地",      earlyBirdPrice:"8000",  regularPrice:"12000", status:"開啟報名", isFull:false },
+      { id:"260420", title:"❷ 學習：頌缽入門",    instructor:"霖霖老師", date:"2026-10-18", startTime:"09:00", endTime:"13:00", capacity:10, bookedCount:0, virtualCount:0, remaining:10,location:"高雄-近高美館",  earlyBirdPrice:"4000",  regularPrice:"5000",  status:"已結束"  }
     ];
 
-    // 自動清洗修復快取資料庫
-    function normalizeCoursePrices(courseList) {
-      if (!Array.isArray(courseList)) return courseList;
-      return courseList.map(c => {
-        let notes = c.notes || "";
-        let eb = c.earlyBirdPrice || "";
-        let rg = c.regularPrice || "";
-        const match = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
-        if (match) {
-          if (!eb) eb = match[1].replace(/,/g, "");
-          if (!rg) rg = match[2].replace(/,/g, "");
-          notes = notes.replace(match[0], "").trim();
+    // ══════════════════════════════════════════════════
+    // 價格欄位自動修復（相容舊格式 notes 裡夾帶價格）
+    // ══════════════════════════════════════════════════
+    function normalizeCoursePrices(list) {
+      if (!Array.isArray(list)) return list;
+      return list.map(c => {
+        let notes = c.notes || "", eb = c.earlyBirdPrice || "", rg = c.regularPrice || "";
+        const m = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
+        if (m) {
+          if (!eb) eb = m[1].replace(/,/g, "");
+          if (!rg) rg = m[2].replace(/,/g, "");
+          notes = notes.replace(m[0], "").trim();
         }
-        return { ...c, notes: notes, earlyBirdPrice: eb, regularPrice: rg };
+        return { ...c, notes, earlyBirdPrice: eb, regularPrice: rg };
       });
     }
 
-    // 初始化頁面
+    // ══════════════════════════════════════════════════
+    // 判斷課程是否已過期
+    // 修正：改用 split 拼接，避免 Safari new Date("yyyy-MM-ddTHH:MM") 解析失敗
+    // ══════════════════════════════════════════════════
+    function isCourseExpired(course) {
+      if (!course || !course.date) return false;
+      try {
+        const dateStr = String(course.date).trim();          // "2026-11-22"
+        const endStr  = String(course.endTime || "23:59").trim(); // "18:00"
+        const parts   = dateStr.split("-");                  // ["2026","11","22"]
+        const tparts  = endStr.split(":");                   // ["18","00"]
+        if (parts.length < 3 || tparts.length < 2) return false;
+        // 用 Date.UTC 避免時區問題，再加 8 小時轉台灣時間
+        const utcMs = Date.UTC(
+          parseInt(parts[0], 10),
+          parseInt(parts[1], 10) - 1,
+          parseInt(parts[2], 10),
+          parseInt(tparts[0], 10) - 8, // UTC+8 → UTC
+          parseInt(tparts[1], 10)
+        );
+        return utcMs < Date.now();
+      } catch (e) { return false; }
+    }
+
+    // ══════════════════════════════════════════════════
+    // 初始化
+    // ══════════════════════════════════════════════════
     document.addEventListener("DOMContentLoaded", () => {
+
+      if (window.__showUpdateBanner) showUpdateBanner(window.__updateVersion);
+      migrateLocalStorageData();
+
+      // API URL 解析（支援 URL 參數帶入）
       const urlParams = new URLSearchParams(window.location.search);
-      const queryApi = urlParams.get("sync") || urlParams.get("api");
+      const queryApi  = urlParams.get("sync") || urlParams.get("api");
       if (queryApi && queryApi.startsWith("http")) {
         localStorage.setItem("appsheet_gas_api", queryApi);
         API_URL = queryApi;
-        try {
-          const cleanUrl = window.location.origin + window.location.pathname;
-          window.history.replaceState({}, document.title, cleanUrl);
-        } catch(e) {}
+        try { window.history.replaceState({}, document.title, window.location.origin + window.location.pathname); } catch (e) {}
       } else {
-        const savedApi = localStorage.getItem("appsheet_gas_api");
-        if (savedApi) API_URL = savedApi;
+        const saved = localStorage.getItem("appsheet_gas_api");
+        if (saved) API_URL = saved;
       }
 
       syncBankSettings();
       loadCourses();
 
-      window.addEventListener("storage", (e) => {
-        if (e.key === "appsheet_shared_courses" || e.key === "appsheet_shared_bookings" || e.key === "appsheet_gas_api") {
+      // 跨分頁同步（管理後台修改後前台自動更新）
+      window.addEventListener("storage", e => {
+        if (["appsheet_shared_courses","appsheet_shared_bookings","appsheet_gas_api"].includes(e.key)) {
           if (e.key === "appsheet_gas_api") API_URL = e.newValue || "";
           loadCourses();
         }
-        if (e.key === "appsheet_bank_name" || e.key === "appsheet_bank_account" || e.key === "appsheet_bank_holder") {
+        if (["appsheet_bank_name","appsheet_bank_account","appsheet_bank_holder"].includes(e.key)) {
           syncBankSettings();
         }
       });
 
-      window.addEventListener("focus", () => loadCourses());
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) loadCourses();
-      });
+      window.addEventListener("focus",             () => loadCourses());
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) loadCourses(); });
     });
 
-    // 載入課程資料
+    // ══════════════════════════════════════════════════
+    // 載入課程（對接 GAS getCourses）
+    // ══════════════════════════════════════════════════
     async function loadCourses() {
       const refreshIcon = document.getElementById("refreshIcon");
       if (refreshIcon) refreshIcon.classList.add("fa-spin");
@@ -571,16 +603,13 @@
       document.getElementById("courseContainer").classList.add("hidden");
       document.getElementById("noCoursesState").classList.add("hidden");
 
-      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
+      // ── 離線 / Demo 模式 ──
+      if (!API_URL || API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
         setTimeout(() => {
-          const cachedCourses = localStorage.getItem("appsheet_shared_courses");
-          if (cachedCourses) {
-            try {
-              allCourses = normalizeCoursePrices(JSON.parse(cachedCourses));
-              localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
-            } catch(e) {
-              allCourses = DEMO_COURSES;
-            }
+          const cached = localStorage.getItem("appsheet_shared_courses");
+          if (cached) {
+            try { allCourses = normalizeCoursePrices(JSON.parse(cached)); }
+            catch (e) { allCourses = DEMO_COURSES; }
           } else {
             allCourses = DEMO_COURSES;
             localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
@@ -591,102 +620,115 @@
         return;
       }
 
+      // ── 連線 GAS 模式（action=getCourses）──
       try {
         const resp = await fetch(`${API_URL}?action=getCourses`);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
         const json = await resp.json();
-        if (json.success && json.courses) {
-          allCourses = json.courses;
+
+        if (json.success && Array.isArray(json.courses)) {
+          allCourses = normalizeCoursePrices(json.courses);
+          // 同步寫入 localStorage 供離線 / 查詢用
+          localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
+        } else {
+          throw new Error(json.message || "API 回傳異常");
+        }
+
+        // 嘗試同步銀行設定（GAS getFullAdminData 才有，這裡只做輕量嘗試）
+        // 前台不帶密碼，所以只讀 config 中公開的銀行資訊
+        // → 由管理後台儲存至 localStorage，前台讀取即可，無需額外 API call
+
+      } catch (err) {
+        console.warn("loadCourses 失敗，使用快取或 Demo 資料：", err);
+        const cached = localStorage.getItem("appsheet_shared_courses");
+        if (cached) {
+          try { allCourses = normalizeCoursePrices(JSON.parse(cached)); }
+          catch (e) { allCourses = DEMO_COURSES; }
         } else {
           allCourses = DEMO_COURSES;
         }
-
-        try {
-          const cfgResp = await fetch(`${API_URL}?action=getConfig`);
-          const cfgJson = await cfgResp.json();
-          if (cfgJson.success && cfgJson.config) {
-            if (cfgJson.config["系統名稱"]) document.title = cfgJson.config["系統名稱"];
-          }
-        } catch (e) {}
-      } catch (err) {
-        allCourses = DEMO_COURSES;
       } finally {
         renderUI();
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
       }
     }
 
+    // ══════════════════════════════════════════════════
+    // 同步本地預約數到課程（離線模式用）
+    // ══════════════════════════════════════════════════
     function syncRemainingCounts() {
       if (!Array.isArray(allCourses)) return;
-
       let bookings = [];
       try {
-        const cachedBookings = localStorage.getItem("appsheet_shared_bookings");
-        if (cachedBookings) bookings = JSON.parse(cachedBookings);
-      } catch(e) {}
+        const cached = localStorage.getItem("appsheet_shared_bookings");
+        if (cached) bookings = JSON.parse(cached);
+      } catch (e) {}
 
-      const bookingCounts = {};
+      const counts = {};
       if (Array.isArray(bookings)) {
         bookings.forEach(b => {
           if (b["簽到狀態"] !== "已取消") {
             const cid = String(b["課程編號"] || "");
-            if (cid) bookingCounts[cid] = (bookingCounts[cid] || 0) + 1;
+            if (cid) counts[cid] = (counts[cid] || 0) + 1;
           }
         });
       }
 
       allCourses.forEach(c => {
-        const capacity = Number(c.capacity) || 1;
-        const realCount = bookingCounts[String(c.id)] || 0;
-        const vCount = Number(c.virtualCount) || 0;
-        
-        let booked = realCount + vCount;
-        if (booked === 0 && typeof c.bookedCount === "number") booked = c.bookedCount;
-        
-        c.bookedCount = booked;
-        c.remaining = Math.max(0, capacity - booked);
-        c.isFull = c.remaining <= 0;
+        // 若已從 GAS 拿到正確的 bookedCount，不用本地覆蓋
+        // 離線模式才需要用 localStorage bookings 推算
+        if (!API_URL || API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+          const capacity   = Number(c.capacity)     || 1;
+          const realCount  = counts[String(c.id)]   || 0;
+          const vCount     = Number(c.virtualCount)  || 0;
+          let booked = realCount + vCount;
+          if (booked === 0 && typeof c.bookedCount === "number") booked = c.bookedCount;
+          c.bookedCount = booked;
+          c.remaining   = Math.max(0, capacity - booked);
+          c.isFull      = c.remaining <= 0;
+        }
       });
     }
 
-    function isCourseExpired(course) {
-      if (!course || !course.date) return false;
-      const dateStr = String(course.date).trim();
-      const endStr = course.endTime ? String(course.endTime).trim() : "23:59";
-      const courseDateTime = new Date(`${dateStr}T${endStr.length === 5 ? endStr + ":00" : endStr}`);
-      if (isNaN(courseDateTime.getTime())) return new Date(dateStr + "T23:59:59") < new Date();
-      return courseDateTime < new Date();
-    }
-
+    // ══════════════════════════════════════════════════
+    // 渲染 UI（日期 Tab + 課程卡片）
+    // ══════════════════════════════════════════════════
     function renderUI() {
       syncRemainingCounts();
       document.getElementById("loadingSkeleton").classList.add("hidden");
-      
-      const activeCourses = (Array.isArray(allCourses) ? allCourses : []).filter(c => !isCourseExpired(c));
 
+      // 只顯示「開啟報名」且未過期的課程
+      const activeCourses = (Array.isArray(allCourses) ? allCourses : [])
+        .filter(c => !isCourseExpired(c) && (c.status === "開啟報名" || !c.status));
+
+      // 日期 Tab（由近到遠）
       const dates = Array.from(new Set(activeCourses.map(c => c.date))).filter(Boolean).sort();
-      const tabsContainer = document.getElementById("dateFilterTabs");
-      
-      if (selectedDate !== 'all' && !dates.includes(selectedDate)) {
-        selectedDate = 'all';
-      }
+      if (selectedDate !== "all" && !dates.includes(selectedDate)) selectedDate = "all";
 
       let tabsHtml = `
-        <button onclick="filterByDate('all')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${selectedDate === 'all' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" data-date="all">
-          全部時段
-        </button>
-      `;
-
+        <button onclick="filterByDate('all')"
+          class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${selectedDate === "all" ? "bg-blue-600 text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}"
+          data-date="all">全部時段</button>`;
       dates.forEach(d => {
-        const isSelected = selectedDate === d;
+        const sel = selectedDate === d;
         tabsHtml += `
-          <button onclick="filterByDate('${d}')" class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${isSelected ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" data-date="${d}">
-            ${formatTabDate(d)}
-          </button>
-        `;
+          <button onclick="filterByDate('${d}')"
+            class="date-tab px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${sel ? "bg-blue-600 text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}"
+            data-date="${d}">${formatFullDate(d)}</button>`;
       });
-      tabsContainer.innerHTML = tabsHtml;
+      document.getElementById("dateFilterTabs").innerHTML = tabsHtml;
 
-      const filtered = selectedDate === 'all' ? activeCourses : activeCourses.filter(c => c.date === selectedDate);
+      // 課程卡片（先篩選再排序：由近到遠，同日期依開始時間）
+      const filtered = (selectedDate === "all"
+        ? activeCourses
+        : activeCourses.filter(c => c.date === selectedDate)
+      ).slice().sort((a, b) => {
+        // 安全拼接成可比較字串 "2026-11-22 08:30"
+        const strA = `${a.date || "9999"} ${a.startTime || "00:00"}`;
+        const strB = `${b.date || "9999"} ${b.startTime || "00:00"}`;
+        return strA < strB ? -1 : strA > strB ? 1 : 0;
+      });
+
       document.getElementById("courseCount").innerText = filtered.length;
       const container = document.getElementById("courseContainer");
 
@@ -695,56 +737,49 @@
         document.getElementById("noCoursesState").classList.remove("hidden");
         return;
       }
-
       document.getElementById("noCoursesState").classList.add("hidden");
       container.classList.remove("hidden");
 
-      let cardsHtml = "";
-      filtered.forEach(c => {
-        const isFull = c.isFull || c.remaining <= 0;
-        const price = Number(c.earlyBirdPrice || c.regularPrice);
-        const priceText = price ? `NT$ ${price.toLocaleString()}` : '';
+      container.innerHTML = filtered.map(c => {
+        const isFull    = c.isFull || c.remaining <= 0;
+        const price     = Number(c.earlyBirdPrice || c.regularPrice);
+        const priceText = price ? `NT$ ${price.toLocaleString()}` : "";
         const shortDate = formatFullDate(c.date);
 
-        cardsHtml += `
-          <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-150 flex items-center justify-between gap-3 ${isFull ? 'opacity-80 bg-slate-50/70' : ''}">
+        return `
+          <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-150 flex items-center justify-between gap-3 ${isFull ? "opacity-80 bg-slate-50/70" : ""}">
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="inline-flex items-center gap-1 text-[11px] font-bold ${isFull ? 'text-slate-600 bg-slate-100' : 'text-blue-700 bg-blue-50'} px-2 py-0.5 rounded-md border ${isFull ? 'border-slate-200' : 'border-blue-100'}">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold ${isFull ? "text-slate-600 bg-slate-100 border-slate-200" : "text-blue-700 bg-blue-50 border-blue-100"} px-2 py-0.5 rounded-md border">
                   <i class="fa-regular fa-clock text-[10px]"></i>
                   <span>${shortDate} ${c.startTime}</span>
                 </span>
                 ${priceText ? `
-                  <span class="inline-flex items-center gap-0.5 text-[11px] font-black ${isFull ? 'text-slate-500 bg-slate-100 border-slate-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} px-2 py-0.5 rounded-md border">
+                  <span class="inline-flex items-center gap-0.5 text-[11px] font-black ${isFull ? "text-slate-500 bg-slate-100 border-slate-200" : "text-emerald-800 bg-emerald-50 border-emerald-200"} px-2 py-0.5 rounded-md border">
                     <i class="fa-solid fa-tag text-[9px]"></i> ${priceText}
-                  </span>
-                ` : ''}
+                  </span>` : ""}
               </div>
               <h3 class="text-xs sm:text-sm font-black text-slate-900 leading-snug truncate" title="${c.title}">${c.title}</h3>
               <div class="flex items-center gap-2 text-[11px] text-slate-500 truncate">
                 <span class="truncate flex items-center gap-1">
-                  <i class="fa-solid fa-location-dot ${isFull ? 'text-slate-400' : 'text-rose-500'} text-[10px] shrink-0"></i>
-                  <span class="truncate text-slate-700 font-medium">${c.location || '待定教室'}</span>
+                  <i class="fa-solid fa-location-dot ${isFull ? "text-slate-400" : "text-rose-500"} text-[10px] shrink-0"></i>
+                  <span class="truncate text-slate-700 font-medium">${c.location || "待定教室"}</span>
                 </span>
                 <span class="text-slate-300 shrink-0">|</span>
-                ${isFull 
+                ${isFull
                   ? `<span class="text-rose-500 font-bold shrink-0 inline-flex items-center gap-0.5"><i class="fa-solid fa-lock text-[9px]"></i> 額滿</span>`
-                  : `<span class="text-emerald-600 font-bold shrink-0 inline-flex items-center gap-0.5"><i class="fa-solid fa-user-check text-[9px]"></i> 剩 ${c.remaining} 名</span>`
-                }
+                  : `<span class="text-emerald-600 font-bold shrink-0 inline-flex items-center gap-0.5"><i class="fa-solid fa-user-check text-[9px]"></i> 剩 ${c.remaining} 名</span>`}
               </div>
             </div>
             <div class="shrink-0 flex flex-col items-end justify-center">
-              ${isFull 
+              ${isFull
                 ? `<button disabled class="px-3.5 sm:px-4 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed border border-slate-200">額滿</button>`
                 : `<button onclick="openBookingModal('${c.id}')" class="px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow-sm shadow-blue-500/20 active:scale-95 transition cursor-pointer">
                     <i class="fa-regular fa-pen-to-square text-[11px]"></i><span>預約</span>
-                  </button>`
-              }
+                  </button>`}
             </div>
-          </div>
-        `;
-      });
-      container.innerHTML = cardsHtml;
+          </div>`;
+      }).join("");
     }
 
     function filterByDate(dateStr) {
@@ -752,115 +787,117 @@
       renderUI();
     }
 
-    let currentPayMethod = "bank";
+    // ══════════════════════════════════════════════════
+    // 銀行設定同步（由管理後台寫入 localStorage）
+    // ══════════════════════════════════════════════════
     function syncBankSettings() {
-      const bankName = localStorage.getItem("appsheet_bank_name") || "822 中國信託";
-      const bankAccount = localStorage.getItem("appsheet_bank_account") || "1234-5678-9012";
-      const bankHolder = localStorage.getItem("appsheet_bank_holder") || "霖霖身心靈工坊 (陳霖霖)";
-      if (document.getElementById("bankOrgName")) document.getElementById("bankOrgName").innerText = bankName;
-      if (document.getElementById("bankAccountNum")) document.getElementById("bankAccountNum").innerText = bankAccount;
-      if (document.getElementById("bankAccountHolder")) document.getElementById("bankAccountHolder").innerText = bankHolder;
+      const name    = localStorage.getItem("appsheet_bank_name")    || "822 中國信託";
+      const account = localStorage.getItem("appsheet_bank_account") || "1234-5678-9012";
+      const holder  = localStorage.getItem("appsheet_bank_holder")  || "霖霖身心靈工坊 (陳霖霖)";
+      const elName    = document.getElementById("bankOrgName");
+      const elAccount = document.getElementById("bankAccountNum");
+      const elHolder  = document.getElementById("bankAccountHolder");
+      if (elName)    elName.innerText    = name;
+      if (elAccount) elAccount.innerText = account;
+      if (elHolder)  elHolder.innerText  = holder;
     }
 
+    // ══════════════════════════════════════════════════
+    // 複製銀行帳號
+    // ══════════════════════════════════════════════════
     function copyBankAccount() {
-      const elAcc = document.getElementById("bankAccountNum");
-      const bankNum = elAcc ? elAcc.innerText.replace(/[^0-9]/g, '') : "123456789012";
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(bankNum).then(() => showCopySuccess()).catch(() => fallbackCopyText(bankNum));
+      const el  = document.getElementById("bankAccountNum");
+      const num = el ? el.innerText.replace(/[^0-9]/g, "") : "";
+      if (!num) return;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(num).then(showCopySuccess).catch(() => fallbackCopyText(num));
       } else {
-        fallbackCopyText(bankNum);
+        fallbackCopyText(num);
       }
     }
-
     function fallbackCopyText(text) {
       const ta = document.createElement("textarea");
       ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
+      ta.style.cssText = "position:fixed;opacity:0";
       document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        document.execCommand("copy");
-        showCopySuccess();
-      } catch (err) {
-        alert("匯款帳號：" + text);
-      }
+      ta.focus(); ta.select();
+      try { document.execCommand("copy"); showCopySuccess(); }
+      catch (e) { alert("匯款帳號：" + text); }
       document.body.removeChild(ta);
     }
-
     function showCopySuccess() {
       const btnText = document.getElementById("copyBankText");
-      const btn = document.getElementById("copyBankBtn");
-      if (btnText && btn) {
-        const original = btnText.innerText;
-        btnText.innerText = "已複製帳號！";
-        btn.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-300");
-        setTimeout(() => {
-          btnText.innerText = original;
-          btn.classList.remove("bg-emerald-50", "text-emerald-700", "border-emerald-300");
-        }, 2000);
-      }
+      const btn     = document.getElementById("copyBankBtn");
+      if (!btnText || !btn) return;
+      const original = btnText.innerText;
+      btnText.innerText = "已複製帳號！";
+      btn.classList.add("bg-emerald-50","text-emerald-700","border-emerald-300");
+      setTimeout(() => {
+        btnText.innerText = original;
+        btn.classList.remove("bg-emerald-50","text-emerald-700","border-emerald-300");
+      }, 2000);
     }
 
+    // ══════════════════════════════════════════════════
+    // 付款方式切換
+    // ══════════════════════════════════════════════════
+    let currentPayMethod = "bank";
     function selectPayMethod(method, autoFocus = true) {
       currentPayMethod = method;
-      const btnBank = document.getElementById("payMethodBank");
-      const btnLine = document.getElementById("payMethodLine");
-      const bankBox = document.getElementById("bankCodeContainer");
-      const lineBox = document.getElementById("linePayContainer");
+      const btnBank   = document.getElementById("payMethodBank");
+      const btnLine   = document.getElementById("payMethodLine");
+      const bankBox   = document.getElementById("bankCodeContainer");
+      const lineBox   = document.getElementById("linePayContainer");
       const codeInput = document.getElementById("studentPaymentCode");
-
       if (!btnBank || !btnLine) return;
 
-      btnBank.className = "py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-blue-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
-      btnLine.className = "py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white hover:bg-emerald-50 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
-
-      if (bankBox) bankBox.classList.add("hidden");
-      if (lineBox) lineBox.classList.add("hidden");
+      const base = "py-2.5 px-3 rounded-xl border-2 border-slate-200 bg-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition cursor-pointer";
+      btnBank.className = base + " hover:bg-blue-50 text-slate-700";
+      btnLine.className = base + " hover:bg-emerald-50 text-slate-700";
+      bankBox?.classList.add("hidden");
+      lineBox?.classList.add("hidden");
       if (codeInput) codeInput.required = false;
 
       if (method === "bank") {
         btnBank.className = "py-2.5 px-3 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
-        if (bankBox) bankBox.classList.remove("hidden");
-        if (codeInput) {
-          codeInput.required = true;
-          if (autoFocus) setTimeout(() => codeInput.focus(), 50);
-        }
+        bankBox?.classList.remove("hidden");
+        if (codeInput) { codeInput.required = true; if (autoFocus) setTimeout(() => codeInput.focus(), 50); }
       } else if (method === "line") {
         btnLine.className = "py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 text-emerald-900 font-bold text-xs flex flex-col items-center justify-center gap-1 transition shadow-sm cursor-pointer";
-        if (lineBox) lineBox.classList.remove("hidden");
+        lineBox?.classList.remove("hidden");
         if (codeInput) codeInput.value = "";
       }
     }
 
+    // ══════════════════════════════════════════════════
+    // 開啟報名 Modal
+    // ══════════════════════════════════════════════════
     function openBookingModal(courseId) {
-      const course = allCourses.find(c => c.id === courseId);
+      const course = allCourses.find(c => String(c.id) === String(courseId));
       if (!course) return;
 
-      document.getElementById("modalCourseId").value = course.id;
+      document.getElementById("modalCourseId").value        = course.id;
       document.getElementById("modalCourseTitle").innerText = course.title;
-      document.getElementById("modalDateTime").innerText = `${formatFullDate(course.date)} ${course.startTime} - ${course.endTime}`;
-      document.getElementById("modalInstructor").innerText = `授課教練：${course.instructor}`;
-      document.getElementById("modalLocation").innerText = `地點：${course.location || '待定'}`;
+      document.getElementById("modalDateTime").innerText    = `${formatFullDate(course.date)} ${course.startTime} - ${course.endTime}`;
+      document.getElementById("modalInstructor").innerText  = `授課教練：${course.instructor || "霖霖老師"}`;
+      document.getElementById("modalLocation").innerText    = `地點：${course.location || "待定"}`;
 
       const nameInput = document.getElementById("studentName");
-      nameInput.value = localStorage.getItem("saved_name") || "";
-      document.getElementById("studentPhone").value = localStorage.getItem("saved_phone") || "";
-      document.getElementById("studentLine").value = localStorage.getItem("saved_line") || "";
-      document.getElementById("studentNotes").value = "";
-      
+      nameInput.value                                       = localStorage.getItem("saved_name")  || "";
+      document.getElementById("studentPhone").value        = localStorage.getItem("saved_phone") || "";
+      document.getElementById("studentLine").value         = localStorage.getItem("saved_line")  || "";
+      document.getElementById("studentNotes").value        = "";
+
       selectPayMethod("bank", false);
       syncBankSettings();
 
       const modal = document.getElementById("bookingModal");
       modal.classList.remove("hidden");
-      const modalInner = modal.querySelector(".max-h-\\[92vh\\]") || modal;
-      
       setTimeout(() => {
-        modalInner.scrollTop = 0;
         modal.scrollTop = 0;
-        if (nameInput) nameInput.focus();
+        const inner = modal.querySelector(".max-h-\\[92vh\\]");
+        if (inner) inner.scrollTop = 0;
+        nameInput?.focus();
       }, 50);
     }
 
@@ -868,14 +905,17 @@
       document.getElementById("bookingModal").classList.add("hidden");
     }
 
+    // ══════════════════════════════════════════════════
+    // 送出預約（對接 GAS bookCourse）
+    // ══════════════════════════════════════════════════
     async function handleBookingSubmit(e) {
       e.preventDefault();
       const courseId = document.getElementById("modalCourseId").value;
-      const name = document.getElementById("studentName").value.trim();
-      const phone = document.getElementById("studentPhone").value.trim();
-      const lineId = document.getElementById("studentLine").value.trim();
-      const notes = document.getElementById("studentNotes").value.trim();
-      const rawCode = (document.getElementById("studentPaymentCode")?.value || "").trim();
+      const name     = document.getElementById("studentName").value.trim();
+      const phone    = document.getElementById("studentPhone").value.trim();
+      const lineId   = document.getElementById("studentLine").value.trim();
+      const notes    = document.getElementById("studentNotes").value.trim();
+      const rawCode  = (document.getElementById("studentPaymentCode")?.value || "").trim();
 
       let finalPaymentCode = "";
       if (currentPayMethod === "bank") {
@@ -898,45 +938,36 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 預約送出中...`;
 
-      localStorage.setItem("saved_name", name);
+      localStorage.setItem("saved_name",  name);
       localStorage.setItem("saved_phone", phone);
-      localStorage.setItem("saved_line", lineId);
+      localStorage.setItem("saved_line",  lineId);
 
-      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !API_URL) {
+      // ── 離線 / Demo 模式 ──
+      if (!API_URL || API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
         setTimeout(() => {
-          const course = allCourses.find(c => c.id === courseId);
+          const course = allCourses.find(c => String(c.id) === String(courseId));
           if (course) {
             course.bookedCount = (course.bookedCount || 0) + 1;
-            course.remaining = Math.max(0, (course.remaining || course.capacity) - 1);
+            course.remaining   = Math.max(0, (course.remaining ?? course.capacity) - 1);
             if (course.remaining <= 0) course.isFull = true;
             localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
           }
-
-          const newBookingId = "b_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-          const nowStr = new Date().toISOString().replace("T", " ").substr(0, 19);
+          const nowStr    = new Date().toISOString().replace("T"," ").substr(0,19);
           const newRecord = {
-            "預約編號": newBookingId,
+            "預約編號": "b_" + Date.now().toString(36),
             "報名時間": nowStr,
             "課程編號": courseId,
-            "課程名稱": course ? course.title : "精選課程",
-            "學員姓名": name,
-            "聯絡電話": phone,
-            "Line ID": lineId,
-            "備註需求": notes,
-            "簽到狀態": "待確認",
-            "匯款五碼": finalPaymentCode
+            "課程名稱": course?.title || "精選課程",
+            "學員姓名": name, "聯絡電話": phone, "Line ID": lineId,
+            "備註需求": notes, "簽到狀態": "待確認", "匯款五碼": finalPaymentCode
           };
-
           let sharedBookings = [];
-          try {
-            const savedB = localStorage.getItem("appsheet_shared_bookings");
-            if (savedB) sharedBookings = JSON.parse(savedB);
-          } catch(e) {}
+          try { const s = localStorage.getItem("appsheet_shared_bookings"); if (s) sharedBookings = JSON.parse(s); } catch (e) {}
           sharedBookings.unshift(newRecord);
           localStorage.setItem("appsheet_shared_bookings", JSON.stringify(sharedBookings));
 
           closeModal();
-          showSuccessModal(nowStr, course ? course.title : "精選課程", `${course ? formatFullDate(course.date) : ""} ${course ? course.startTime : ""}`);
+          showSuccessModal(nowStr, course?.title || "精選課程", `${course ? formatFullDate(course.date) : ""} ${course?.startTime || ""}`);
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span>確認預約報名</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
           renderUI();
@@ -944,57 +975,78 @@
         return;
       }
 
+      // ── 連線 GAS 模式（action=bookCourse，POST JSON）──
       try {
-        const payload = { action: "bookCourse", courseId, name, phone, lineId, paymentCode: finalPaymentCode, notes };
+        const payload = {
+          action: "bookCourse",
+          courseId, name, phone, lineId,
+          paymentCode: finalPaymentCode,
+          notes
+        };
         const resp = await fetch(API_URL, {
-          method: "POST",
+          method:  "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
+          body:    JSON.stringify(payload)
         });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
         const res = await resp.json();
+
         if (res.success) {
+          // 更新本地快取
+          const course = allCourses.find(c => String(c.id) === String(courseId));
+          if (course) {
+            course.bookedCount = (course.bookedCount || 0) + 1;
+            course.remaining   = Math.max(0, (course.remaining ?? course.capacity) - 1);
+            if (course.remaining <= 0) course.isFull = true;
+            localStorage.setItem("appsheet_shared_courses", JSON.stringify(allCourses));
+          }
+          // 同步寫入 localStorage bookings（供查詢用）
+          const nowStr    = new Date().toISOString().replace("T"," ").substr(0,19);
+          const newRecord = {
+            "預約編號": res.bookingId,
+            "報名時間": nowStr,
+            "課程編號": courseId,
+            "課程名稱": res.courseTitle || course?.title || "",
+            "學員姓名": name, "聯絡電話": phone, "Line ID": lineId,
+            "備註需求": notes, "簽到狀態": "待確認", "匯款五碼": finalPaymentCode
+          };
+          let sharedBookings = [];
+          try { const s = localStorage.getItem("appsheet_shared_bookings"); if (s) sharedBookings = JSON.parse(s); } catch (e) {}
+          sharedBookings.unshift(newRecord);
+          localStorage.setItem("appsheet_shared_bookings", JSON.stringify(sharedBookings));
+
           closeModal();
           showSuccessModal(res.bookingId, res.courseTitle, res.dateTime);
-          loadCourses();
+          renderUI();
         } else {
           alert(res.message || "預約失敗，請重試！");
         }
       } catch (err) {
+        console.error("bookCourse 失敗：", err);
         alert("網路連線逾時或異常，請稍後再試！");
       } finally {
-        submitBtn.disabled = false;
+        submitBtn.disabled  = false;
         submitBtn.innerHTML = `<span>確認預約報名</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
       }
     }
 
+    // ══════════════════════════════════════════════════
+    // 成功 Modal
+    // ══════════════════════════════════════════════════
     function showSuccessModal(bkId, courseTitle, dateTime) {
-      document.getElementById("succBookingId").innerText = bkId;
+      document.getElementById("succBookingId").innerText   = bkId;
       document.getElementById("succCourseTitle").innerText = courseTitle;
-      document.getElementById("succDateTime").innerText = dateTime;
+      document.getElementById("succDateTime").innerText    = dateTime;
       document.getElementById("successModal").classList.remove("hidden");
     }
-
     function closeSuccessModal() {
       document.getElementById("successModal").classList.add("hidden");
     }
 
-    function formatFullDate(dateStr) {
-      if (!dateStr) return "";
-      const wDay = (getWeekDay(dateStr) || "").replace("週", "");
-      return `${dateStr.replace(/-/g, "/")}(${wDay})`;
-    }
-
-    function getWeekDay(dateStr) {
-      if (!dateStr) return "";
-      const d = new Date(dateStr);
-      const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
-      return days[d.getDay()] || "";
-    }
-
-    function formatTabDate(dateStr) {
-      return formatFullDate(dateStr);
-    }
-
+    // ══════════════════════════════════════════════════
+    // 學員查詢預約
+    // 修正：GAS 新增 getBookings action，同時 fallback localStorage
+    // ══════════════════════════════════════════════════
     function openMyBookingsModal() {
       const modal = document.getElementById("myBookingsModal");
       if (!modal) return;
@@ -1007,14 +1059,12 @@
       }
       if (savedPhone) queryMyBookings();
     }
-
     function closeMyBookingsModal() {
-      const modal = document.getElementById("myBookingsModal");
-      if (modal) modal.classList.add("hidden");
+      document.getElementById("myBookingsModal")?.classList.add("hidden");
     }
 
     async function queryMyBookings() {
-      const phoneInput = document.getElementById("queryPhoneInput");
+      const phoneInput    = document.getElementById("queryPhoneInput");
       const listContainer = document.getElementById("myBookingsList");
       if (!phoneInput || !listContainer) return;
 
@@ -1024,26 +1074,46 @@
         return;
       }
 
-      listContainer.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 正在連線查詢預約紀錄...</div>`;
+      listContainer.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 查詢中...</div>`;
 
       let bookings = [];
 
+      // ① 優先從 GAS 查詢（action=getBookings，GAS 需對應實作）
       if (API_URL && API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
         try {
           const resp = await fetch(`${API_URL}?action=getBookings&phone=${encodeURIComponent(phone)}`);
-          const json = await resp.json();
-          if (json.success && json.bookings) bookings = json.bookings;
-        } catch(err) {}
+          if (resp.ok) {
+            const json = await resp.json();
+            if (json.success && Array.isArray(json.bookings)) {
+              bookings = json.bookings;
+              // 同步更新 localStorage，讓下次離線也能查到最新狀態
+              try {
+                let cached = [];
+                const raw = localStorage.getItem("appsheet_shared_bookings");
+                if (raw) cached = JSON.parse(raw);
+                // 合併：以 GAS 資料為準，更新已存在的，新增不存在的
+                bookings.forEach(b => {
+                  const idx = cached.findIndex(c => c["預約編號"] === b["預約編號"]);
+                  if (idx >= 0) cached[idx] = b; else cached.unshift(b);
+                });
+                localStorage.setItem("appsheet_shared_bookings", JSON.stringify(cached));
+              } catch (e) {}
+            }
+          }
+        } catch (err) {
+          console.warn("getBookings API 失敗，改用快取：", err);
+        }
       }
 
+      // ② Fallback：從 localStorage 查詢
       if (bookings.length === 0) {
         try {
-          const sharedStr = localStorage.getItem("appsheet_shared_bookings");
-          if (sharedStr) {
-            const allShared = JSON.parse(sharedStr);
-            bookings = allShared.filter(b => (b["聯絡電話"] || "").trim() === phone);
+          const raw = localStorage.getItem("appsheet_shared_bookings");
+          if (raw) {
+            const all = JSON.parse(raw);
+            bookings = all.filter(b => (b["聯絡電話"] || "").trim() === phone);
           }
-        } catch(e) {}
+        } catch (e) {}
       }
 
       if (bookings.length === 0) {
@@ -1052,48 +1122,40 @@
             <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-receipt"></i></div>
             <p class="text-xs font-bold text-slate-700">查無此手機號碼之預約紀錄</p>
             <p class="text-[11px] text-slate-400">請確認號碼是否與報名時一致，或聯絡助教確認！</p>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
-      let html = "";
-      bookings.forEach(b => {
+      listContainer.innerHTML = bookings.map(b => {
         const st = (b["簽到狀態"] || "待確認").trim();
         let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
-        let icon = "fa-hourglass-half";
-        let statusTitle = "待確認入帳";
-        let statusDesc = "已收到您的預約登記，助教正核對款項中，確認無誤後將更新為報名成功！";
+        let icon = "fa-hourglass-half", statusTitle = "待確認入帳";
+        let statusDesc  = "已收到您的預約登記，助教正核對款項中，確認無誤後將更新為報名成功！";
 
-        if (st === "報名成功" || st === "已收訖" || st === "已完成") {
-          badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
-          icon = "fa-circle-check";
-          statusTitle = "報名成功 (已收訖)";
-          statusDesc = "款項已確認入帳，您的名額已保留完成，課堂當天抵達教室簽到即可！";
+        if (["報名成功","已收訖","已完成"].includes(st)) {
+          badgeClass  = "bg-emerald-50 text-emerald-700 border-emerald-200";
+          icon        = "fa-circle-check"; statusTitle = "報名成功 (已收訖)";
+          statusDesc  = "款項已確認入帳，您的名額已保留完成，課堂當天抵達教室簽到即可！";
         } else if (st === "已簽到") {
-          badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
-          icon = "fa-check-double";
-          statusTitle = "已簽到出席";
-          statusDesc = "您已於課堂現場完成報到簽到！";
+          badgeClass  = "bg-blue-50 text-blue-700 border-blue-200";
+          icon        = "fa-check-double"; statusTitle = "已簽到出席";
+          statusDesc  = "您已於課堂現場完成報到簽到！";
         } else if (st === "已取消") {
-          badgeClass = "bg-slate-100 text-slate-400 border-slate-200 line-through";
-          icon = "fa-ban";
-          statusTitle = "已取消";
-          statusDesc = "此預約已取消或名額已釋出。";
+          badgeClass  = "bg-slate-100 text-slate-400 border-slate-200 line-through";
+          icon        = "fa-ban"; statusTitle = "已取消";
+          statusDesc  = "此預約已取消或名額已釋出。";
         }
 
-        html += `
+        return `
           <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5">
             <div class="flex items-start justify-between gap-2">
               <div>
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
                   <i class="fa-solid ${icon}"></i><span>${statusTitle}</span>
                 </span>
-                <h4 class="font-bold text-slate-900 text-sm mt-1.5 leading-snug">${b["課程名稱"]}</h4>
+                <h4 class="font-bold text-slate-900 text-sm mt-1.5 leading-snug">${b["課程名稱"] || "-"}</h4>
               </div>
-              <div class="text-right shrink-0">
-                <span class="text-xs font-bold text-slate-800">${b["學員姓名"]}</span>
-              </div>
+              <span class="text-xs font-bold text-slate-800 shrink-0">${b["學員姓名"] || ""}</span>
             </div>
             <div class="bg-slate-50 rounded-xl p-2.5 text-xs text-slate-600 space-y-1">
               <div class="flex items-center justify-between text-[11px] text-slate-500">
@@ -1102,50 +1164,25 @@
               </div>
               <p class="text-[11px] leading-relaxed pt-1 text-slate-600 border-t border-slate-200/60">${statusDesc}</p>
             </div>
-          </div>
-        `;
-      });
-      listContainer.innerHTML = html;
+          </div>`;
+      }).join("");
     }
 
+    // ══════════════════════════════════════════════════
+    // 日期格式化（Safari 安全版）
+    // ══════════════════════════════════════════════════
+    function formatFullDate(dateStr) {
+      if (!dateStr) return "";
+      try {
+        const parts = String(dateStr).trim().split("-");
+        if (parts.length < 3) return dateStr;
+        const d    = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
+        const days = ["日","一","二","三","四","五","六"];
+        const wd   = isNaN(d.getDay()) ? "" : `週${days[d.getDay()]}`;
+        return `${parts[0]}/${parts[1]}/${parts[2]}(${wd})`;
+      } catch (e) { return dateStr; }
+    }
   </script>
-
-  <!-- 學員自主查詢預約 Modal -->
-  <div id="myBookingsModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-            <i class="fa-solid fa-ticket"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">查詢我的預約課程</h3>
-            <p class="text-[11px] text-slate-400">輸入手機號碼即可查看您的報名狀態與對帳進度</p>
-          </div>
-        </div>
-        <button onclick="closeMyBookingsModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs transition">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="flex gap-2">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="tel" id="queryPhoneInput" placeholder="請輸入報名時的手機號碼" class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-        </div>
-        <button type="button" onclick="queryMyBookings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
-          查詢
-        </button>
-      </div>
-
-      <!-- 查詢結果列表 -->
-      <div id="myBookingsList" class="flex-1 overflow-y-auto space-y-2.5 max-h-72 pr-1">
-        <div class="text-center py-6 text-slate-400 text-xs">
-          請於上方輸入報名手機號碼開始查詢
-        </div>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>
