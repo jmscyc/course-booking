@@ -48,7 +48,7 @@
     }
   </style>
   <script>
-    const APP_VERSION = "3.1.0";
+    const APP_VERSION = "3.2.0";
     // 防閃爍字體
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -617,6 +617,11 @@
           <label class="block text-xs font-bold text-slate-700 mb-1">Line ID</label>
           <input type="text" id="editBookingLineId" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
         </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1"><i class="fa-solid fa-envelope text-slate-500 mr-1"></i>Email <span class="text-slate-400 font-normal">(確認入帳後將自動寄送通知信至此信箱)</span></label>
+        <input type="email" id="editBookingEmail" placeholder="example@gmail.com"
+          class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -1489,6 +1494,7 @@ function openEditBookingModal(bookingId) {
   document.getElementById("editBookingStudentName").value=b["學員姓名"]||"";
   document.getElementById("editBookingPhone").value=b["聯絡電話"]||"";
   document.getElementById("editBookingLineId").value=b["Line ID"]||"";
+  document.getElementById("editBookingEmail").value=b["Email"]||"";
   document.getElementById("editBookingPayCode").value=b["匯款五碼"]||"";
   var st=(b["簽到狀態"]||"待確認").trim(); if(st==="已預約") st="待確認";
   document.getElementById("editBookingStatus").value=st;
@@ -1509,16 +1515,22 @@ async function handleSaveBookingEdit(e) {
   b["學員姓名"]=document.getElementById("editBookingStudentName").value.trim();
   b["聯絡電話"]=document.getElementById("editBookingPhone").value.trim();
   b["Line ID"]=document.getElementById("editBookingLineId").value.trim();
+  b["Email"]=document.getElementById("editBookingEmail").value.trim();
   b["匯款五碼"]=document.getElementById("editBookingPayCode").value.trim();
   b["簽到狀態"]=document.getElementById("editBookingStatus").value;
   b["備註需求"]=document.getElementById("editBookingNotes").value.trim();
   b["管理備註"]=document.getElementById("editBookingAdminNotes").value.trim();
+  if (b["Email"] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b["Email"])) {
+    alert("Email 格式不正確，請重新確認或清空不填！");
+    document.getElementById("editBookingEmail").focus();
+    return;
+  }
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
   if (API_URL&&API_URL.startsWith("http")) {
-    try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"updateBooking",password:ADMIN_PASS,bookingId:bookingId,courseName:b["課程名稱"],studentName:b["學員姓名"],phone:b["聯絡電話"],lineId:b["Line ID"],payCode:b["匯款五碼"],notes:b["備註需求"],adminNotes:b["管理備註"],status:b["簽到狀態"]})}); }catch(err){}
+    try{ await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"updateBooking",password:ADMIN_PASS,bookingId:bookingId,courseName:b["課程名稱"],studentName:b["學員姓名"],phone:b["聯絡電話"],lineId:b["Line ID"],email:b["Email"],payCode:b["匯款五碼"],notes:b["備註需求"],adminNotes:b["管理備註"],status:b["簽到狀態"]})}); }catch(err){}
   }
   closeEditBookingModal(); alert("✅ 預約資料已成功更新！");
 }
@@ -1535,7 +1547,7 @@ async function updateBookingStatus(bookingId, newStatus) {
 async function deleteBooking(bookingId) {
   var target=null;
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){target=adminBookings[i];break;}}
-  if (!confirm("⚠️ 確定要永久刪除此筆報名資料嗎？\n\n• 學員："+(target?target["學員姓名":""]:"")+"\n• 課程："+(target?target["課程名稱"]:"")+"\n\n刪除後無法還原！")) return;
+  if (!confirm("⚠️ 確定要永久刪除此筆報名資料嗎？\n\n• 學員："+(target?target["學員姓名"]:"")+"\n• 課程："+(target?target["課程名稱"]:"")+"\n\n刪除後無法還原！")) return;
   adminBookings=adminBookings.filter(function(b){return b["預約編號"]!==bookingId;});
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
