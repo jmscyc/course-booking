@@ -48,7 +48,7 @@
     }
   </style>
   <script>
-    const APP_VERSION = "3.2.0";
+    const APP_VERSION = "3.3.2";
     // 防閃爍字體
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -746,6 +746,12 @@
           <input type="number" id="formRegularPrice" placeholder="例如：5000"
             class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800">
         </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-bold text-slate-700 mb-1"><i class="fa-solid fa-hourglass-half text-amber-600 mr-1"></i>早鳥價截止日 <span class="text-slate-400 font-normal">(選填，留空＝早鳥價永久有效)</span></label>
+          <input type="date" id="formEarlyBirdDeadline"
+            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-amber-800">
+          <p class="text-[10px] text-slate-500 mt-1">超過此日期（台灣時間 23:59）前台將自動切換為定價，報名頁並會顯示倒數計時</p>
+        </div>
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-700 mb-1">課程詳細說明</label>
@@ -892,15 +898,28 @@ function escapeHtmlAttr(str) {
   return str ? String(str).replace(/"/g,"&quot;").replace(/'/g,"&#39;") : "";
 }
 
+// ✅ Bug Fix：改用與 index.html 相同的 Date.UTC(+8 轉換) 明確時區運算，
+// 不再依賴瀏覽器本機時區隱性解析 new Date("...T...")。
+// 若管理者的裝置時區不是台灣（UTC+8），舊寫法會與前台的過期判斷不一致，
+// 導致管理後台與報名頁顯示的「開放報名課程」數量不同。
 function isCourseExpired(course) {
   if (!course||!course.date) return false;
   var dateStr = String(course.date).trim().replace(/\//g,"-");
   if (dateStr.startsWith("1899")) return false;
-  var endStr  = course.endTime ? sanitizeTimeForInput(String(course.endTime).trim()) : "23:59";
+  var endStr = course.endTime ? sanitizeTimeForInput(String(course.endTime).trim()) : "23:59";
   if (!endStr) endStr = "23:59";
-  var dt = new Date(dateStr+"T"+endStr+":00");
-  if (isNaN(dt.getTime())) return new Date(dateStr+"T23:59:59") < new Date();
-  return dt < new Date();
+  var dateParts = dateStr.split("-");
+  var timeParts = endStr.split(":").slice(0,2);
+  if (dateParts.length < 3 || timeParts.length < 2) return false;
+  var utcMs = Date.UTC(
+    parseInt(dateParts[0], 10),
+    parseInt(dateParts[1], 10) - 1,
+    parseInt(dateParts[2], 10),
+    parseInt(timeParts[0], 10) - 8,  // UTC+8 → UTC
+    parseInt(timeParts[1], 10)
+  );
+  if (isNaN(utcMs)) return false;
+  return utcMs < Date.now();
 }
 
 function isBookingExpired(booking) {
@@ -935,6 +954,24 @@ function formatShortDate(dateStr) {
   return Number(p[1])+"/"+Number(p[2])+"("+getWeekDay(dateStr)+")";
 }
 function formatDate(val) { if(!val) return ""; return String(val).split("T")[0]; }
+
+// ══════════════════════════════════════════════
+// 早鳥截止判斷（台灣時間 23:59:59 當天截止）
+// ══════════════════════════════════════════════
+function earlyBirdDeadlineMs(deadlineStr) {
+  if (!deadlineStr) return null;
+  var p = String(deadlineStr).trim().replace(/\//g,"-").split("-");
+  if (p.length!==3) return null;
+  var y=parseInt(p[0],10), m=parseInt(p[1],10), d=parseInt(p[2],10);
+  if (isNaN(y)||isNaN(m)||isNaN(d)) return null;
+  // 台灣 23:59:59 (UTC+8) = UTC 15:59:59 同日
+  return Date.UTC(y, m-1, d, 15, 59, 59);
+}
+function isEarlyBirdActive(course) {
+  if (!course || !course.earlyBirdPrice) return false;
+  var dl = earlyBirdDeadlineMs(course.earlyBirdDeadline);
+  return dl===null || Date.now() <= dl;
+}
 
 // 自動清洗：舊資料中混在 notes 裡的價格 → 分離至獨立欄位
 function normalizeCoursePrices(list) {
@@ -1058,9 +1095,13 @@ function renderCoursesTable() {
       '<td class="px-4 py-3 font-mono font-bold text-slate-500">'+c.id+'</td>' +
       '<td class="px-4 py-3 whitespace-nowrap">' +
         '<div class="font-bold '+(isEnded?"text-slate-500 line-through":"text-slate-900")+'">'+c.title+'</div>' +
-        '<div class="flex items-center gap-1.5 mt-0.5">' +
-          (c.earlyBirdPrice?'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $'+c.earlyBirdPrice+'</span>':"") +
-          (c.regularPrice?'<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">定價 $'+c.regularPrice+'</span>':"") +
+        '<div class="flex items-center gap-1.5 mt-0.5 flex-wrap">' +
+          (c.earlyBirdPrice?(isEarlyBirdActive(c)
+            ?'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $'+c.earlyBirdPrice+'</span>'
+            :'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200 line-through"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $'+c.earlyBirdPrice+'</span>'
+          ):"") +
+          (c.regularPrice?'<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded '+(isEarlyBirdActive(c)?"bg-slate-100 text-slate-600":"bg-blue-50 text-blue-700 border border-blue-200")+'">定價 $'+c.regularPrice+'</span>':"") +
+          (c.earlyBirdDeadline?'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded '+(isEarlyBirdActive(c)?"bg-amber-50 text-amber-700 border border-amber-200":"bg-slate-100 text-slate-400 border border-slate-200")+'"><i class="fa-solid fa-hourglass-half mr-0.5 text-[9px]"></i>'+(isEarlyBirdActive(c)?"早鳥至 ":"已過 ")+formatShortDate(c.earlyBirdDeadline)+'</span>':"") +
           (c.notes?'<span class="text-[11px] text-slate-400 truncate max-w-[180px]" title="'+escapeHtmlAttr(c.notes)+'">'+c.notes+'</span>':"") +
         '</div>' +
       '</td>' +
@@ -1387,12 +1428,13 @@ function openCourseModal(courseId) {
     document.getElementById("formVirtualCount").value=(c.virtualCount!==undefined&&c.virtualCount!==null)?Number(c.virtualCount):0;
     document.getElementById("formEarlyBirdPrice").value=c.earlyBirdPrice||"";
     document.getElementById("formRegularPrice").value=c.regularPrice||"";
+    document.getElementById("formEarlyBirdDeadline").value=c.earlyBirdDeadline||"";
     document.getElementById("formStatus").value=c.status||"開啟報名";
     document.getElementById("formNotes").value=c.notes||"";
   } else {
     document.getElementById("courseModalTitle").innerText="開立新課程時段";
     document.getElementById("editCourseId").value="";
-    ["formTitle","formNotes","formEarlyBirdPrice","formRegularPrice"].forEach(function(id){document.getElementById(id).value="";});
+    ["formTitle","formNotes","formEarlyBirdPrice","formRegularPrice","formEarlyBirdDeadline"].forEach(function(id){document.getElementById(id).value="";});
     document.getElementById("formInstructor").value="霖霖";
     document.getElementById("formCapacity").value="8";
     document.getElementById("formVirtualCount").value="0";
@@ -1443,6 +1485,7 @@ async function handleCourseSubmit(e) {
     virtualCount:vCount,
     earlyBirdPrice:document.getElementById("formEarlyBirdPrice").value.trim(),
     regularPrice:document.getElementById("formRegularPrice").value.trim(),
+    earlyBirdDeadline:document.getElementById("formEarlyBirdDeadline").value.trim(),
     date:document.getElementById("formDate").value,
     startTime:document.getElementById("formStartTime").value,
     endTime:document.getElementById("formEndTime").value,
