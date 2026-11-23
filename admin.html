@@ -49,6 +49,7 @@
   </style>
   <script>
     const APP_VERSION = "3.6.0";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzLqx6a2HqyKRqTuXkWGc9AvAMa3SBe8vRqfCU-P7nVJT3sSaKLj1mirabS1mBRO0dPYQ/exec";
     // 防閃爍字體
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -835,7 +836,7 @@ function sanitizeTimeForInput(val) {
 // ══════════════════════════════════════════════
 // 核心資料
 // ══════════════════════════════════════════════
-var API_URL    = localStorage.getItem("appsheet_gas_api") || "";
+var API_URL = GAS_API_URL || localStorage.getItem("appsheet_gas_api") || "";
 // 密碼只存在本次分頁工作階段（關閉分頁即清除），不再明文長期存在 localStorage
 var ADMIN_PASS = sessionStorage.getItem("admin_pass") || "";
 localStorage.removeItem("appsheet_admin_pass"); // 清除舊版殘留的明文密碼
