@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>課程預約系統 - 管理者後台</title>
-  <link rel="stylesheet" href="tailwind.css?v=3.6.1">
+  <link rel="stylesheet" href="tailwind.css?v=3.6.2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
@@ -48,7 +48,7 @@
     }
   </style>
   <script>
-    const APP_VERSION = "3.6.1";
+    const APP_VERSION = "3.6.2";
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8XO6H117ptrvwJ0gpeehshT2q6k1wuQry-_dduHJWGrwun13r3AiYLxSF2DeZtGaM/exec";
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -178,14 +178,12 @@
   <!-- ══ 課程維護 ══ -->
   <div id="viewCourses" class="space-y-4">
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-      <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="openCourseModal(null)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition">
-          <i class="fa-solid fa-circle-plus"></i> 開立新課程時段
-        </button>
-      </div>
+      <button onclick="openCourseModal(null)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition w-fit">
+        <i class="fa-solid fa-circle-plus"></i> 開立新課程時段
+      </button>
       <div class="relative w-full sm:w-64">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input type="text" id="courseSearchInput" oninput="renderCoursesTable()" placeholder="搜尋課程名稱、教練或地點..."
+        <input type="text" id="courseSearchInput" oninput="renderCoursesTable()" placeholder="搜尋課程名稱或地點..."
           class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
     </div>
@@ -195,10 +193,13 @@
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
             <tr>
-              <th class="px-4 py-3">編號</th><th class="px-4 py-3">課程名稱</th><th class="px-4 py-3">授課教練</th>
-              <th class="px-4 py-3">開課日期時間</th><th class="px-4 py-3">教室/地點</th>
-              <th class="px-4 py-3 text-center">已報名 / 人數上限</th><th class="px-4 py-3 text-center">狀態</th>
-              <th class="px-4 py-3 text-right">維護操作</th>
+              <th class="px-4 py-3">編號</th>
+              <th class="px-4 py-3">課程名稱 / 價格</th>
+              <th class="px-4 py-3">開課日期時間</th>
+              <th class="px-4 py-3">教室 / 地點</th>
+              <th class="px-4 py-3 text-center">已報名 / 人數上限</th>
+              <th class="px-4 py-3 text-center">狀態</th>
+              <th class="px-4 py-3 text-right">操作</th>
             </tr>
           </thead>
           <tbody id="coursesTableBody" class="divide-y divide-slate-100"></tbody>
@@ -213,15 +214,17 @@
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
       <div class="relative flex-1 max-w-sm">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input type="text" id="bookingSearchInput" oninput="renderBookingsTable()" placeholder="搜尋學員姓名、電話、報名日期..."
+        <input type="text" id="bookingSearchInput" oninput="renderBookingsTable()" placeholder="搜尋學員姓名、電話、課程..."
           class="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
       <div class="grid grid-cols-2 sm:flex gap-2">
-        <select id="bookingSortMode" onchange="renderBookingsTable()" aria-label="排序方式" class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+        <select id="bookingSortMode" onchange="renderBookingsTable()" aria-label="排序方式"
+          class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
           <option value="class">📅 依上課時間（近→遠）</option>
           <option value="booked">🕒 依報名時間（新→舊）</option>
         </select>
-        <select id="bookingStatusFilter" onchange="renderBookingsTable()" aria-label="預約狀態" class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+        <select id="bookingStatusFilter" onchange="renderBookingsTable()" aria-label="預約狀態"
+          class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
           <option value="all">全部預約狀態</option>
           <option value="待確認">⏳ 待確認</option>
           <option value="報名成功">✅ 報名成功</option>
@@ -237,15 +240,12 @@
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
             <tr>
-              <th class="px-3 py-3 whitespace-nowrap bg-blue-50/60 text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>開課時間</th>
+              <th class="px-3 py-3 whitespace-nowrap bg-blue-50/60 text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>上課時間 / 地點</th>
               <th class="px-3 py-3 whitespace-nowrap">課程名稱</th>
               <th class="px-3 py-3 whitespace-nowrap text-slate-500">報名時間</th>
-              <th class="px-3 py-3 whitespace-nowrap">學員姓名</th>
-              <th class="px-3 py-3 whitespace-nowrap">聯絡電話</th>
-              <th class="px-3 py-3 whitespace-nowrap">Line ID</th>
-              <th class="px-3 py-3 text-center whitespace-nowrap">付款方式</th>
-              <th class="px-3 py-3 whitespace-nowrap max-w-[120px]">備註需求</th>
-              <th class="px-3 py-3 whitespace-nowrap max-w-[120px] text-amber-700 bg-amber-50/50">管理備註</th>
+              <th class="px-3 py-3 whitespace-nowrap">學員</th>
+              <th class="px-3 py-3 text-center whitespace-nowrap">付款 / 金額</th>
+              <th class="px-3 py-3 whitespace-nowrap max-w-[120px]">備註</th>
               <th class="px-3 py-3 text-center whitespace-nowrap">狀態</th>
               <th class="px-3 py-3 text-center whitespace-nowrap min-w-[200px] sticky right-0 bg-slate-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">操作</th>
             </tr>
@@ -285,8 +285,14 @@
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
       <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
         <div class="grid grid-cols-2 sm:flex gap-2">
-          <button onclick="setHistorySubMode('records')" id="subModeRecordsBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1"><i class="fa-solid fa-list-ul"></i> 過往明細</button>
-          <button onclick="setHistorySubMode('students')" id="subModeStudentsBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center gap-1"><i class="fa-solid fa-user-check"></i> 學員統計</button>
+          <button onclick="setHistorySubMode('records')" id="subModeRecordsBtn"
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-list-ul"></i> 過往明細
+          </button>
+          <button onclick="setHistorySubMode('students')" id="subModeStudentsBtn"
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-user-check"></i> 學員統計
+          </button>
         </div>
         <div class="relative w-full sm:w-72">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -302,8 +308,9 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200/80 uppercase">
               <tr>
-                <th class="px-4 py-3">排行</th><th class="px-4 py-3">學員姓名</th><th class="px-4 py-3">聯絡電話</th>
-                <th class="px-4 py-3">Line ID</th><th class="px-4 py-3 text-center">報名次數</th>
+                <th class="px-4 py-3">排行</th><th class="px-4 py-3">學員姓名</th>
+                <th class="px-4 py-3">聯絡電話</th><th class="px-4 py-3">Line ID</th>
+                <th class="px-4 py-3 text-center">報名次數</th>
                 <th class="px-4 py-3">參與課程</th><th class="px-4 py-3 text-center">操作</th>
               </tr>
             </thead>
@@ -321,7 +328,7 @@
               <tr>
                 <th class="px-3 py-3 whitespace-nowrap bg-blue-50/60 text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>上課時間 / 課程</th>
                 <th class="px-3 py-3 whitespace-nowrap">學員</th>
-                <th class="px-3 py-3 text-center whitespace-nowrap">付款</th>
+                <th class="px-3 py-3 text-center whitespace-nowrap">付款 / 金額</th>
                 <th class="px-3 py-3">備註</th>
                 <th class="px-3 py-3 text-center whitespace-nowrap">狀態</th>
                 <th class="px-3 py-3 text-center whitespace-nowrap">操作</th>
@@ -340,10 +347,9 @@
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
       <form onsubmit="handleSaveSettings(event)" class="space-y-4">
 
-        <!-- 系統名稱 -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">系統前台名稱</label>
-          <input type="text" id="settingSysName" value="霖霖的課程預約系統"
+          <input type="text" id="settingSysName"
             class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
@@ -371,6 +377,18 @@
           </div>
         </div>
 
+        <!-- 早鳥截止預設天數 -->
+        <div class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+            <i class="fa-solid fa-hourglass-half text-amber-600"></i> 早鳥截止預設天數
+          </h4>
+          <div class="flex items-center gap-3">
+            <input type="number" id="settingEarlyBirdDefaultDays" min="1" max="365" value="7"
+              class="w-24 text-xs px-3 py-2 rounded-xl border border-amber-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-amber-800">
+            <p class="text-[11px] text-amber-800">天（開立新課程時，早鳥截止日自動設為「上課日期前 N 天」）</p>
+          </div>
+        </div>
+
         <!-- 常用教室 -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">常用教室選單 <span class="text-slate-400 font-normal">(每行一個)</span></label>
@@ -382,8 +400,7 @@
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">前台公告與提醒事項</label>
           <textarea id="settingNotice" rows="3"
-            class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            >選擇您喜歡的時段即可立即登記，如額滿會即時更新。請準時出席並自備運動毛巾與水壺！</textarea>
+            class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
         </div>
 
         <!-- Google Sheets 串接 -->
@@ -401,18 +418,18 @@
           <div>
             <label class="block text-[11px] font-bold text-slate-700 mb-1">Google Apps Script Web App 網址 <span class="text-slate-400 font-normal">（已寫入程式碼，唯讀）</span></label>
             <div class="flex items-center gap-2">
-              <input type="url" id="settingGasUrl" readonly title="網址已寫在程式碼裡，如需更換請修改 admin.html 與 index.html 的 GAS_API_URL"
+              <input type="url" id="settingGasUrl" readonly
                 class="flex-1 min-w-0 text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 focus:outline-none font-mono cursor-not-allowed">
               <button type="button" onclick="testGasConnection()" id="testGasBtn"
                 class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shrink-0 shadow-sm">測試連線</button>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="copyDirectSyncUrl('admin')" id="copySyncUrlBtn"
+            <button type="button" onclick="copyDirectSyncUrl('admin')"
               class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-sliders text-emerald-600"></i> 複製管理後台網址
             </button>
-            <button type="button" onclick="showSyncQrModal('admin')" id="showQrBtn"
+            <button type="button" onclick="showSyncQrModal('admin')"
               class="py-2 px-3 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-qrcode text-emerald-600"></i> 顯示同步 QR Code
             </button>
@@ -491,14 +508,6 @@
               </label>
             </div>
             <div id="emailDetailsContainer" class="space-y-3">
-              <div class="bg-blue-50/60 border border-blue-200/60 rounded-xl p-3 space-y-1.5">
-                <p class="text-[11px] font-bold text-blue-900 flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-blue-600"></i> 如何運作？（零設定、零費用）</p>
-                <ul class="text-[11px] text-blue-800 space-y-1 pl-4 list-disc leading-relaxed">
-                  <li>使用 <strong>GAS 內建的 Gmail 寄信功能</strong>，透過您部署 Apps Script 的 Google 帳號寄出</li>
-                  <li>每天可免費寄送 <strong>100 封</strong>（個人帳號）或 <strong>1500 封</strong>（Workspace 帳號）</li>
-                  <li>不需申請任何 API Token，只需填入收件 Email 即可！</li>
-                </ul>
-              </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label class="block text-[11px] font-bold text-slate-700 mb-1">管理員收件 Email <span class="text-rose-500">*</span></label>
@@ -515,7 +524,7 @@
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-[11px] font-bold text-slate-800">確認入帳時，詢問是否寄送「報名成功」確認信給學員</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">開啟：每次確認入帳都會問您是否寄送；關閉：一律不寄。學員需在報名時填寫 Email</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">開啟：每次確認入帳都會問您是否寄送；關閉：一律不寄</p>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer ml-2">
                     <input type="checkbox" id="settingStudentEmailEnabled" class="sr-only peer" checked>
@@ -525,7 +534,7 @@
               </div>
               <div class="flex justify-end">
                 <button type="button" onclick="testNotificationChannel('email')" class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
-                  <i class="fa-solid fa-paper-plane text-[11px]"></i> 發送測試 Email 至管理員信箱
+                  <i class="fa-solid fa-paper-plane text-[11px]"></i> 發送測試 Email（含確認信格式）
                 </button>
               </div>
             </div>
@@ -542,7 +551,7 @@
 
 </main>
 
-<!-- 預約修改 Modal -->
+<!-- ══ 預約修改 Modal ══ -->
 <div id="editBookingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
   <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
@@ -560,46 +569,73 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">所屬課程 <span class="text-rose-500">*</span></label>
-          <select id="editBookingCourseId" required onchange="onEditCourseChange(this.value)" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+          <select id="editBookingCourseId" required onchange="onEditCourseChange(this.value)"
+            class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">報名時間 <span class="text-slate-400 font-normal">(不可修改)</span></label>
-          <input type="text" id="editBookingTime" readonly tabindex="-1" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 font-mono">
+          <input type="text" id="editBookingTime" readonly tabindex="-1"
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 font-mono">
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">學員姓名 <span class="text-rose-500">*</span></label>
-          <input type="text" id="editBookingStudentName" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold">
+          <input type="text" id="editBookingStudentName" required
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">聯絡電話 <span class="text-rose-500">*</span></label>
-          <input type="tel" id="editBookingPhone" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+          <input type="tel" id="editBookingPhone" required
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Line ID</label>
-          <input type="text" id="editBookingLineId" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+          <input type="text" id="editBookingLineId"
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
         </div>
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1"><i class="fa-solid fa-envelope text-slate-500 mr-1"></i>Email <span class="text-slate-400 font-normal">(確認入帳後可選擇寄送確認信)</span></label>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Email</label>
         <input type="email" id="editBookingEmail" placeholder="example@gmail.com"
           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+      <!-- 上課日期、地點、金額 -->
+      <div class="bg-blue-50/60 border border-blue-200/80 rounded-xl p-3 space-y-2.5">
+        <p class="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info text-blue-600"></i>
+          以下欄位切換課程時自動帶入，也可手動修改
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">上課日期</label>
+            <input type="date" id="editBookingClassDate"
+              class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">上課地點</label>
+            <input type="text" id="editBookingClassLocation" placeholder="例如：高雄-近高美館"
+              class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">繳費金額 (NT$)</label>
+            <input type="number" id="editBookingPrice" min="0" placeholder="例如：4000"
+              class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">付款方式 / 匯款後五碼</label>
           <input type="text" id="editBookingPayCode" placeholder="如：42919 或 LINE轉帳"
             class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">應付金額 (NT$)</label>
-          <input type="number" id="editBookingPrice" min="0" placeholder="例如：4000"
-            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold">
-        </div>
-        <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">預約 / 簽到狀態</label>
-          <select id="editBookingStatus" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold bg-white">
+          <select id="editBookingStatus"
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold bg-white">
             <option value="待確認">⏳ 待確認</option>
             <option value="報名成功">✅ 報名成功</option>
             <option value="已簽到">🎯 已簽到</option>
@@ -609,7 +645,7 @@
         </div>
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1"><i class="fa-solid fa-comment-dots text-slate-500 mr-1"></i>學員備註需求</label>
+        <label class="block text-xs font-bold text-slate-700 mb-1">學員備註需求</label>
         <textarea id="editBookingNotes" rows="2" placeholder="學員飲食、特殊體況或備註事項..."
           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
       </div>
@@ -618,18 +654,20 @@
           <span class="flex items-center gap-1.5"><i class="fa-solid fa-lock text-amber-600"></i>管理備註</span>
           <span class="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">僅管理端可見</span>
         </label>
-        <textarea id="editBookingAdminNotes" rows="2" placeholder="例如：已私訊確認時間、已開立收據、特約VIP學員..."
+        <textarea id="editBookingAdminNotes" rows="2" placeholder="例如：已私訊確認時間、已開立收據..."
           class="w-full text-xs px-3.5 py-2 rounded-lg border border-amber-300 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-800 resize-none font-medium"></textarea>
       </div>
       <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
         <button type="button" onclick="closeEditBookingModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">取消</button>
-        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition shadow-md flex items-center gap-1.5"><i class="fa-solid fa-check"></i> 儲存修改</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition shadow-md flex items-center gap-1.5">
+          <i class="fa-solid fa-check"></i> 儲存修改
+        </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- 課程新增/編輯 Modal -->
+<!-- ══ 課程新增/編輯 Modal（移除授課教練）══ -->
 <div id="courseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
   <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
@@ -646,19 +684,16 @@
         <input type="text" id="formTitle" required placeholder="如：❷ 學習：頌缽入門"
           class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900">
       </div>
-      <div class="grid grid-cols-3 gap-2.5">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">授課教練 <span class="text-rose-500">*</span></label>
-          <input type="text" id="formInstructor" required value="霖霖"
-            class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+      <div class="grid grid-cols-2 gap-2.5">
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">人數上限 <span class="text-rose-500">*</span></label>
           <input type="number" id="formCapacity" required value="8" min="1" max="100"
             class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold">
         </div>
         <div class="bg-amber-50/70 p-1.5 rounded-xl border border-amber-200/80">
-          <label class="block text-[11px] font-bold text-amber-900 mb-0.5 flex items-center justify-between"><span>虛擬報名</span><i class="fa-solid fa-ghost text-amber-500 text-[10px]"></i></label>
+          <label class="block text-[11px] font-bold text-amber-900 mb-0.5 flex items-center justify-between">
+            <span>虛擬報名</span><i class="fa-solid fa-ghost text-amber-500 text-[10px]"></i>
+          </label>
           <input type="number" id="formVirtualCount" value="0" min="0" max="50"
             class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-amber-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-amber-800">
           <p class="text-[9px] text-amber-700 mt-0.5">訪客將看到增加此前置人數</p>
@@ -667,15 +702,18 @@
       <div class="grid grid-cols-3 gap-2">
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">開課日期 <span class="text-rose-500">*</span></label>
-          <input type="date" id="formDate" required class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="date" id="formDate" required onchange="autoFillEarlyBirdDeadline()"
+            class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">開始時間 <span class="text-rose-500">*</span></label>
-          <input type="time" id="formStartTime" required class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="time" id="formStartTime" required
+            class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">結束時間 <span class="text-rose-500">*</span></label>
-          <input type="time" id="formEndTime" required class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="time" id="formEndTime" required
+            class="w-full text-xs px-2 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
@@ -708,7 +746,10 @@
             class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800">
         </div>
         <div class="col-span-2">
-          <label class="block text-xs font-bold text-slate-700 mb-1"><i class="fa-solid fa-hourglass-half text-amber-600 mr-1"></i>早鳥價截止日 <span class="text-slate-400 font-normal">(選填，留空＝永久有效)</span></label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-hourglass-half text-amber-600 mr-1"></i>早鳥價截止日
+            <span class="text-slate-400 font-normal">(選填，留空＝永久有效；開課日期填入後自動計算)</span>
+          </label>
           <input type="date" id="formEarlyBirdDeadline"
             class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-amber-800">
           <p class="text-[10px] text-slate-500 mt-1">超過此日期（台灣時間 23:59）前台將自動切換為定價，並顯示早鳥倒數計時</p>
@@ -745,7 +786,6 @@ function checkVersionAndShowBanner() {
   }
   localStorage.setItem("app_version", APP_VERSION);
 }
-
 function doForceRefresh() {
   localStorage.setItem("app_version", APP_VERSION);
   window.location.reload(true);
@@ -755,11 +795,9 @@ function doForceRefresh() {
 // 字體控制
 // ══════════════════════════════════════════════
 var FONT_MIN = 12, FONT_MAX = 36;
-
 function getCurrentFontPx() {
   return parseFloat(localStorage.getItem("admin_font_px")) || (window.innerWidth >= 768 ? 16 : 21);
 }
-
 function applyFontPx(px, save) {
   if (save === undefined) save = true;
   px = Math.min(FONT_MAX, Math.max(FONT_MIN, Math.round(px)));
@@ -769,7 +807,6 @@ function applyFontPx(px, save) {
   if (el) el.textContent = px+"px";
   if (save) localStorage.setItem("admin_font_px", px);
 }
-
 function adjustFontSize(delta) { applyFontPx(getCurrentFontPx() + delta); }
 
 // ══════════════════════════════════════════════
@@ -781,39 +818,35 @@ function sanitizeTimeForInput(val) {
   str = str.replace(/^(\d{1,2}:\d{2}):\d{2}$/, "$1");
   var ampmMatch = str.match(/^(上午|下午|AM|PM)\s*(\d{1,2}):(\d{2})$/i);
   if (ampmMatch) {
-    var period = ampmMatch[1];
-    var hours  = parseInt(ampmMatch[2], 10);
-    var mins   = ampmMatch[3];
-    var isAfternoon = (period === "下午" || period.toUpperCase() === "PM");
+    var period = ampmMatch[1], hours = parseInt(ampmMatch[2], 10), mins = ampmMatch[3];
+    var isAfternoon = period === "下午" || period.toUpperCase() === "PM";
     if (isAfternoon && hours !== 12) hours += 12;
     if (!isAfternoon && hours === 12) hours = 0;
     return String(hours).padStart(2,"0") + ":" + mins;
   }
   var plainMatch = str.match(/^(\d{1,2}):(\d{2})$/);
-  if (plainMatch) {
-    return String(parseInt(plainMatch[1],10)).padStart(2,"0") + ":" + plainMatch[2];
-  }
+  if (plainMatch) return String(parseInt(plainMatch[1],10)).padStart(2,"0") + ":" + plainMatch[2];
   return str;
 }
 
 // ══════════════════════════════════════════════
-// 核心資料與狀態
+// 核心資料
 // ══════════════════════════════════════════════
-var API_URL = GAS_API_URL || localStorage.getItem("appsheet_gas_api") || "";
+var API_URL    = GAS_API_URL || localStorage.getItem("appsheet_gas_api") || "";
 var ADMIN_PASS = sessionStorage.getItem("admin_pass") || "";
 localStorage.removeItem("appsheet_admin_pass");
 
-var lastAdminLoadAt = 0, adminLoading = false, settingsFormLoaded = false;
-var courseMap = {};
-var adminCourses = [];
-var adminBookings = [];
+var lastAdminLoadAt  = 0;
+var adminLoading     = false;
+var settingsFormLoaded = false;
+var courseMap        = {};
+var adminCourses     = [];
+var adminBookings    = [];
 var customClassrooms = ["高雄-近高美館","台南安南醫院","台北場地"];
+var earlyBirdDefaultDays = 7;  // 從設定讀取後更新
 
 (function(){
-  try {
-    var s = localStorage.getItem("appsheet_classrooms");
-    if (s) customClassrooms = JSON.parse(s);
-  } catch(e) {}
+  try { var s=localStorage.getItem("appsheet_classrooms"); if(s) customClassrooms=JSON.parse(s); } catch(e){}
 })();
 
 function courseById(id) { return courseMap[String(id)] || null; }
@@ -823,19 +856,15 @@ function setConnStatus(ok, text) {
   var dot = document.getElementById("connDot"), txt = document.getElementById("connText");
   if (dot) dot.className = "w-2 h-2 rounded-full inline-block shrink-0 " +
     (ok === true ? "bg-emerald-400 animate-pulse" : ok === false ? "bg-rose-500" : "bg-slate-400");
-  if (txt) {
-    txt.textContent = text;
-    txt.className = "truncate " + (ok === false ? "text-rose-300 font-bold" : "");
-  }
+  if (txt) { txt.textContent = text; txt.className = "truncate " + (ok===false?"text-rose-300 font-bold":""); }
 }
 
-function phoneKey(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
-function moneyText(v) { var n = Number(String(v || "").replace(/,/g, "")); return n > 0 ? "NT$ " + n.toLocaleString() : ""; }
+function phoneKey(v) { return String(v||"").replace(/\D/g,"").replace(/^0+/,""); }
+function moneyText(v) { var n=Number(String(v||"").replace(/,/g,"")); return n>0?"NT$ "+n.toLocaleString():""; }
 
 async function apiPost(payload) {
   var resp = await fetch(API_URL, {
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
     body: JSON.stringify(Object.assign({ password: ADMIN_PASS }, payload))
   });
   if (!resp.ok) throw new Error("HTTP " + resp.status);
@@ -851,7 +880,7 @@ async function apiPost(payload) {
 
 function reportSyncError(actionLabel, err) {
   console.warn(actionLabel + " 失敗：", err);
-  alert("❌ " + actionLabel + "失敗：" + (err && err.message ? err.message : err) + "\n\n畫面將重新載入試算表的最新資料。");
+  alert("❌ " + actionLabel + "失敗：" + (err&&err.message?err.message:err) + "\n\n畫面將重新載入試算表的最新資料。");
   loadFullAdminData(true);
 }
 
@@ -867,13 +896,12 @@ async function handleAdminLogin() {
   if (hasApi()) {
     try {
       var resp = await fetch(API_URL, {
-        method:"POST",
-        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
         body: JSON.stringify({ action:"verifyPassword", password:input })
       });
       var res = await resp.json();
       ok = !!res.success;
-      if (!ok && !res.authError) { alert("登入驗證失敗：" + (res.message || "伺服器錯誤")); return; }
+      if (!ok && !res.authError) { alert("登入驗證失敗：" + (res.message||"伺服器錯誤")); return; }
     } catch (e) { alert("無法連線到 Google 試算表，請確認網路後再試一次。"); return; }
   } else {
     var offlinePass = localStorage.getItem("appsheet_offline_pass") || "";
@@ -901,7 +929,7 @@ function handleAuthLost() {
   ADMIN_PASS = "";
   sessionStorage.removeItem("admin_pass");
   sessionStorage.removeItem("admin_authenticated");
-  alert("⚠️ 管理密碼驗證失敗（可能已在其他裝置變更），請重新登入。");
+  alert("⚠️ 管理密碼驗證失敗，請重新登入。");
   checkAdminAuth();
 }
 
@@ -909,122 +937,102 @@ function handleAuthLost() {
 // 工具函式
 // ══════════════════════════════════════════════
 function escapeHtml(str) {
-  return (str===null||str===undefined) ? "" : String(str)
+  return (str===null||str===undefined)?"":String(str)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 var escapeHtmlAttr = escapeHtml;
 
 function escObj(o) {
-  var r = {};
-  Object.keys(o||{}).forEach(function(k){ var v=o[k]; r[k] = (typeof v==="string") ? escapeHtml(v) : v; });
+  var r={};
+  Object.keys(o||{}).forEach(function(k){ var v=o[k]; r[k]=(typeof v==="string")?escapeHtml(v):v; });
   return r;
 }
 
-// 使用 UTC+8 明確時區計算，避免跨時區誤判
 function isCourseExpired(course) {
   if (!course||!course.date) return false;
-  var dateStr = String(course.date).trim().replace(/\//g,"-");
+  var dateStr=String(course.date).trim().replace(/\//g,"-");
   if (dateStr.startsWith("1899")) return false;
-  var endStr = course.endTime ? sanitizeTimeForInput(String(course.endTime).trim()) : "23:59";
-  if (!endStr) endStr = "23:59";
-  var dateParts = dateStr.split("-");
-  var timeParts = endStr.split(":").slice(0,2);
-  if (dateParts.length < 3 || timeParts.length < 2) return false;
-  var utcMs = Date.UTC(
-    parseInt(dateParts[0], 10),
-    parseInt(dateParts[1], 10) - 1,
-    parseInt(dateParts[2], 10),
-    parseInt(timeParts[0], 10) - 8,
-    parseInt(timeParts[1], 10)
-  );
+  var endStr=course.endTime?sanitizeTimeForInput(String(course.endTime).trim()):"23:59";
+  if (!endStr) endStr="23:59";
+  var dateParts=dateStr.split("-"), timeParts=endStr.split(":").slice(0,2);
+  if (dateParts.length<3||timeParts.length<2) return false;
+  var utcMs=Date.UTC(parseInt(dateParts[0],10),parseInt(dateParts[1],10)-1,parseInt(dateParts[2],10),parseInt(timeParts[0],10)-8,parseInt(timeParts[1],10));
   if (isNaN(utcMs)) return false;
   return utcMs < Date.now();
 }
 
-// 「待確認」的預約即使課程已過期，也保留在名冊（讓管理者仍可確認入帳）
 function isBookingExpired(booking) {
   if (!booking) return false;
-  var st = String(booking["簽到狀態"] || "待確認").trim();
-  if (st === "待確認" || st === "已預約") return false;
-  var course = courseById(booking["課程編號"]);
+  var st=String(booking["簽到狀態"]||"待確認").trim();
+  if (st==="待確認"||st==="已預約") return false;
+  var course=courseById(booking["課程編號"]);
   if (course) return isCourseExpired(course);
-  if (st === "已完成") return true;
+  if (st==="已完成") return true;
   if (booking["報名時間"]) {
-    var d = new Date(String(booking["報名時間"]).replace(" ","T"));
-    if (!isNaN(d.getTime()) && (new Date()-d)/86400000 > 60) return true;
+    var d=new Date(String(booking["報名時間"]).replace(" ","T"));
+    if (!isNaN(d.getTime())&&(new Date()-d)/86400000>60) return true;
   }
   return false;
 }
 
 function getWeekDay(dateStr) {
   if (!dateStr) return "";
-  var d = new Date(String(dateStr).replace(/\//g,"-")+"T00:00:00");
+  var d=new Date(String(dateStr).replace(/\//g,"-")+"T00:00:00");
   if (isNaN(d.getTime())) return "";
   return ["日","一","二","三","四","五","六"][d.getDay()];
 }
 function formatDisplayDate(dateStr) {
   if (!dateStr) return "-";
-  var p = String(dateStr).replace(/\//g,"-").split("-");
+  var p=String(dateStr).replace(/\//g,"-").split("-");
   if (p.length!==3) return dateStr;
   return p[0]+"/"+p[1].padStart(2,"0")+"/"+p[2].padStart(2,"0")+"("+getWeekDay(dateStr)+")";
 }
 function formatShortDate(dateStr) {
   if (!dateStr) return "-";
-  var p = String(dateStr).replace(/\//g,"-").split("-");
+  var p=String(dateStr).replace(/\//g,"-").split("-");
   if (p.length!==3) return dateStr;
   return Number(p[1])+"/"+Number(p[2])+"("+getWeekDay(dateStr)+")";
 }
-function formatDate(val) { if(!val) return ""; return String(val).split("T")[0]; }
 
-// 早鳥截止判斷（台灣時間 23:59:59）
 function earlyBirdDeadlineMs(deadlineStr) {
   if (!deadlineStr) return null;
-  var p = String(deadlineStr).trim().replace(/\//g,"-").split("-");
+  var p=String(deadlineStr).trim().replace(/\//g,"-").split("-");
   if (p.length!==3) return null;
   var y=parseInt(p[0],10), m=parseInt(p[1],10), d=parseInt(p[2],10);
   if (isNaN(y)||isNaN(m)||isNaN(d)) return null;
-  return Date.UTC(y, m-1, d, 15, 59, 59);
+  return Date.UTC(y,m-1,d,15,59,59);
 }
 function isEarlyBirdActive(course) {
-  if (!course || !course.earlyBirdPrice) return false;
-  var dl = earlyBirdDeadlineMs(course.earlyBirdDeadline);
-  return dl===null || Date.now() <= dl;
+  if (!course||!course.earlyBirdPrice) return false;
+  var dl=earlyBirdDeadlineMs(course.earlyBirdDeadline);
+  return dl===null||Date.now()<=dl;
 }
 
 function normalizeCoursePrices(list) {
   if (!Array.isArray(list)) return list;
-  return list.map(function(c) {
+  return list.map(function(c){
     var notes=c.notes||"", eb=c.earlyBirdPrice||"", rg=c.regularPrice||"";
-    var m = notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
-    if (m) {
-      if (!eb) eb=m[1].replace(/,/g,"");
-      if (!rg) rg=m[2].replace(/,/g,"");
-      notes=notes.replace(m[0],"").trim();
-    }
-    var vc = (c.virtualCount !== undefined && c.virtualCount !== null) ? Number(c.virtualCount) : 0;
-    if (isNaN(vc)) vc = 0;
-    return Object.assign({}, c, { notes:notes, earlyBirdPrice:eb, regularPrice:rg, virtualCount:vc });
+    var m=notes.match(/[(（]早鳥價?[\s:：$]*([0-9,]+)[\s/]*定價?[\s:：$]*([0-9,]+)[)）]/);
+    if (m){ if(!eb) eb=m[1].replace(/,/g,""); if(!rg) rg=m[2].replace(/,/g,""); notes=notes.replace(m[0],"").trim(); }
+    var vc=(c.virtualCount!==undefined&&c.virtualCount!==null)?Number(c.virtualCount):0;
+    if (isNaN(vc)) vc=0;
+    return Object.assign({},c,{notes,earlyBirdPrice:eb,regularPrice:rg,virtualCount:vc});
   });
 }
 
 function calculateCourseBookedCounts() {
-  var counts = {};
-  adminBookings.forEach(function(b) {
-    if (b["簽到狀態"] !== "已取消") {
-      var cid = String(b["課程編號"]);
-      counts[cid] = (counts[cid]||0) + 1;
-    }
+  var counts={};
+  adminBookings.forEach(function(b){
+    if (b["簽到狀態"]!=="已取消"){ var cid=String(b["課程編號"]); counts[cid]=(counts[cid]||0)+1; }
   });
-  courseMap = {};
-  adminCourses.forEach(function(c) {
-    courseMap[String(c.id)] = c;
-    var real = counts[c.id] || 0;
-    var virt = (c.virtualCount !== undefined && c.virtualCount !== null) ? Number(c.virtualCount) : 0;
-    if (isNaN(virt)) virt = 0;
-    c.realBookedCount = real;
-    c.virtualCount    = virt;
-    c.bookedCount     = real + virt;
-    c.remaining       = Math.max(0, c.capacity - c.bookedCount);
+  courseMap={};
+  adminCourses.forEach(function(c){
+    courseMap[String(c.id)]=c;
+    var real=counts[c.id]||0;
+    var virt=(c.virtualCount!==undefined&&c.virtualCount!==null)?Number(c.virtualCount):0;
+    if (isNaN(virt)) virt=0;
+    c.realBookedCount=real; c.virtualCount=virt;
+    c.bookedCount=real+virt; c.remaining=Math.max(0,c.capacity-c.bookedCount);
   });
 }
 
@@ -1037,15 +1045,14 @@ function makeStatusBadge(st) {
 }
 
 function makePayCell(payCode, price) {
-  var m = moneyText(price);
-  return makePayBadge(payCode) + (m ? '<div class="text-[11px] font-bold text-emerald-700 mt-0.5 whitespace-nowrap">'+m+'</div>' : "");
+  var m=moneyText(price);
+  return makePayBadge(payCode)+(m?'<div class="text-[11px] font-bold text-emerald-700 mt-0.5 whitespace-nowrap">'+m+'</div>':"");
 }
-
 function makePayBadge(payCode) {
-  var p = String(payCode||"-");
+  var p=String(payCode||"-");
   if (p.toLowerCase().indexOf("line")!==-1) return '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-lg text-xs font-bold font-mono border border-emerald-200"><i class="fa-brands fa-line mr-1"></i>LINE</span>';
   if (p.indexOf("現")!==-1) return '<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-lg text-xs font-bold font-mono border border-amber-200">付現</span>';
-  if (p!=="-"&&p)           return '<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded-lg text-xs font-mono font-black border border-blue-300 tracking-widest">'+p+'</span>';
+  if (p!=="-"&&p) return '<span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded-lg text-xs font-mono font-black border border-blue-300 tracking-widest">'+p+'</span>';
   return '<span class="text-slate-300">-</span>';
 }
 
@@ -1053,208 +1060,225 @@ function makePayBadge(payCode) {
 // renderAll
 // ══════════════════════════════════════════════
 function renderAll() {
-  document.getElementById("courseCountBadge").innerText = adminCourses.length;
-  var active = adminBookings.filter(function(b){ return !isBookingExpired(b); });
-  document.getElementById("bookingCountBadge").innerText = active.length;
+  document.getElementById("courseCountBadge").innerText=adminCourses.length;
+  var active=adminBookings.filter(function(b){return !isBookingExpired(b);});
+  document.getElementById("bookingCountBadge").innerText=active.length;
   renderCoursesTable();
   renderBookingsTable();
   renderHistorySection();
 }
 
 // ══════════════════════════════════════════════
-// 課程清單
+// 課程清單（移除授課教練欄）
 // ══════════════════════════════════════════════
 function renderCoursesTable() {
-  var q = (document.getElementById("courseSearchInput").value||"").toLowerCase();
-  var all = adminCourses.filter(function(c){
+  var q=(document.getElementById("courseSearchInput").value||"").toLowerCase();
+  var all=adminCourses.filter(function(c){
     return (c.title||"").toLowerCase().indexOf(q)!==-1||
-           (c.instructor||"").toLowerCase().indexOf(q)!==-1||
            (c.location||"").toLowerCase().indexOf(q)!==-1||
            (c.id||"").toLowerCase().indexOf(q)!==-1;
   });
 
-  var tbody = document.getElementById("coursesTableBody");
-  var mCon  = document.getElementById("coursesMobileContainer");
-  var noRow = document.getElementById("noCoursesRow");
+  var tbody=document.getElementById("coursesTableBody");
+  var mCon=document.getElementById("coursesMobileContainer");
+  var noRow=document.getElementById("noCoursesRow");
 
-  if (!all.length) {
-    if (tbody) tbody.innerHTML="";
-    if (mCon) mCon.innerHTML='<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前暫無任何課程資料</div>';
+  if (!all.length){
+    if(tbody) tbody.innerHTML="";
+    if(mCon) mCon.innerHTML='<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前暫無任何課程資料</div>';
     noRow&&noRow.classList.remove("hidden"); return;
   }
   noRow&&noRow.classList.add("hidden");
 
-  function sortByDate(a,b) {
+  function sortByDate(a,b){
     var da=new Date(String(a.date).replace(/\//g,"-")+"T"+(sanitizeTimeForInput(a.startTime)||"00:00")+":00");
     var db=new Date(String(b.date).replace(/\//g,"-")+"T"+(sanitizeTimeForInput(b.startTime)||"00:00")+":00");
     return da-db;
   }
-  var activeCourses  = all.filter(function(c){ return !isCourseExpired(c)&&c.status!=="已結束"; }).sort(sortByDate);
-  var historyCourses = all.filter(function(c){ return isCourseExpired(c)||c.status==="已結束"; }).sort(sortByDate);
+  var activeCourses=all.filter(function(c){return !isCourseExpired(c)&&c.status!=="已結束";}).sort(sortByDate);
+  var historyCourses=all.filter(function(c){return isCourseExpired(c)||c.status==="已結束";}).sort(sortByDate);
 
   var html="", mHtml="";
 
   function buildRow(rawC, isEnded) {
-    var c = escObj(rawC);
-    var isFull = (rawC.remaining||0) <= 0;
-    var displayDate = formatDisplayDate(c.date);
-    var shortDate   = formatShortDate(c.date);
-    var startT = sanitizeTimeForInput(c.startTime)||c.startTime||"";
-    var endT   = sanitizeTimeForInput(c.endTime)||c.endTime||"";
+    var c=escObj(rawC);
+    var isFull=(rawC.remaining||0)<=0;
+    var displayDate=formatDisplayDate(c.date);
+    var shortDate=formatShortDate(c.date);
+    var startT=sanitizeTimeForInput(c.startTime)||c.startTime||"";
+    var endT=sanitizeTimeForInput(c.endTime)||c.endTime||"";
 
-    var sBadge = isEnded
-      ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600 border border-slate-300 inline-flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>已結束</span>'
-      : (c.status==="開啟報名"
-          ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>'
-          : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">'+c.status+'</span>');
+    var sBadge=isEnded
+      ?'<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-600 border border-slate-300 inline-flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>已結束</span>'
+      :(c.status==="開啟報名"
+        ?'<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">開啟報名</span>'
+        :'<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">'+c.status+'</span>');
 
-    html += '<tr class="'+(isEnded?"bg-slate-100/60 opacity-60 hover:opacity-80":"hover:bg-slate-50")+' transition">' +
-      '<td class="px-4 py-3 font-mono font-bold text-slate-500">'+c.id+'</td>' +
-      '<td class="px-4 py-3 whitespace-nowrap">' +
-        '<div class="font-bold '+(isEnded?"text-slate-500 line-through":"text-slate-900")+'">'+c.title+'</div>' +
-        '<div class="flex items-center gap-1.5 mt-0.5 flex-wrap">' +
+    // 桌機列（移除授課教練欄）
+    html+='<tr class="'+(isEnded?"bg-slate-100/60 opacity-60 hover:opacity-80":"hover:bg-slate-50")+' transition">'+
+      '<td class="px-4 py-3 font-mono font-bold text-slate-500 text-[11px]">'+c.id+'</td>'+
+      '<td class="px-4 py-3 whitespace-nowrap">'+
+        '<div class="font-bold '+(isEnded?"text-slate-500 line-through":"text-slate-900")+'">'+c.title+'</div>'+
+        '<div class="flex items-center gap-1.5 mt-0.5 flex-wrap">'+
           (rawC.earlyBirdPrice?(isEarlyBirdActive(rawC)
             ?'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $'+c.earlyBirdPrice+'</span>'
             :'<span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200 line-through"><i class="fa-solid fa-tag mr-0.5 text-[9px]"></i>早鳥 $'+c.earlyBirdPrice+'</span>'
-          ):"") +
-          (rawC.regularPrice?'<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded '+(isEarlyBirdActive(rawC)?"bg-slate-100 text-slate-600":"bg-blue-50 text-blue-700 border border-blue-200")+'">定價 $'+c.regularPrice+'</span>':"") +
+          ):"")+
+          (rawC.regularPrice?'<span class="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded '+(isEarlyBirdActive(rawC)?"bg-slate-100 text-slate-600":"bg-blue-50 text-blue-700 border border-blue-200")+'">定價 $'+c.regularPrice+'</span>':"")+
           (c.notes?'<span class="text-[11px] text-slate-400 truncate max-w-[180px]" title="'+escapeHtmlAttr(rawC.notes)+'">'+c.notes+'</span>':"") +
-        '</div>' +
-      '</td>' +
-      '<td class="px-4 py-3 font-semibold '+(isEnded?"text-slate-500":"text-blue-600")+'">'+c.instructor+'</td>' +
-      '<td class="px-4 py-3">' +
-        '<span class="font-medium '+(isEnded?"text-slate-500":"text-slate-800")+'">'+displayDate+'</span>' +
-        '<div class="text-[11px] text-slate-400">'+startT+' - '+endT+'</div>' +
-      '</td>' +
-      '<td class="px-4 py-3 text-slate-600">'+(c.location||"待定")+'</td>' +
-      '<td class="px-4 py-3 text-center">' +
-        '<div class="inline-flex items-baseline gap-1">' +
-          '<span class="font-bold '+(isFull?"text-rose-600":(isEnded?"text-slate-500":"text-slate-800"))+'">'+(rawC.bookedCount||0)+'</span>' +
-          '<span class="text-slate-400">/ '+rawC.capacity+'</span>' +
-        '</div>' +
+        '</div>'+
+      '</td>'+
+      '<td class="px-4 py-3">'+
+        '<span class="font-medium '+(isEnded?"text-slate-500":"text-slate-800")+'">'+displayDate+'</span>'+
+        '<div class="text-[11px] text-slate-400">'+startT+' - '+endT+'</div>'+
+      '</td>'+
+      '<td class="px-4 py-3 text-slate-600">'+(c.location||"待定")+'</td>'+
+      '<td class="px-4 py-3 text-center">'+
+        '<div class="inline-flex items-baseline gap-1">'+
+          '<span class="font-bold '+(isFull?"text-rose-600":(isEnded?"text-slate-500":"text-slate-800"))+'">'+(rawC.bookedCount||0)+'</span>'+
+          '<span class="text-slate-400">/ '+rawC.capacity+'</span>'+
+        '</div>'+
         (rawC.virtualCount?'<div class="text-[10px] text-amber-600">(實'+(rawC.realBookedCount||0)+'+虛'+rawC.virtualCount+')</div>':"") +
-        (isFull&&!isEnded?'<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>':"") +
-      '</td>' +
-      '<td class="px-4 py-3 text-center">'+sBadge+'</td>' +
-      '<td class="px-4 py-3 text-right whitespace-nowrap">' +
-        '<button onclick="openCourseModal(\''+c.id+'\')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold mr-1 transition"><i class="fa-solid fa-pen"></i> 編輯</button>' +
-        '<button onclick="deleteCourse(\''+c.id+'\')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash-can"></i></button>' +
-      '</td>' +
+        (isFull&&!isEnded?'<span class="block text-[10px] text-rose-500 font-bold">已額滿</span>':"")+
+      '</td>'+
+      '<td class="px-4 py-3 text-center">'+sBadge+'</td>'+
+      '<td class="px-4 py-3 text-right whitespace-nowrap">'+
+        '<button onclick="openCourseModal(\''+c.id+'\')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold mr-1 transition"><i class="fa-solid fa-pen"></i> 編輯</button>'+
+        '<button onclick="deleteCourse(\''+c.id+'\')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-trash-can"></i></button>'+
+      '</td>'+
     '</tr>';
 
-    mHtml += '<div class="'+(isEnded?"bg-slate-100/80 opacity-60 border border-slate-200/60":"bg-white border border-slate-200/90 shadow-sm hover:border-blue-400")+' rounded-2xl p-3 flex items-center justify-between gap-2.5 transition">' +
-      '<div class="min-w-0 flex-1 space-y-1">' +
-        '<div class="flex items-center gap-1.5 flex-wrap">' +
-          '<span class="inline-flex items-center gap-1 text-[11px] font-bold '+(isEnded?"text-slate-600 bg-slate-200/80":"text-blue-700 bg-blue-50 border border-blue-100")+' px-2 py-0.5 rounded-md">' +
+    // 手機卡片
+    mHtml+='<div class="'+(isEnded?"bg-slate-100/80 opacity-60 border border-slate-200/60":"bg-white border border-slate-200/90 shadow-sm hover:border-blue-400")+' rounded-2xl p-3 flex items-center justify-between gap-2.5 transition">'+
+      '<div class="min-w-0 flex-1 space-y-1">'+
+        '<div class="flex items-center gap-1.5 flex-wrap">'+
+          '<span class="inline-flex items-center gap-1 text-[11px] font-bold '+(isEnded?"text-slate-600 bg-slate-200/80":"text-blue-700 bg-blue-50 border border-blue-100")+' px-2 py-0.5 rounded-md">'+
             '<i class="fa-regular fa-clock text-[10px]"></i> '+shortDate+' '+startT+
-          '</span>' +
-          sBadge +
-          (isFull&&!isEnded?'<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">額滿</span>':"") +
-        '</div>' +
-        '<h3 class="text-xs font-black '+(isEnded?"text-slate-500 line-through":"text-slate-900")+' leading-snug truncate">'+c.title+'</h3>' +
-        '<div class="flex items-center gap-2 text-[11px] text-slate-500">' +
-          '<span class="truncate flex items-center gap-1 min-w-0"><i class="fa-solid fa-location-dot '+(isEnded?"text-slate-400":"text-rose-500")+' text-[10px] shrink-0"></i><span class="truncate font-medium text-slate-700">'+(c.location||"待定")+'</span></span>' +
-          '<span class="text-slate-300 shrink-0">|</span>' +
-          '<span class="font-bold '+(isFull&&!isEnded?"text-rose-600":"text-blue-700")+' shrink-0">已報 '+(rawC.bookedCount||0)+'/'+rawC.capacity+'</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="shrink-0 flex items-center gap-1">' +
-        '<button onclick="openCourseModal(\''+c.id+'\')" class="px-2.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-pen text-[11px]"></i> 編輯</button>' +
-        '<button onclick="deleteCourse(\''+c.id+'\')" class="p-2 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl text-xs transition"><i class="fa-solid fa-trash-can text-[11px]"></i></button>' +
-      '</div>' +
+          '</span>'+sBadge+
+          (isFull&&!isEnded?'<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">額滿</span>':"")+
+        '</div>'+
+        '<h3 class="text-xs font-black '+(isEnded?"text-slate-500 line-through":"text-slate-900")+' leading-snug truncate">'+c.title+'</h3>'+
+        '<div class="flex items-center gap-2 text-[11px] text-slate-500">'+
+          '<span class="truncate flex items-center gap-1 min-w-0"><i class="fa-solid fa-location-dot '+(isEnded?"text-slate-400":"text-rose-500")+' text-[10px] shrink-0"></i><span class="truncate font-medium text-slate-700">'+(c.location||"待定")+'</span></span>'+
+          '<span class="text-slate-300 shrink-0">|</span>'+
+          '<span class="font-bold '+(isFull&&!isEnded?"text-rose-600":"text-blue-700")+' shrink-0">已報 '+(rawC.bookedCount||0)+'/'+rawC.capacity+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="shrink-0 flex items-center gap-1">'+
+        '<button onclick="openCourseModal(\''+c.id+'\')" class="px-2.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-pen text-[11px]"></i> 編輯</button>'+
+        '<button onclick="deleteCourse(\''+c.id+'\')" class="p-2 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl text-xs transition"><i class="fa-solid fa-trash-can text-[11px]"></i></button>'+
+      '</div>'+
     '</div>';
   }
 
-  activeCourses.forEach(function(c){ buildRow(c, false); });
+  activeCourses.forEach(function(c){ buildRow(c,false); });
 
-  if (activeCourses.length>0 && historyCourses.length>0) {
-    html += '<tr><td colspan="8" class="px-4 py-3 bg-slate-100/80 border-y border-slate-300/60">' +
-      '<div class="flex items-center gap-2 text-[11px] font-bold text-slate-500">' +
-        '<i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 以下為已結束或過期之歷史課程' +
-      '</div></td></tr>';
-    mHtml += '<div class="flex items-center gap-2 py-1.5 px-2 text-[11px] font-bold text-slate-400">' +
-      '<div class="flex-1 h-px bg-slate-200"></div>' +
-      '<span class="shrink-0 flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>以下為歷史課程</span>' +
-      '<div class="flex-1 h-px bg-slate-200"></div></div>';
+  if (activeCourses.length>0&&historyCourses.length>0) {
+    html+='<tr><td colspan="7" class="px-4 py-3 bg-slate-100/80 border-y border-slate-300/60">'+
+      '<div class="flex items-center gap-2 text-[11px] font-bold text-slate-500"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 以下為已結束或過期之歷史課程</div>'+
+    '</td></tr>';
+    mHtml+='<div class="flex items-center gap-2 py-1.5 px-2 text-[11px] font-bold text-slate-400">'+
+      '<div class="flex-1 h-px bg-slate-200"></div><span class="shrink-0 flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left"></i>以下為歷史課程</span><div class="flex-1 h-px bg-slate-200"></div>'+
+    '</div>';
   }
 
-  historyCourses.forEach(function(c){ buildRow(c, true); });
+  historyCourses.forEach(function(c){ buildRow(c,true); });
 
   if (tbody) tbody.innerHTML=html;
   if (mCon)  mCon.innerHTML=mHtml;
 }
 
 // ══════════════════════════════════════════════
-// 預約名冊
+// 預約名冊（上課日期/地點從預約記錄讀取）
 // ══════════════════════════════════════════════
+function getBookingClassDate(b) {
+  // 優先用預約記錄中儲存的上課日期，沒有才從課程表查
+  if (b["上課日期"]) return b["上課日期"];
+  var c=courseById(b["課程編號"]);
+  return c ? c.date : "";
+}
+function getBookingClassLocation(b) {
+  if (b["上課地點"]) return b["上課地點"];
+  var c=courseById(b["課程編號"]);
+  return c ? (c.location||"") : "";
+}
+
 function classTimeMs(b) {
-  var c = courseById(b["課程編號"]);
-  if (!c || !c.date) return 8.64e15;
-  var t = new Date(String(c.date).replace(/\//g,"-")+"T"+(sanitizeTimeForInput(c.startTime)||"00:00")+":00").getTime();
-  return isNaN(t) ? 8.64e15 : t;
+  var d=getBookingClassDate(b);
+  var c=courseById(b["課程編號"]);
+  var timeStr=c?sanitizeTimeForInput(c.startTime)||"00:00":"00:00";
+  if (!d) return 8.64e15;
+  var t=new Date(String(d).replace(/\//g,"-")+"T"+timeStr+":00").getTime();
+  return isNaN(t)?8.64e15:t;
 }
 function bookedTimeMs(b) {
-  var t = new Date(String(b["報名時間"]||"").replace(" ","T")).getTime();
-  return isNaN(t) ? 0 : t;
+  var t=new Date(String(b["報名時間"]||"").replace(" ","T")).getTime();
+  return isNaN(t)?0:t;
 }
 
 function renderBookingsTable() {
-  var q  = (document.getElementById("bookingSearchInput").value||"").toLowerCase();
-  var sf = document.getElementById("bookingStatusFilter").value;
-  var actives = adminBookings.filter(function(b){ return !isBookingExpired(b); });
+  var q=(document.getElementById("bookingSearchInput").value||"").toLowerCase();
+  var sf=document.getElementById("bookingStatusFilter").value;
+  var actives=adminBookings.filter(function(b){return !isBookingExpired(b);});
 
-  var filtered = actives.filter(function(b) {
-    var course = courseById(b["課程編號"]);
-    var cd = course ? course.date+" "+course.startTime+"-"+course.endTime : "";
-    var mq = (b["學員姓名"]||"").toLowerCase().indexOf(q)!==-1||
-             (b["聯絡電話"]||"").indexOf(q)!==-1||
-             (b["課程名稱"]||"").toLowerCase().indexOf(q)!==-1||
-             (b["預約編號"]||"").toLowerCase().indexOf(q)!==-1||
-             (b["報名時間"]||"").indexOf(q)!==-1||
-             cd.indexOf(q)!==-1;
-    if (!mq && /\d{3,}/.test(q)) mq = phoneKey(b["聯絡電話"]).indexOf(phoneKey(q)) !== -1;
+  var filtered=actives.filter(function(b){
+    var classDate=getBookingClassDate(b)||"";
+    var classLoc=getBookingClassLocation(b)||"";
+    var mq=(b["學員姓名"]||"").toLowerCase().indexOf(q)!==-1||
+           (b["聯絡電話"]||"").indexOf(q)!==-1||
+           (b["課程名稱"]||"").toLowerCase().indexOf(q)!==-1||
+           (b["預約編號"]||"").toLowerCase().indexOf(q)!==-1||
+           (b["報名時間"]||"").indexOf(q)!==-1||
+           classDate.indexOf(q)!==-1||
+           classLoc.toLowerCase().indexOf(q)!==-1;
+    if (!mq&&/\d{3,}/.test(q)) mq=phoneKey(b["聯絡電話"]).indexOf(phoneKey(q))!==-1;
     var rawSt=(b["簽到狀態"]||"待確認").trim();
     var normSt=(rawSt==="已預約"||!rawSt)?"待確認":rawSt;
-    var ms=sf==="all"||normSt===sf||rawSt===sf;
-    return mq&&ms;
+    return mq&&(sf==="all"||normSt===sf||rawSt===sf);
   });
 
-  var sortMode = (document.getElementById("bookingSortMode")||{}).value || "class";
-  if (sortMode === "booked") {
-    filtered.sort(function(a,b_){ return bookedTimeMs(b_) - bookedTimeMs(a); });
+  var sortMode=(document.getElementById("bookingSortMode")||{}).value||"class";
+  if (sortMode==="booked") {
+    filtered.sort(function(a,b_){return bookedTimeMs(b_)-bookedTimeMs(a);});
   } else {
-    filtered.sort(function(a,b_){ return (classTimeMs(a) - classTimeMs(b_)) || (bookedTimeMs(a) - bookedTimeMs(b_)); });
+    filtered.sort(function(a,b_){return (classTimeMs(a)-classTimeMs(b_))||(bookedTimeMs(a)-bookedTimeMs(b_));});
   }
 
-  var tbody = document.getElementById("bookingsTableBody");
-  var mCon  = document.getElementById("bookingsMobileContainer");
-  var noRow = document.getElementById("noBookingsRow");
+  var tbody=document.getElementById("bookingsTableBody");
+  var mCon=document.getElementById("bookingsMobileContainer");
+  var noRow=document.getElementById("noBookingsRow");
 
-  if (!filtered.length) {
-    if (tbody) tbody.innerHTML="";
-    if (mCon) mCon.innerHTML='<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前尚無符合條件的預約記錄</div>';
+  if (!filtered.length){
+    if(tbody) tbody.innerHTML="";
+    if(mCon) mCon.innerHTML='<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-200">目前尚無符合條件的預約記錄</div>';
     noRow&&noRow.classList.remove("hidden"); return;
   }
   noRow&&noRow.classList.add("hidden");
 
   var html="", mHtml="";
-  filtered.forEach(function(rawB) {
-    var b = escObj(rawB);
+  filtered.forEach(function(rawB){
+    var b=escObj(rawB);
     var rawSt=(rawB["簽到狀態"]||"待確認").trim();
     var st=rawSt==="已預約"?"待確認":rawSt;
     var isCancelled=st==="已取消", isChecked=st==="已簽到";
     var isCompleted=st==="已完成", isSuccess=st==="報名成功", isPending=st==="待確認"||!st;
     var sBadge=makeStatusBadge(st);
 
+    // 從預約記錄讀取上課日期/地點
+    var classDateRaw=getBookingClassDate(rawB);
+    var classLocRaw=getBookingClassLocation(rawB);
+    var classDate=classDateRaw?formatDisplayDate(classDateRaw):"-";
+    var classLoc=escapeHtml(classLocRaw||"-");
+
+    // 從課程表取上課時間（預約記錄沒存時間）
     var course=courseById(rawB["課程編號"]);
-    var classDate=course?formatDisplayDate(course.date):"-";
     var classTime=course?(sanitizeTimeForInput(course.startTime)||course.startTime||"")+" - "+(sanitizeTimeForInput(course.endTime)||course.endTime||""):"";
 
-    var bId = b["預約編號"];
-    var bLine = rawB["Line ID"]||"";
+    var bId=b["預約編號"];
+    var bLine=rawB["Line ID"]||"";
 
-    var actionBtns =
-      '<button onclick="openEditBookingModal(\''+bId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-pen text-blue-600"></i> 修改</button>' +
+    var actionBtns=
+      '<button onclick="openEditBookingModal(\''+bId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-pen text-blue-600"></i> 修改</button>'+
       (isPending?'<button onclick="confirmPaymentAction(\''+bId+'\')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> 確認入帳</button>':"") +
       (isSuccess?'<button onclick="updateBookingStatus(\''+bId+'\',\'已簽到\')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm inline-flex items-center gap-1"><i class="fa-solid fa-clipboard-check"></i> 現場簽到</button>':"") +
       (isChecked?'<button onclick="updateBookingStatus(\''+bId+'\',\'報名成功\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-rotate-left"></i> 取消簽到</button>':"") +
@@ -1262,60 +1286,67 @@ function renderBookingsTable() {
       (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition" title="喚起 LINE"><i class="fa-brands fa-line text-sm"></i></button>':"") +
       (!isCancelled
         ?'<button onclick="updateBookingStatus(\''+bId+'\',\'已取消\')" class="px-2 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-medium transition">取消</button>'
-        :'<button onclick="updateBookingStatus(\''+bId+'\',\'待確認\')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">還原</button>' +
+        :'<button onclick="updateBookingStatus(\''+bId+'\',\'待確認\')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">還原</button>'+
          '<button onclick="deleteBooking(\''+bId+'\')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> 刪除</button>');
 
-    html +=
+    html+=
       '<tr class="hover:bg-slate-50 transition '+(isCancelled?"opacity-50":"")+'">' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">' +
-          '<div class="font-bold text-slate-900 leading-tight flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-blue-600 text-xs"></i><span class="font-mono">'+classDate+'</span></div>' +
-          '<div class="text-[11px] text-blue-700 font-mono leading-tight mt-0.5">'+classTime+'</div>' +
-        '</td>' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900"><div>'+b["課程名稱"]+'</div><div class="text-[11px] text-slate-400 font-mono">#'+(b["課程編號"]||"")+'</div></td>' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap"><div class="font-mono font-medium text-slate-600 leading-tight">'+((rawB["報名時間"]||"").split(" ")[0])+'</div><div class="text-[11px] text-slate-400 font-mono">'+((rawB["報名時間"]||"").split(" ")[1]||"")+'</div></td>' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-800">'+b["學員姓名"]+'</td>' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-700">'+b["聯絡電話"]+'</td>' +
-        '<td class="px-3.5 py-2.5 whitespace-nowrap font-mono text-slate-600">'+(bLine?'<div class="inline-flex items-center gap-1.5"><span>'+b["Line ID"]+'</span><a href="https://line.me/R/ti/p/~'+encodeURIComponent(bLine)+'" target="_blank" class="text-emerald-500 hover:text-emerald-600"><i class="fa-brands fa-line text-sm"></i></a></div>':"-")+'</td>' +
-        '<td class="px-4 py-3 text-center whitespace-nowrap">'+makePayCell(b["匯款五碼"], b["應付金額"])+'</td>' +
-        '<td class="px-3 py-2.5 whitespace-nowrap max-w-[120px] truncate text-slate-600" title="'+(rawB["備註需求"]||"")+'">'+(b["備註需求"]||'<span class="text-slate-300">-</span>')+'</td>' +
-        '<td class="px-3 py-2.5 whitespace-nowrap max-w-[120px] truncate text-amber-800 bg-amber-50/40 font-medium" title="'+(rawB["管理備註"]||"")+'">'+(b["管理備註"]?'<span class="inline-flex items-center gap-1"><i class="fa-solid fa-tag text-[10px] text-amber-600"></i>'+b["管理備註"]+'</span>':'<span class="text-slate-300">-</span>')+'</td>' +
-        '<td class="px-4 py-3 text-center">'+sBadge+'</td>' +
-        '<td class="px-3 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">' +
-          '<div class="inline-flex items-center gap-1.5 justify-center flex-wrap">'+actionBtns+'</div>' +
-        '</td>' +
+        '<td class="px-3.5 py-2.5 whitespace-nowrap bg-blue-50/20">'+
+          '<div class="font-bold text-slate-900 font-mono text-xs">'+classDate+'</div>'+
+          '<div class="text-[11px] text-blue-700 font-mono leading-tight">'+classTime+'</div>'+
+          '<div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1"><i class="fa-solid fa-location-dot text-rose-400 text-[10px]"></i>'+classLoc+'</div>'+
+        '</td>'+
+        '<td class="px-3.5 py-2.5 whitespace-nowrap font-bold text-slate-900">'+b["課程名稱"]+'</td>'+
+        '<td class="px-3.5 py-2.5 whitespace-nowrap"><div class="font-mono text-slate-600 text-[11px]">'+((rawB["報名時間"]||"").split(" ")[0])+'</div><div class="text-[11px] text-slate-400 font-mono">'+((rawB["報名時間"]||"").split(" ")[1]||"")+'</div></td>'+
+        '<td class="px-3.5 py-2.5 whitespace-nowrap">'+
+          '<div class="font-bold text-slate-800">'+b["學員姓名"]+'</div>'+
+          '<div class="text-[11px] text-slate-500 font-mono">'+b["聯絡電話"]+'</div>'+
+          (bLine?'<div class="text-[11px] text-emerald-700 font-mono flex items-center gap-1"><i class="fa-brands fa-line text-xs"></i>'+b["Line ID"]+'</div>':"")+
+        '</td>'+
+        '<td class="px-3.5 py-2.5 text-center">'+makePayCell(b["匯款五碼"],b["繳費金額"])+'</td>'+
+        '<td class="px-3 py-2.5 max-w-[160px]">'+
+          (b["備註需求"]?'<div class="text-[11px] text-slate-600 truncate" title="'+b["備註需求"]+'">'+b["備註需求"]+'</div>':"") +
+          (b["管理備註"]?'<div class="text-[11px] text-amber-800 font-medium truncate flex items-center gap-1" title="'+b["管理備註"]+'"><i class="fa-solid fa-lock text-amber-500 text-[10px]"></i>'+b["管理備註"]+'</div>':"") +
+          (!b["備註需求"]&&!b["管理備註"]?'<span class="text-slate-300">-</span>':"") +
+        '</td>'+
+        '<td class="px-3.5 py-2.5 text-center">'+sBadge+'</td>'+
+        '<td class="px-3 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.04)]">'+
+          '<div class="inline-flex items-center gap-1.5 justify-center flex-wrap">'+actionBtns+'</div>'+
+        '</td>'+
       '</tr>';
 
-    var bShortDate=course?formatShortDate(course.date):"-";
-    var bStartT=course?(sanitizeTimeForInput(course.startTime)||course.startTime||""):"";
-    mHtml +=
+    var bShortDate=classDateRaw?formatShortDate(classDateRaw):"-";
+    mHtml+=
       '<div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm hover:border-blue-400 transition space-y-2 '+(isCancelled?"opacity-60 bg-slate-50":"")+'">' +
-        '<div class="flex items-center justify-between gap-1.5 flex-wrap">' +
-          '<div class="flex items-center gap-1.5 flex-wrap min-w-0">' +
-            '<span class="inline-flex items-center gap-1 font-mono font-bold text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100"><i class="fa-regular fa-clock text-[10px]"></i> '+bShortDate+' '+bStartT+'</span>' +
-            sBadge +
-          '</div>' +
-          '<div class="shrink-0">'+makePayCell(b["匯款五碼"], b["應付金額"])+'</div>' +
-        '</div>' +
-        '<div class="flex items-center justify-between gap-2">' +
-          '<div class="min-w-0 flex-1 space-y-0.5">' +
-            '<div class="flex items-baseline gap-2"><h3 class="font-black text-slate-900 text-sm shrink-0">'+b["學員姓名"]+'</h3><span class="text-[11px] text-slate-500 truncate">'+b["課程名稱"]+'</span></div>' +
-            (b["備註需求"]?'<p class="text-[11px] text-slate-400 truncate"><i class="fa-solid fa-comment-dots text-[10px] mr-1"></i>'+b["備註需求"]+'</p>':"") +
-          '</div>' +
-          '<div class="shrink-0 flex items-center gap-1">' +
-            (rawB["聯絡電話"]?'<a href="tel:'+rawB["聯絡電話"]+'" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 flex items-center justify-center transition"><i class="fa-solid fa-phone text-xs"></i></a>':"") +
-            (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\')" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition"><i class="fa-brands fa-line text-sm"></i></button>':"") +
-          '</div>' +
-        '</div>' +
-        '<div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-100 flex-wrap">' +
-          '<button onclick="openEditBookingModal(\''+bId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"><i class="fa-solid fa-pen text-[10px] text-blue-600"></i> 修改</button>' +
-          (isPending?'<button onclick="confirmPaymentAction(\''+bId+'\')" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 min-w-[80px]"><i class="fa-solid fa-circle-check text-[11px]"></i> 確認入帳</button>':"") +
-          (isSuccess?'<button onclick="updateBookingStatus(\''+bId+'\',\'已簽到\')" class="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"><i class="fa-solid fa-clipboard-check text-[11px]"></i> 現場簽到</button>':"") +
-          (isChecked?'<button onclick="updateBookingStatus(\''+bId+'\',\'報名成功\')" class="flex-1 py-1.5 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"><i class="fa-solid fa-rotate-left text-[11px]"></i> 取消簽到</button>':"") +
+        '<div class="flex items-center justify-between gap-1.5 flex-wrap">'+
+          '<div class="flex items-center gap-1.5 flex-wrap min-w-0">'+
+            '<span class="inline-flex items-center gap-1 font-mono font-bold text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">'+
+              '<i class="fa-regular fa-clock text-[10px]"></i> '+bShortDate+
+            '</span>'+sBadge+
+          '</div>'+
+          '<div class="shrink-0">'+makePayCell(b["匯款五碼"],b["繳費金額"])+'</div>'+
+        '</div>'+
+        '<div class="flex items-center justify-between gap-2">'+
+          '<div class="min-w-0 flex-1 space-y-0.5">'+
+            '<div class="flex items-baseline gap-2"><h3 class="font-black text-slate-900 text-sm shrink-0">'+b["學員姓名"]+'</h3><span class="text-[11px] text-slate-500 truncate">'+b["課程名稱"]+'</span></div>'+
+            (classLocRaw?'<p class="text-[11px] text-slate-400 truncate flex items-center gap-1"><i class="fa-solid fa-location-dot text-rose-400 text-[10px]"></i>'+escapeHtml(classLocRaw)+'</p>':"")+
+            (b["備註需求"]?'<p class="text-[11px] text-slate-400 truncate"><i class="fa-solid fa-comment-dots text-[10px] mr-1"></i>'+b["備註需求"]+'</p>':"")+
+          '</div>'+
+          '<div class="shrink-0 flex items-center gap-1">'+
+            (rawB["聯絡電話"]?'<a href="tel:'+rawB["聯絡電話"]+'" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 flex items-center justify-center transition"><i class="fa-solid fa-phone text-xs"></i></a>':"")+
+            (bLine?'<button onclick="openLineNoticePrompt(\''+bId+'\')" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition"><i class="fa-brands fa-line text-sm"></i></button>':"")+
+          '</div>'+
+        '</div>'+
+        '<div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-100 flex-wrap">'+
+          '<button onclick="openEditBookingModal(\''+bId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"><i class="fa-solid fa-pen text-[10px] text-blue-600"></i> 修改</button>'+
+          (isPending?'<button onclick="confirmPaymentAction(\''+bId+'\')" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 min-w-[80px]"><i class="fa-solid fa-circle-check text-[11px]"></i> 確認入帳</button>':"")+
+          (isSuccess?'<button onclick="updateBookingStatus(\''+bId+'\',\'已簽到\')" class="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"><i class="fa-solid fa-clipboard-check text-[11px]"></i> 現場簽到</button>':"")+
+          (isChecked?'<button onclick="updateBookingStatus(\''+bId+'\',\'報名成功\')" class="flex-1 py-1.5 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"><i class="fa-solid fa-rotate-left text-[11px]"></i> 取消簽到</button>':"")+
           (!isCancelled
             ?'<button onclick="updateBookingStatus(\''+bId+'\',\'已取消\')" class="px-2 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-xs font-medium transition shrink-0">取消</button>'
-            :'<button onclick="updateBookingStatus(\''+bId+'\',\'待確認\')" class="flex-1 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">還原</button>' +
-             '<button onclick="deleteBooking(\''+bId+'\')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"><i class="fa-regular fa-trash-can text-[10px]"></i> 刪除</button>') +
-        '</div>' +
+            :'<button onclick="updateBookingStatus(\''+bId+'\',\'待確認\')" class="flex-1 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition">還原</button>'+
+             '<button onclick="deleteBooking(\''+bId+'\')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"><i class="fa-regular fa-trash-can text-[10px]"></i> 刪除</button>')+
+        '</div>'+
       '</div>';
   });
 
@@ -1327,33 +1358,33 @@ function renderBookingsTable() {
 // 過往統計
 // ══════════════════════════════════════════════
 function activeHistoryBookings() {
-  return adminBookings.filter(function(b){ return String(b["簽到狀態"]||"").trim() !== "已取消"; });
+  return adminBookings.filter(function(b){return String(b["簽到狀態"]||"").trim()!=="已取消";});
 }
 
 function getStudentBookingStats() {
   var stats={};
   activeHistoryBookings().forEach(function(rawB){
     var name=rawB["學員姓名"]||"未具名", phone=rawB["聯絡電話"]||"-";
-    var key=phoneKey(rawB["聯絡電話"]) || ("name_"+(rawB["學員姓名"]||""));
+    var key=phoneKey(rawB["聯絡電話"])||("name_"+(rawB["學員姓名"]||""));
     if (!stats[key]) stats[key]={name:escapeHtml(name),phone:escapeHtml(phone),line:escapeHtml(rawB["Line ID"]||"-"),count:0,courses:[]};
     stats[key].count++;
     stats[key].courses.push({
-      bookingId: escapeHtml(rawB["預約編號"]||""),
-      courseTitle: escapeHtml(rawB["課程名稱"]||""),
-      date: escapeHtml((rawB["報名時間"]||"").split(" ")[0]),
-      status: escapeHtml(rawB["簽到狀態"]||"")
+      bookingId:escapeHtml(rawB["預約編號"]||""),
+      courseTitle:escapeHtml(rawB["課程名稱"]||""),
+      date:escapeHtml((rawB["報名時間"]||"").split(" ")[0]),
+      status:escapeHtml(rawB["簽到狀態"]||"")
     });
   });
-  return Object.values(stats).sort(function(a,b){ return b.count-a.count; });
+  return Object.values(stats).sort(function(a,b){return b.count-a.count;});
 }
 
-var currentHistorySubMode = "records";
+var currentHistorySubMode="records";
 
 function setHistorySubMode(mode) {
   currentHistorySubMode=mode;
   var btnS=document.getElementById("subModeStudentsBtn"), btnR=document.getElementById("subModeRecordsBtn");
   var conS=document.getElementById("historyStudentsContainer"), conR=document.getElementById("historyRecordsContainer");
-  var on ="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1";
+  var on="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1";
   var off="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center gap-1";
   if (mode==="students"){ btnS.className=on; btnR.className=off; conS.classList.remove("hidden"); conR.classList.add("hidden"); }
   else{ btnR.className=on; btnS.className=off; conR.classList.remove("hidden"); conS.classList.add("hidden"); }
@@ -1386,7 +1417,10 @@ function renderHistorySection() {
       else if(idx===2) rankBadge='<span class="w-6 h-6 rounded-full bg-amber-600 text-white font-black text-xs flex items-center justify-center shadow-sm">🥉</span>';
       var rBadge=s.count>=3?'<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700">★ 核心忠實 ('+s.count+'次)</span>':(s.count===2?'<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">回流學員</span>':"");
       var courseTags=s.courses.map(function(c){
-        return '<div class="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] mr-1.5 mb-1 transition"><span class="font-bold">'+c.courseTitle+'</span><span class="text-slate-400 font-mono">('+c.date+')</span>'+(c.bookingId?'<button onclick="openEditBookingModal(\''+c.bookingId+'\')" class="text-blue-600 hover:text-blue-800 ml-1"><i class="fa-solid fa-pen text-[10px]"></i></button>':"")+'</div>';
+        return '<div class="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] mr-1.5 mb-1 transition">'+
+          '<span class="font-bold">'+c.courseTitle+'</span><span class="text-slate-400 font-mono">('+c.date+')</span>'+
+          (c.bookingId?'<button onclick="openEditBookingModal(\''+c.bookingId+'\')" class="text-blue-600 hover:text-blue-800 ml-1"><i class="fa-solid fa-pen text-[10px]"></i></button>':"")+
+        '</div>';
       }).join("");
       tHtml+='<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-center">'+rankBadge+'</td><td class="px-4 py-3"><div class="flex items-center gap-1.5"><span class="font-bold text-slate-900">'+s.name+'</span>'+rBadge+'</div></td><td class="px-4 py-3 font-mono font-medium text-slate-700">'+s.phone+'</td><td class="px-4 py-3 text-slate-500 font-mono">'+s.line+'</td><td class="px-4 py-3 text-center font-black text-base text-blue-600">'+s.count+' 次</td><td class="px-4 py-3 max-w-md">'+courseTags+'</td><td class="px-4 py-3 text-center">'+(s.courses[0]&&s.courses[0].bookingId?'<button onclick="openEditBookingModal(\''+s.courses[0].bookingId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"><i class="fa-solid fa-pen text-blue-600"></i> 修改</button>':"-")+'</td></tr>';
       mHtml+='<div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3"><div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2">'+rankBadge+'<div><h4 class="font-black text-slate-900 text-base">'+s.name+'</h4><p class="text-xs font-mono text-slate-500">'+s.phone+'</p></div></div><div class="text-right"><span class="inline-block px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-xs border border-blue-200">累計 '+s.count+' 次</span><div class="mt-1">'+rBadge+'</div></div></div><div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1.5"><div class="text-xs font-bold text-slate-700"><i class="fa-solid fa-clock-rotate-left mr-1 text-slate-400"></i>曾參與課程</div>'+s.courses.map(function(c){ return '<div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/70 text-xs"><div class="min-w-0 pr-2"><p class="font-bold text-slate-800 truncate">'+c.courseTitle+'</p><p class="text-[10px] text-slate-400 font-mono">'+c.date+'</p></div>'+(c.bookingId?'<button onclick="openEditBookingModal(\''+c.bookingId+'\')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"><i class="fa-solid fa-pen text-blue-600 text-[10px]"></i> 修改</button>':"")+'</div>'; }).join("")+'</div></div>';
@@ -1395,7 +1429,6 @@ function renderHistorySection() {
     if (mCon)  mCon.innerHTML=mHtml;
 
   } else {
-    // 過往明細
     var tbody2=document.getElementById("historyRecordsTableBody");
     var mCon2=document.getElementById("historyRecordsMobileContainer");
     var filtered2=adminBookings.filter(function(b){
@@ -1404,14 +1437,16 @@ function renderHistorySection() {
                (b["課程名稱"]||"").toLowerCase().indexOf(q)!==-1||
                (b["預約編號"]||"").toLowerCase().indexOf(q)!==-1||
                (b["備註需求"]||"").toLowerCase().indexOf(q)!==-1||
-               (b["管理備註"]||"").toLowerCase().indexOf(q)!==-1;
-      if (!hit && /\d{3,}/.test(q)) hit = phoneKey(b["聯絡電話"]).indexOf(phoneKey(q))!==-1;
+               (b["管理備註"]||"").toLowerCase().indexOf(q)!==-1||
+               (getBookingClassDate(b)||"").indexOf(q)!==-1||
+               (getBookingClassLocation(b)||"").toLowerCase().indexOf(q)!==-1;
+      if (!hit&&/\d{3,}/.test(q)) hit=phoneKey(b["聯絡電話"]).indexOf(phoneKey(q))!==-1;
       return hit;
     }).sort(function(a,b_){
       var ta=classTimeMs(a), tb=classTimeMs(b_), NONE=8.64e15;
-      if (ta===NONE && tb!==NONE) return 1;
-      if (tb===NONE && ta!==NONE) return -1;
-      return (tb-ta) || (bookedTimeMs(b_)-bookedTimeMs(a));
+      if (ta===NONE&&tb!==NONE) return 1;
+      if (tb===NONE&&ta!==NONE) return -1;
+      return (tb-ta)||(bookedTimeMs(b_)-bookedTimeMs(a));
     });
 
     if (!filtered2.length){ if(tbody2)tbody2.innerHTML=""; if(mCon2)mCon2.innerHTML=""; noRow&&noRow.classList.remove("hidden"); return; }
@@ -1419,25 +1454,28 @@ function renderHistorySection() {
     var tHtml2="", mHtml2="";
 
     filtered2.forEach(function(rawB){
-      var b = escObj(rawB);
-      var course=courseById(rawB["課程編號"]);
+      var b=escObj(rawB);
       var st=(rawB["簽到狀態"]||"待確認").trim(); if(st==="已預約") st="待確認";
       var isPending=st==="待確認";
-      var classDate=course?formatDisplayDate(course.date):"課程已刪除";
-      var classTime=course?(sanitizeTimeForInput(course.startTime)||course.startTime||"")+" - "+(sanitizeTimeForInput(course.endTime)||course.endTime||""):"";
-      var pCell=makePayCell(b["匯款五碼"], b["應付金額"]);
+      var classDateRaw=getBookingClassDate(rawB);
+      var classLocRaw=getBookingClassLocation(rawB);
+      var classDate=classDateRaw?formatDisplayDate(classDateRaw):"課程已刪除";
+      var course=courseById(rawB["課程編號"]);
+      var classTime=course?(sanitizeTimeForInput(course.startTime)||"")+" - "+(sanitizeTimeForInput(course.endTime)||""):"";
+      var pCell=makePayCell(b["匯款五碼"],b["繳費金額"]);
       var sBadge=makeStatusBadge(st);
       var bId=b["預約編號"];
       var confirmBtn=isPending?'<button onclick="confirmPaymentAction(\''+bId+'\')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1 whitespace-nowrap"><i class="fa-solid fa-circle-check"></i> 確認入帳</button>':"";
       var editBtn='<button onclick="openEditBookingModal(\''+bId+'\')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-xs font-bold transition inline-flex items-center gap-1 whitespace-nowrap"><i class="fa-solid fa-pen text-blue-600"></i> 修改</button>';
       var notesHtml=
-        (b["備註需求"]?'<div class="truncate text-slate-600" title="'+b["備註需求"]+'"><i class="fa-solid fa-comment-dots text-slate-400 text-[10px] mr-1"></i>'+b["備註需求"]+'</div>':"") +
+        (b["備註需求"]?'<div class="truncate text-slate-600" title="'+b["備註需求"]+'"><i class="fa-solid fa-comment-dots text-slate-400 text-[10px] mr-1"></i>'+b["備註需求"]+'</div>':"")+
         (b["管理備註"]?'<div class="truncate text-amber-800 font-medium" title="'+b["管理備註"]+'"><i class="fa-solid fa-lock text-amber-500 text-[10px] mr-1"></i>'+b["管理備註"]+'</div>':"");
 
       tHtml2+='<tr class="hover:bg-slate-50 transition '+(st==="已取消"?"opacity-50":"")+'">'+
-        '<td class="px-3 py-2.5 bg-blue-50/20 min-w-[180px]">'+
+        '<td class="px-3 py-2.5 bg-blue-50/20 min-w-[200px]">'+
           '<div class="font-bold text-slate-900 font-mono whitespace-nowrap text-xs">'+classDate+' <span class="text-[11px] text-blue-700 font-medium">'+classTime+'</span></div>'+
-          '<div class="text-[11px] text-slate-600 font-semibold mt-0.5 truncate max-w-[200px]">'+b["課程名稱"]+'</div>'+
+          '<div class="text-[11px] text-slate-600 font-semibold mt-0.5 truncate max-w-[220px]">'+b["課程名稱"]+'</div>'+
+          (classLocRaw?'<div class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-location-dot text-rose-400 text-[10px]"></i>'+escapeHtml(classLocRaw)+'</div>':"")+
         '</td>'+
         '<td class="px-3 py-2.5 whitespace-nowrap">'+
           '<div class="font-bold text-slate-800 text-xs">'+b["學員姓名"]+'</div>'+
@@ -1455,22 +1493,19 @@ function renderHistorySection() {
           '<div class="min-w-0 flex-1">'+
             '<div class="font-mono font-bold text-xs text-blue-900"><i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>'+classDate+' <span class="text-blue-600 font-medium text-[11px]">'+classTime+'</span></div>'+
             '<p class="text-xs font-bold text-slate-700 mt-0.5 truncate">'+b["課程名稱"]+'</p>'+
+            (classLocRaw?'<p class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-location-dot text-rose-400 text-[10px]"></i>'+escapeHtml(classLocRaw)+'</p>':"")+
           '</div>'+
           '<div class="shrink-0">'+sBadge+'</div>'+
         '</div>'+
         '<div class="flex items-center justify-between gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">'+
-          '<div class="min-w-0">'+
-            '<p class="font-black text-slate-900 text-sm">'+b["學員姓名"]+'</p>'+
-            '<p class="text-[11px] text-slate-500 font-mono truncate">'+(b["聯絡電話"]||"-")+(b["Line ID"]?' · LINE '+b["Line ID"]:"")+'</p>'+
-          '</div>'+
+          '<div class="min-w-0"><p class="font-black text-slate-900 text-sm">'+b["學員姓名"]+'</p><p class="text-[11px] text-slate-500 font-mono truncate">'+(b["聯絡電話"]||"-")+(b["Line ID"]?' · LINE '+b["Line ID"]:"")+'</p></div>'+
           '<div class="shrink-0 text-right">'+pCell+'</div>'+
         '</div>'+
         (notesHtml?'<div class="text-[11px] space-y-0.5 px-1">'+notesHtml+'</div>':"")+
         '<div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">'+
           (rawB["聯絡電話"]?'<a href="tel:'+rawB["聯絡電話"]+'" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-phone text-xs"></i></a>':"")+
           (rawB["Line ID"]?'<a href="https://line.me/R/ti/p/~'+encodeURIComponent(rawB["Line ID"])+'" target="_blank" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><i class="fa-brands fa-line text-sm"></i></a>':"")+
-          '<div class="flex-1"></div>'+
-          confirmBtn+editBtn+
+          '<div class="flex-1"></div>'+confirmBtn+editBtn+
         '</div>'+
       '</div>';
     });
@@ -1485,27 +1520,33 @@ function renderHistorySection() {
 // ══════════════════════════════════════════════
 function switchTab(tab) {
   ["courses","bookings","history","settings"].forEach(function(t){
-    var vId = "view"+t.charAt(0).toUpperCase()+t.slice(1);
-    var bId = "tab"+t.charAt(0).toUpperCase()+t.slice(1)+"Btn";
-    var v=document.getElementById(vId), b=document.getElementById(bId);
-    if (t===tab){
-      v&&v.classList.remove("hidden");
-      if(b) b.className="tab-active pb-2.5 sm:pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5 shrink-0";
-    } else {
-      v&&v.classList.add("hidden");
-      if(b) b.className="pb-2.5 sm:pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5 shrink-0";
-    }
+    var v=document.getElementById("view"+t.charAt(0).toUpperCase()+t.slice(1));
+    var b=document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1)+"Btn");
+    if (t===tab){ v&&v.classList.remove("hidden"); if(b) b.className="tab-active pb-2.5 sm:pb-3 text-xs sm:text-sm whitespace-nowrap transition flex items-center gap-1.5 shrink-0"; }
+    else{ v&&v.classList.add("hidden"); if(b) b.className="pb-2.5 sm:pb-3 text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap transition flex items-center gap-1.5 shrink-0"; }
   });
   if (tab==="history") renderHistorySection();
 }
 
 // ══════════════════════════════════════════════
-// 課程 Modal
+// 課程 Modal（移除授課教練；早鳥截止自動計算）
 // ══════════════════════════════════════════════
 function buildLocationSelectOptions(selectedVal) {
   var sel=document.getElementById("formLocationSelect"); if(!sel) return;
-  sel.innerHTML=customClassrooms.map(function(c){ return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>'; }).join("")+'<option value="custom">✏️ 自訂其他地點...</option>';
+  sel.innerHTML=customClassrooms.map(function(c){return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>';}).join("")+'<option value="custom">✏️ 自訂其他地點...</option>';
   if (selectedVal) sel.value=selectedVal;
+}
+
+/** 開課日期變更時，自動計算早鳥截止日（上課日期 - earlyBirdDefaultDays 天） */
+function autoFillEarlyBirdDeadline() {
+  var dateVal=document.getElementById("formDate").value;
+  var deadlineEl=document.getElementById("formEarlyBirdDeadline");
+  if (!dateVal||!deadlineEl||deadlineEl.value) return; // 已有值就不覆蓋
+  var d=new Date(dateVal+"T00:00:00");
+  if (isNaN(d.getTime())) return;
+  d.setDate(d.getDate()-earlyBirdDefaultDays);
+  var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+  deadlineEl.value=y+"-"+m+"-"+day;
 }
 
 function openCourseModal(courseId) {
@@ -1516,7 +1557,6 @@ function openCourseModal(courseId) {
     document.getElementById("courseModalTitle").innerText="編輯課程時段 - "+c.id;
     document.getElementById("editCourseId").value=c.id;
     document.getElementById("formTitle").value=c.title||"";
-    document.getElementById("formInstructor").value=c.instructor||"";
     document.getElementById("formCapacity").value=c.capacity||"";
     document.getElementById("formDate").value=c.date||"";
     document.getElementById("formStartTime").value=sanitizeTimeForInput(c.startTime)||"";
@@ -1537,13 +1577,11 @@ function openCourseModal(courseId) {
     document.getElementById("courseModalTitle").innerText="開立新課程時段";
     document.getElementById("editCourseId").value="";
     ["formTitle","formNotes","formEarlyBirdPrice","formRegularPrice","formEarlyBirdDeadline"].forEach(function(id){document.getElementById(id).value="";});
-    document.getElementById("formInstructor").value="霖霖";
     document.getElementById("formCapacity").value="8";
     document.getElementById("formVirtualCount").value="0";
-    document.getElementById("formStartTime").value="19:00";
-    document.getElementById("formEndTime").value="20:00";
+    document.getElementById("formStartTime").value="09:00";
+    document.getElementById("formEndTime").value="13:00";
     document.getElementById("formStatus").value="開啟報名";
-    // 預設日期為明天
     var tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
     document.getElementById("formDate").value=tomorrow.toISOString().split("T")[0];
     var defaultLoc=customClassrooms[0]||"";
@@ -1552,6 +1590,8 @@ function openCourseModal(courseId) {
     document.getElementById("formLocationCustom").classList.add("hidden");
     document.getElementById("formLocationCustom").value="";
     document.getElementById("formLocation").value=defaultLoc;
+    // 新課程自動填入早鳥截止日
+    autoFillEarlyBirdDeadline();
   }
   document.getElementById("courseModal").classList.remove("hidden");
 }
@@ -1574,7 +1614,7 @@ async function handleCourseSubmit(e) {
   var courseData={
     courseId:courseId,
     title:document.getElementById("formTitle").value.trim(),
-    instructor:document.getElementById("formInstructor").value.trim(),
+    instructor:"霖霖", // 保留欄位但固定值，GAS 端可忽略
     capacity:Number(document.getElementById("formCapacity").value),
     virtualCount:vCount,
     earlyBirdPrice:document.getElementById("formEarlyBirdPrice").value.trim(),
@@ -1590,41 +1630,39 @@ async function handleCourseSubmit(e) {
   if (!courseData.date){ alert("請選擇上課日期！"); btn.disabled=false; btn.innerText="確認儲存並同步"; return; }
   if (!(courseData.capacity>0)){ alert("人數上限必須大於 0！"); btn.disabled=false; btn.innerText="確認儲存並同步"; return; }
 
-  var finalId = courseId;
+  var finalId=courseId;
   if (hasApi()) {
     try {
-      var res = await apiPost(Object.assign({action:"saveCourse"}, courseData));
-      finalId = res.courseId || courseId;
+      var res=await apiPost(Object.assign({action:"saveCourse"},courseData));
+      finalId=res.courseId||courseId;
     } catch (err) {
       btn.disabled=false; btn.innerText="確認儲存並同步";
-      alert("❌ 課程儲存失敗："+err.message);
-      return;
+      alert("❌ 課程儲存失敗："+err.message); return;
     }
   } else if (!finalId) {
-    finalId = "C"+Date.now().toString().slice(-8);
+    finalId="C"+Date.now().toString().slice(-8);
   }
 
-  var existing = courseById(finalId);
-  if (existing) Object.assign(existing, courseData, {id:finalId});
-  else adminCourses.unshift(Object.assign({}, courseData, {id:finalId, bookedCount:0, remaining:courseData.capacity}));
+  var existing=courseById(finalId);
+  if (existing) Object.assign(existing,courseData,{id:finalId});
+  else adminCourses.unshift(Object.assign({},courseData,{id:finalId,bookedCount:0,remaining:courseData.capacity}));
   calculateCourseBookedCounts();
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll(); closeCourseModal();
   btn.disabled=false; btn.innerText="確認儲存並同步";
-  alert(courseId ? "✅ 課程已更新！" : "✅ 新課程已上架！（編號 "+finalId+"）");
+  alert(courseId?"✅ 課程已更新！":"✅ 新課程已上架！（編號 "+finalId+"）");
 }
 
 async function deleteCourse(courseId) {
   if (!confirm("確定要刪除課程編號「"+courseId+"」嗎？")) return;
   if (hasApi()) {
-    try {
-      await apiPost({action:"deleteCourse", courseId:courseId});
-    } catch (err) {
-      if (err.res && err.res.needForce) {
-        if (!confirm("⚠️ 此課程仍有 "+err.res.activeCount+" 筆有效預約！\n刪除課程後，這些預約會變成找不到對應課程。\n\n仍要強制刪除嗎？")) return;
-        try { await apiPost({action:"deleteCourse", courseId:courseId, force:true}); }
-        catch (err2) { reportSyncError("刪除課程", err2); return; }
-      } else { reportSyncError("刪除課程", err); return; }
+    try { await apiPost({action:"deleteCourse",courseId:courseId}); }
+    catch (err) {
+      if (err.res&&err.res.needForce) {
+        if (!confirm("⚠️ 此課程仍有 "+err.res.activeCount+" 筆有效預約！\n仍要強制刪除嗎？")) return;
+        try { await apiPost({action:"deleteCourse",courseId:courseId,force:true}); }
+        catch (err2) { reportSyncError("刪除課程",err2); return; }
+      } else { reportSyncError("刪除課程",err); return; }
     }
   }
   adminCourses=adminCourses.filter(function(c){return c.id!==courseId;});
@@ -1634,19 +1672,24 @@ async function deleteCourse(courseId) {
 }
 
 // ══════════════════════════════════════════════
-// 修改預約 Modal
+// 修改預約 Modal（含上課日期、地點、繳費金額）
 // ══════════════════════════════════════════════
 function buildEditCourseSelect(currentCourseId) {
-  var sel = document.getElementById("editBookingCourseId");
-  if (!sel) return;
-  sel.innerHTML = adminCourses.map(function(c){
-    var label = c.title + "（" + c.date + " " + c.id + "）";
+  var sel=document.getElementById("editBookingCourseId"); if(!sel) return;
+  sel.innerHTML=adminCourses.map(function(c){
+    var label=c.title+"（"+c.date+" "+c.id+"）";
     return '<option value="'+escapeHtml(c.id)+'"'+(c.id===currentCourseId?" selected":"")+'>'+escapeHtml(label)+'</option>';
   }).join("");
 }
 
+/** 切換課程時自動帶入上課日期/地點；金額不自動覆蓋，讓管理者手動調整 */
 function onEditCourseChange(courseId) {
-  // 切換課程時不自動清空金額，管理者自行調整
+  var c=courseById(courseId);
+  if (!c) return;
+  var dateEl=document.getElementById("editBookingClassDate");
+  var locEl=document.getElementById("editBookingClassLocation");
+  if (dateEl) dateEl.value=c.date||"";
+  if (locEl)  locEl.value=c.location||"";
 }
 
 function openEditBookingModal(bookingId) {
@@ -1662,7 +1705,10 @@ function openEditBookingModal(bookingId) {
   document.getElementById("editBookingLineId").value=b["Line ID"]||"";
   document.getElementById("editBookingEmail").value=b["Email"]||"";
   document.getElementById("editBookingPayCode").value=b["匯款五碼"]||"";
-  document.getElementById("editBookingPrice").value=b["應付金額"]||"";
+  document.getElementById("editBookingPrice").value=b["繳費金額"]||"";
+  // 上課日期/地點：優先用預約記錄中儲存的值
+  document.getElementById("editBookingClassDate").value=b["上課日期"]||(courseById(b["課程編號"])?courseById(b["課程編號"]).date:"");
+  document.getElementById("editBookingClassLocation").value=b["上課地點"]||(courseById(b["課程編號"])?courseById(b["課程編號"]).location:"");
   var st=(b["簽到狀態"]||"待確認").trim(); if(st==="已預約") st="待確認";
   document.getElementById("editBookingStatus").value=st;
   document.getElementById("editBookingNotes").value=b["備註需求"]||"";
@@ -1678,22 +1724,23 @@ async function handleSaveBookingEdit(e) {
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){b=adminBookings[i];break;}}
   if (!b) return;
   var newEmail=document.getElementById("editBookingEmail").value.trim();
-  if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+  if (newEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){
     alert("Email 格式不正確，請重新確認或清空不填！");
-    document.getElementById("editBookingEmail").focus();
-    return;
+    document.getElementById("editBookingEmail").focus(); return;
   }
-  var selectedCourseId = document.getElementById("editBookingCourseId").value;
-  var selectedCourse = courseById(selectedCourseId);
+  var selectedCourseId=document.getElementById("editBookingCourseId").value;
+  var selectedCourse=courseById(selectedCourseId);
 
   b["課程編號"]=selectedCourseId;
-  b["課程名稱"]=selectedCourse ? selectedCourse.title : b["課程名稱"];
+  b["課程名稱"]=selectedCourse?selectedCourse.title:b["課程名稱"];
+  b["上課日期"]=document.getElementById("editBookingClassDate").value.trim();
+  b["上課地點"]=document.getElementById("editBookingClassLocation").value.trim();
   b["學員姓名"]=document.getElementById("editBookingStudentName").value.trim();
   b["聯絡電話"]=document.getElementById("editBookingPhone").value.trim();
   b["Line ID"]=document.getElementById("editBookingLineId").value.trim();
   b["Email"]=newEmail;
   b["匯款五碼"]=document.getElementById("editBookingPayCode").value.trim();
-  b["應付金額"]=document.getElementById("editBookingPrice").value.trim();
+  b["繳費金額"]=document.getElementById("editBookingPrice").value.trim();
   b["簽到狀態"]=document.getElementById("editBookingStatus").value;
   b["備註需求"]=document.getElementById("editBookingNotes").value.trim();
   b["管理備註"]=document.getElementById("editBookingAdminNotes").value.trim();
@@ -1705,23 +1752,25 @@ async function handleSaveBookingEdit(e) {
   closeEditBookingModal();
 
   if (hasApi()) {
-    try{
+    try {
       await apiPost({
         action:"updateBooking",
         bookingId:bookingId,
         courseId:selectedCourseId,
         courseName:b["課程名稱"],
+        classDate:b["上課日期"],
+        classLocation:b["上課地點"],
         studentName:b["學員姓名"],
         phone:b["聯絡電話"],
         lineId:b["Line ID"],
         email:b["Email"],
         payCode:b["匯款五碼"],
-        price:b["應付金額"],
+        price:b["繳費金額"],
         notes:b["備註需求"],
         adminNotes:b["管理備註"],
         status:b["簽到狀態"]
       });
-    } catch(err){ reportSyncError("更新預約資料", err); return; }
+    } catch(err){ reportSyncError("更新預約資料",err); return; }
   }
   alert("✅ 預約資料已成功更新！");
 }
@@ -1732,7 +1781,7 @@ async function updateBookingStatus(bookingId, newStatus) {
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (hasApi()){ try{ await apiPost({action:"updateBookingStatus",bookingId:bookingId,newStatus:newStatus}); }catch(err){ reportSyncError("更新狀態", err); } }
+  if (hasApi()){ try{ await apiPost({action:"updateBookingStatus",bookingId:bookingId,newStatus:newStatus}); }catch(err){ reportSyncError("更新狀態",err); } }
 }
 
 async function deleteBooking(bookingId) {
@@ -1744,7 +1793,7 @@ async function deleteBooking(bookingId) {
   localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
-  if (hasApi()){ try{ await apiPost({action:"deleteBooking",bookingId:bookingId}); }catch(err){ reportSyncError("刪除預約", err); } }
+  if (hasApi()){ try{ await apiPost({action:"deleteBooking",bookingId:bookingId}); }catch(err){ reportSyncError("刪除預約",err); } }
 }
 
 // ══════════════════════════════════════════════
@@ -1755,14 +1804,13 @@ async function confirmPaymentAction(bookingId) {
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){target=adminBookings[i];break;}}
   if (!target) return;
 
-  var priceText = target["應付金額"] ? "NT$ "+Number(target["應付金額"]).toLocaleString() : "未設定";
-  if (!confirm("確定已收到「"+target["學員姓名"]+"」的款項？\n• 課程："+target["課程名稱"]+"\n• 應付金額："+priceText+"\n\n確定後狀態將更新為【報名成功】！")) return;
+  var priceText=target["繳費金額"]?"NT$ "+Number(target["繳費金額"]).toLocaleString():"未設定";
+  if (!confirm("確定已收到「"+target["學員姓名"]+"」的款項？\n• 課程："+target["課程名稱"]+"\n• 繳費金額："+priceText+"\n\n確定後狀態將更新為【報名成功】！")) return;
 
-  // 詢問是否寄確認信（依設定決定預設）
-  var isStudentEmailEnabled = document.getElementById("settingStudentEmailEnabled") ? document.getElementById("settingStudentEmailEnabled").checked : true;
-  var sendEmail = false;
-  if (isStudentEmailEnabled && target["Email"]) {
-    sendEmail = confirm("是否同時寄送「報名成功確認信」給學員？\n（Email："+target["Email"]+"）\n\n確認信包含課程日期、時間、地點與應付金額。");
+  var isStudentEmailEnabled=document.getElementById("settingStudentEmailEnabled")?document.getElementById("settingStudentEmailEnabled").checked:true;
+  var sendEmail=false;
+  if (isStudentEmailEnabled&&target["Email"]) {
+    sendEmail=confirm("是否同時寄送「報名成功確認信」給學員？\n（Email："+target["Email"]+"）\n\n確認信包含課程日期、時間、地點與繳費金額。");
   }
 
   target["簽到狀態"]="報名成功";
@@ -1771,22 +1819,17 @@ async function confirmPaymentAction(bookingId) {
   localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
   renderAll();
 
-  var mailNote = "";
-  if (hasApi()){
-    try{
-      var res = await apiPost({
-        action:"confirmPayment",
-        bookingId:bookingId,
-        studentEmail:target["Email"]||"",
-        sendStudentEmail:sendEmail
-      });
-      if (res.notificationResult) mailNote = "\n📧 " + res.notificationResult;
-    }catch(err){ reportSyncError("確認入帳", err); return; }
+  var mailNote="";
+  if (hasApi()) {
+    try {
+      var res=await apiPost({action:"confirmPayment",bookingId:bookingId,studentEmail:target["Email"]||"",sendStudentEmail:sendEmail});
+      if (res.notificationResult) mailNote="\n📧 "+res.notificationResult;
+    } catch(err){ reportSyncError("確認入帳",err); return; }
   }
 
   if (target["Line ID"]) {
-    if (mailNote) alert("✅ 已確認入帳！" + mailNote);
-    var msg="🎉【報名成功確認】\n"+target["學員姓名"]+" 您好！\n已確認收到您報名【"+target["課程名稱"]+"】之款項！\n• 預約編號："+target["預約編號"]+"\n• 應付金額："+priceText+"\n• 狀態：【報名成功】\n期待在課堂上相見！";
+    if (mailNote) alert("✅ 已確認入帳！"+mailNote);
+    var msg="🎉【報名成功確認】\n"+target["學員姓名"]+" 您好！\n已確認收到您報名【"+target["課程名稱"]+"】之款項！\n• 預約編號："+target["預約編號"]+"\n• 繳費金額："+priceText+"\n• 狀態：【報名成功】\n期待在課堂上相見！";
     if (confirm("是否複製並開啟 LINE 通知學員（Line ID: "+target["Line ID"]+"）？")){ navigator.clipboard&&navigator.clipboard.writeText(msg); window.open("https://line.me/R/ti/p/~"+target["Line ID"],"_blank"); }
   } else {
     alert("已確認「"+target["學員姓名"]+"」款項收訖，狀態更新為【報名成功】！"+mailNote);
@@ -1797,8 +1840,8 @@ function openLineNoticePrompt(bookingId) {
   var b=null;
   for(var i=0;i<adminBookings.length;i++){if(adminBookings[i]["預約編號"]===bookingId){b=adminBookings[i];break;}}
   if (!b||!b["Line ID"]) return;
-  var priceText = b["應付金額"] ? "NT$ "+Number(b["應付金額"]).toLocaleString() : "";
-  var msg="🎉【課程報名成功】\n"+b["學員姓名"]+" 您好！我們已收到您的款項，【"+b["課程名稱"]+"】已確認報名成功囉！"+(priceText?"\n• 應付金額："+priceText:"");
+  var priceText=b["繳費金額"]?"NT$ "+Number(b["繳費金額"]).toLocaleString():"";
+  var msg="🎉【課程報名成功】\n"+b["學員姓名"]+" 您好！我們已收到您的款項，【"+b["課程名稱"]+"】已確認報名成功囉！"+(priceText?"\n• 繳費金額："+priceText:"");
   navigator.clipboard&&navigator.clipboard.writeText(msg);
   if (confirm("LINE 通知快捷\n\n已複製通知訊息，是否前往學員 LINE（@"+b["Line ID"]+"）發送？")){ window.open("https://line.me/R/ti/p/~"+b["Line ID"],"_blank"); }
 }
@@ -1820,15 +1863,15 @@ async function testNotificationChannel(channelType) {
   var adminEmail=document.getElementById("settingAdminEmail")?document.getElementById("settingAdminEmail").value.trim():"";
   if (channelType==="telegram"&&(!tgToken||!tgChat)){ alert("請先輸入 Telegram Bot Token 與 Chat ID！"); return; }
   if (channelType==="email"&&!adminEmail){ alert("請先填寫管理員 Email！"); return; }
-  if (!API_URL||!API_URL.startsWith("http")){ alert("[模擬模式] 測試通知已模擬發送至 "+channelType+"！"); return; }
-  try{
+  if (!API_URL||!API_URL.startsWith("http")){ alert("[模擬模式] 測試通知已模擬發送！"); return; }
+  try {
     var res=await apiPost({action:"testNotification",type:channelType,token:tgToken,chatId:tgChat,adminEmail:adminEmail});
     alert("✅ "+res.message);
-  }catch(err){ alert("測試失敗："+err.message); }
+  } catch(err){ alert("測試失敗："+err.message); }
 }
 
 // ══════════════════════════════════════════════
-// 儲存設定
+// 儲存設定（含早鳥截止預設天數）
 // ══════════════════════════════════════════════
 async function handleSaveSettings(e) {
   e.preventDefault();
@@ -1839,6 +1882,7 @@ async function handleSaveSettings(e) {
   var notice=document.getElementById("settingNotice").value.trim();
   var newPass=document.getElementById("settingPassword").value.trim();
   var rawClassrooms=document.getElementById("settingClassrooms").value;
+  var ebDays=parseInt(document.getElementById("settingEarlyBirdDefaultDays").value||"7",10)||7;
   var bankName=document.getElementById("settingBankName")?document.getElementById("settingBankName").value.trim():"";
   var bankAccount=document.getElementById("settingBankAccount")?document.getElementById("settingBankAccount").value.trim():"";
   var bankHolder=document.getElementById("settingBankHolder")?document.getElementById("settingBankHolder").value.trim():"";
@@ -1852,37 +1896,33 @@ async function handleSaveSettings(e) {
 
   var parsedClassrooms=rawClassrooms.split(/[\n,]/).map(function(s){return s.trim();}).filter(Boolean);
   if (parsedClassrooms.length>0){ customClassrooms=parsedClassrooms; localStorage.setItem("appsheet_classrooms",JSON.stringify(customClassrooms)); }
+  earlyBirdDefaultDays=ebDays;
 
-  var authPass = ADMIN_PASS;
-
+  var authPass=ADMIN_PASS;
   function finishSave(){ btn.disabled=false; btn.innerText="儲存所有設定"; }
 
   if (API_URL&&API_URL.startsWith("http")) {
-    try{
+    try {
       var resp=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
         body:JSON.stringify({action:"saveSettings",password:authPass,systemName:sysName,notice:notice,
           newPassword:newPass,classrooms:customClassrooms.join(","),
-          telegramEnabled:telegramEnabled,tgBotToken:tgBotToken,tgChatId:tgChatId,
-          emailEnabled:emailEnabled,adminEmail:adminEmail,senderName:senderName,
-          studentEmailEnabled:studentEmailEnabled,
-          bankName:bankName,bankAccount:bankAccount,bankHolder:bankHolder})});
+          earlyBirdDefaultDays:String(ebDays),
+          telegramEnabled,tgBotToken,tgChatId,emailEnabled,adminEmail,senderName,studentEmailEnabled,
+          bankName,bankAccount,bankHolder})});
       var res=await resp.json();
       finishSave();
-      if (res&&res.success){
-        if (newPass && newPass!==authPass){ ADMIN_PASS=newPass; sessionStorage.setItem("admin_pass",newPass); }
+      if (res&&res.success) {
+        if (newPass&&newPass!==authPass){ ADMIN_PASS=newPass; sessionStorage.setItem("admin_pass",newPass); }
         document.getElementById("settingPassword").value="";
-        alert("✅ 系統設定已成功儲存！"+((newPass&&newPass!==authPass)?"（密碼已更新，其他裝置需用新密碼重新登入）":""));
+        alert("✅ 系統設定已成功儲存！"+((newPass&&newPass!==authPass)?"（密碼已更新）":""));
       } else {
         alert("❌ 設定儲存失敗："+(res&&res.message?res.message:"未知錯誤"));
       }
-    }catch(err){
-      finishSave();
-      alert("❌ 連線失敗，設定未儲存："+err.message);
-    }
+    } catch(err){ finishSave(); alert("❌ 連線失敗，設定未儲存："+err.message); }
   } else {
     if (newPass){ ADMIN_PASS=newPass; localStorage.setItem("appsheet_offline_pass",newPass); }
     finishSave();
-    alert("✅ 系統設定已成功儲存！（目前為離線展示模式，僅儲存在本機）");
+    alert("✅ 系統設定已成功儲存！（離線模式）");
   }
 }
 
@@ -1891,7 +1931,7 @@ async function handleSaveSettings(e) {
 // ══════════════════════════════════════════════
 function updateGasStatusBadge(url) {
   var badge=document.getElementById("gasStatusBadge"); if(!badge) return;
-  if (url&&url.startsWith("http")){
+  if (url&&url.startsWith("http")) {
     badge.className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1";
     badge.innerHTML='<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>已串接 Google 試算表';
   } else {
@@ -1901,21 +1941,19 @@ function updateGasStatusBadge(url) {
 }
 
 async function testGasConnection() {
-  var url = API_URL;
+  var url=API_URL;
   var testBtn=document.getElementById("testGasBtn");
   if (!url||!url.startsWith("http")){ alert("GAS 網址未設定，請確認程式碼中的 GAS_API_URL 已正確填寫！"); return; }
   if (testBtn){ testBtn.disabled=true; testBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> 連線中...'; }
-  try{
+  try {
     var resp=await fetch(url+"?action=getCourses");
     var json=await resp.json();
-    if (json&&(json.success||Array.isArray(json.courses))){
+    if (json&&(json.success||Array.isArray(json.courses))) {
       alert("🎉 Google 試算表雲端連線測試成功！");
       updateGasStatusBadge(url);
       loadFullAdminData(true);
-    } else {
-      alert("⚠️ 已連線但回傳格式未符合預期，請確認程式碼已正確部署。");
-    }
-  }catch(err){ alert("❌ 連線測試失敗："+err.message); }
+    } else { alert("⚠️ 已連線但回傳格式未符合預期，請確認程式碼已正確部署。"); }
+  } catch(err){ alert("❌ 連線測試失敗："+err.message); }
   finally{ if(testBtn){testBtn.disabled=false;testBtn.innerText="測試連線";} }
 }
 
@@ -1923,60 +1961,34 @@ async function testGasConnection() {
 // QR Code 同步
 // ══════════════════════════════════════════════
 var currentQrTarget="admin";
-
 function getDirectSyncUrl(target) {
   if(!target) target="admin";
   var gasUrl=API_URL||"";
   if (!gasUrl||!gasUrl.startsWith("http")) return null;
   var path=window.location.pathname;
-  if (target==="student"){
-    path=path.replace(/admin\.html$/,"index.html");
-    if(path.indexOf("index.html")===-1) path=path.replace(/\/[^/]*$/,"/index.html");
-  } else {
-    path=path.replace(/index\.html$/,"admin.html");
-    if(path.indexOf("admin.html")===-1) path=path.replace(/\/[^/]*$/,"/admin.html");
-  }
+  if (target==="student"){ path=path.replace(/admin\.html$/,"index.html"); if(path.indexOf("index.html")===-1) path=path.replace(/\/[^/]*$/,"/index.html"); }
+  else{ path=path.replace(/index\.html$/,"admin.html"); if(path.indexOf("admin.html")===-1) path=path.replace(/\/[^/]*$/,"/admin.html"); }
   return window.location.origin+path+"?sync="+encodeURIComponent(gasUrl);
 }
-
 async function copyDirectSyncUrl(target) {
   var syncUrl=getDirectSyncUrl(target);
   if(!syncUrl){alert("GAS 網址未設定，無法產生同步連結。");return;}
-  try{ await navigator.clipboard.writeText(syncUrl); alert("🔗 專屬同步網址已複製！傳給新裝置點開即自動完成綁定。"); }
-  catch(e){ window.prompt("請手動複製此同步網址：",syncUrl); }
+  try{ await navigator.clipboard.writeText(syncUrl); alert("🔗 已複製同步網址！"); }
+  catch(e){ window.prompt("請手動複製：",syncUrl); }
 }
-
-function showSyncQrModal(target) {
-  currentQrTarget=target||"admin";
-  renderSyncQrCode();
-  var m=document.getElementById("syncQrModal");
-  if(m) m.classList.remove("hidden");
-}
-
-function switchSyncQrTarget(target) {
-  currentQrTarget=target;
-  renderSyncQrCode();
-}
-
+function showSyncQrModal(target) { currentQrTarget=target||"admin"; renderSyncQrCode(); var m=document.getElementById("syncQrModal"); if(m) m.classList.remove("hidden"); }
+function switchSyncQrTarget(target) { currentQrTarget=target; renderSyncQrCode(); }
 function renderSyncQrCode() {
   var syncUrl=getDirectSyncUrl(currentQrTarget);
   if(!syncUrl){alert("GAS 網址未設定，無法產生 QR Code。");return;}
   var container=document.getElementById("syncQrContainer"); if(!container) return;
   var tabA=document.getElementById("qrTabAdmin"), tabS=document.getElementById("qrTabStudent"), desc=document.getElementById("qrTargetDesc");
-  if (currentQrTarget==="admin"){
-    if(tabA) tabA.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
-    if(tabS) tabS.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
-    if(desc) desc.innerText="新手機掃描後，將自動綁定並開啟「管理後台」：";
-  } else {
-    if(tabS) tabS.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm";
-    if(tabA) tabA.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
-    if(desc) desc.innerText="手機掃描後，將自動開啟「學員預約報名頁」：";
-  }
+  if (currentQrTarget==="admin"){ if(tabA) tabA.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm"; if(tabS) tabS.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition"; if(desc) desc.innerText="新手機掃描後，將自動綁定並開啟「管理後台」："; }
+  else{ if(tabS) tabS.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition shadow-sm"; if(tabA) tabA.className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition"; if(desc) desc.innerText="手機掃描後，將自動開啟「學員預約報名頁」："; }
   container.innerHTML="";
   if (typeof QRCode!=="undefined") new QRCode(container,{text:syncUrl,width:190,height:190,colorDark:"#0f172a",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
   else container.innerHTML='<p class="text-xs text-rose-500">QR Code 模組載入中，請使用複製連結功能。</p>';
 }
-
 function closeSyncQrModal() { var m=document.getElementById("syncQrModal"); if(m) m.classList.add("hidden"); }
 
 // ══════════════════════════════════════════════
@@ -1985,99 +1997,93 @@ function closeSyncQrModal() { var m=document.getElementById("syncQrModal"); if(m
 function checkAdminAuth() {
   var isAuth=sessionStorage.getItem("admin_authenticated");
   var overlay=document.getElementById("loginOverlay"); if(!overlay) return;
-  if (isAuth==="true" && (ADMIN_PASS || !hasApi())){
-    overlay.style.display="none"; overlay.classList.add("hidden");
-  } else {
-    overlay.style.display="flex"; overlay.classList.remove("hidden");
-    setTimeout(function(){var el=document.getElementById("adminLoginInput");if(el)el.focus();},100);
-  }
+  if (isAuth==="true"&&(ADMIN_PASS||!hasApi())){ overlay.style.display="none"; overlay.classList.add("hidden"); }
+  else{ overlay.style.display="flex"; overlay.classList.remove("hidden"); setTimeout(function(){var el=document.getElementById("adminLoginInput");if(el)el.focus();},100); }
 }
 
 // ══════════════════════════════════════════════
 // 資料載入
 // ══════════════════════════════════════════════
 function loadLocalSharedData() {
-  try{
+  try {
     var sc=localStorage.getItem("appsheet_shared_courses");
     if (sc){ var p=JSON.parse(sc); if(Array.isArray(p)&&p.length>0) adminCourses=normalizeCoursePrices(p); }
     var sb=localStorage.getItem("appsheet_shared_bookings");
     if (sb){ var p2=JSON.parse(sb); if(Array.isArray(p2)) adminBookings=p2; }
-  }catch(e){ console.warn("載入本地資料失敗：",e); }
+  } catch(e){ console.warn("載入本地資料失敗：",e); }
 }
 
 async function loadFullAdminData(force) {
   if (adminLoading) return;
-  if (!force && Date.now()-lastAdminLoadAt < 30000) return;
-  if (hasApi() && !ADMIN_PASS) { loadLocalSharedData(); calculateCourseBookedCounts(); renderAll(); return; }
-  adminLoading = true;
+  if (!force&&Date.now()-lastAdminLoadAt<30000) return;
+  if (hasApi()&&!ADMIN_PASS){ loadLocalSharedData(); calculateCourseBookedCounts(); renderAll(); return; }
+  adminLoading=true;
   var refreshIcon=document.getElementById("adminRefreshIcon");
   if (refreshIcon) refreshIcon.classList.add("fa-spin");
-  setConnStatus(null, "連線中…");
+  setConnStatus(null,"連線中…");
 
   if (hasApi()) {
-    try{
+    try {
       var resp=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
         body:JSON.stringify({action:"getFullAdminData",password:ADMIN_PASS})});
       var json=await resp.json();
       if (json.success) {
-        if (json.version&&json.version!==APP_VERSION){
-          var banner=document.getElementById("updateBanner");
-          if(banner) banner.style.display="flex";
-        }
-        adminCourses = Array.isArray(json.courses) ? normalizeCoursePrices(json.courses) : [];
-        adminBookings = Array.isArray(json.bookings) ? json.bookings : [];
+        if (json.version&&json.version!==APP_VERSION){ var banner=document.getElementById("updateBanner"); if(banner) banner.style.display="flex"; }
+        adminCourses=Array.isArray(json.courses)?normalizeCoursePrices(json.courses):[];
+        adminBookings=Array.isArray(json.bookings)?json.bookings:[];
         localStorage.setItem("appsheet_shared_courses",JSON.stringify(adminCourses));
         localStorage.setItem("appsheet_shared_bookings",JSON.stringify(adminBookings));
-        if (json.config && !settingsFormLoaded) { fillSettingsForm(json.config); settingsFormLoaded = true; }
-        setConnStatus(true, "已連線 Google 試算表");
+        if (json.config&&!settingsFormLoaded){ fillSettingsForm(json.config); settingsFormLoaded=true; }
+        setConnStatus(true,"已連線 Google 試算表");
       } else {
-        console.warn("getFullAdminData 失敗：", json.message);
+        console.warn("getFullAdminData 失敗：",json.message);
         if (json.authError) handleAuthLost();
-        else setConnStatus(false, "連線失敗：" + (json.message || "未知錯誤")); // ← 修正全形括號
+        else setConnStatus(false,"連線失敗："+(json.message||"未知錯誤"));
         loadLocalSharedData();
       }
-    }catch(err){
-      console.warn("API 連線失敗，回退本地快取：",err);
-      setConnStatus(false, "無法連線，使用本機快取");
-      loadLocalSharedData();
-    }
+    } catch(err){ console.warn("API 連線失敗：",err); setConnStatus(false,"無法連線，使用本機快取"); loadLocalSharedData(); }
   } else {
-    setConnStatus(null, "離線展示模式");
-    loadLocalSharedData();
+    setConnStatus(null,"離線展示模式"); loadLocalSharedData();
   }
 
-  var gasEl = document.getElementById("settingGasUrl");
-  if (gasEl) gasEl.value = API_URL||"";
-  if (document.getElementById("settingClassrooms"))
-    document.getElementById("settingClassrooms").value=customClassrooms.join("\n");
+  var gasEl=document.getElementById("settingGasUrl");
+  if (gasEl) gasEl.value=API_URL||"";
+  if (document.getElementById("settingClassrooms")) document.getElementById("settingClassrooms").value=customClassrooms.join("\n");
   updateGasStatusBadge(API_URL);
   calculateCourseBookedCounts();
   renderAll();
-  lastAdminLoadAt = Date.now();
-  adminLoading = false;
+  lastAdminLoadAt=Date.now();
+  adminLoading=false;
   if (refreshIcon) refreshIcon.classList.remove("fa-spin");
 }
 
 function fillSettingsForm(cfg) {
-  function setVal(id, v){ var el=document.getElementById(id); if(el && v!==undefined && v!==null) el.value=v; }
-  function setChk(id, v){ var el=document.getElementById(id); if(el && v!==undefined) el.checked = v==="開啟"; return el?el.checked:false; }
+  function setVal(id,v){ var el=document.getElementById(id); if(el&&v!==undefined&&v!==null) el.value=v; }
+  function setChk(id,v){ var el=document.getElementById(id); if(el&&v!==undefined) el.checked=v==="開啟"; return el?el.checked:false; }
   setVal("settingSysName", cfg["系統名稱"]);
-  setVal("settingNotice", cfg["預約提醒事項"]);
+  setVal("settingNotice",  cfg["預約提醒事項"]);
+  if (cfg["早鳥截止預設天數"]) {
+    var days=parseInt(cfg["早鳥截止預設天數"],10);
+    if (!isNaN(days)&&days>0) {
+      earlyBirdDefaultDays=days;
+      setVal("settingEarlyBirdDefaultDays",String(days));
+    }
+  }
   if (cfg["常用教室清單"]) {
     var list=cfg["常用教室清單"].split(",").map(function(s){return s.trim();}).filter(Boolean);
     if (list.length>0){ customClassrooms=list; localStorage.setItem("appsheet_classrooms",JSON.stringify(list)); }
     if (document.getElementById("settingClassrooms")) document.getElementById("settingClassrooms").value=customClassrooms.join("\n");
   }
-  if (cfg["Telegram通知開關"]) toggleNotifyCard("telegram", setChk("settingTelegramEnabled", cfg["Telegram通知開關"]));
-  setVal("settingTgBotToken", cfg["TelegramBotToken"]);
-  setVal("settingTgChatId", cfg["TelegramChatId"]);
-  if (cfg["Email通知開關"]) toggleNotifyCard("email", setChk("settingEmailEnabled", cfg["Email通知開關"]));
-  setVal("settingAdminEmail", cfg["管理員Email"]);
-  setVal("settingSenderName", cfg["寄件者名稱"]);
-  if (cfg["學員Email通知開關"]) setChk("settingStudentEmailEnabled", cfg["學員Email通知開關"]);
-  setVal("settingBankName", cfg["銀行名稱"]);
+  if (cfg["Telegram通知開關"]) toggleNotifyCard("telegram",setChk("settingTelegramEnabled",cfg["Telegram通知開關"]));
+  setVal("settingTgBotToken",cfg["TelegramBotToken"]);
+  setVal("settingTgChatId",  cfg["TelegramChatId"]);
+  if (cfg["Email通知開關"]) toggleNotifyCard("email",setChk("settingEmailEnabled",cfg["Email通知開關"]));
+  setVal("settingAdminEmail",   cfg["管理員Email"]);
+  setVal("settingSenderName",   cfg["寄件者名稱"]);
+  if (cfg["學員Email通知開關"]) setChk("settingStudentEmailEnabled",cfg["學員Email通知開關"]);
+  setVal("settingBankName",    cfg["銀行名稱"]);
   setVal("settingBankAccount", cfg["銀行帳號"]);
-  setVal("settingBankHolder", cfg["戶名"]);
+  setVal("settingBankHolder",  cfg["戶名"]);
 }
 
 // ══════════════════════════════════════════════
@@ -2087,18 +2093,11 @@ document.addEventListener("DOMContentLoaded", function() {
   localStorage.removeItem("admin_app_font_size");
   applyFontPx(parseFloat(localStorage.getItem("admin_font_px"))||(window.innerWidth>=768?16:21), false);
   checkVersionAndShowBanner();
-
-  // 開課表單預設日期（明天）
-  var tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  if (document.getElementById("formDate")) document.getElementById("formDate").value=tomorrow.toISOString().split("T")[0];
-
   checkAdminAuth();
 
-  // 網址帶入 sync 參數（僅供前台端使用，後台以程式碼中的 GAS_API_URL 為準）
   var urlParams=new URLSearchParams(window.location.search);
   var urlSync=urlParams.get("sync")||urlParams.get("api");
-  if (urlSync&&urlSync.startsWith("http")){
-    // 後台不改寫 API_URL，避免蓋掉程式碼中的設定
+  if (urlSync&&urlSync.startsWith("http")) {
     try{ window.history.replaceState({},document.title,window.location.origin+window.location.pathname); }catch(e){}
   }
 
