@@ -482,6 +482,22 @@
               <p class="text-[11px] text-amber-800">天（開立新課程時，早鳥截止日自動設為「上課日期前 N 天」）</p>
             </div>
           </div>
+          <!-- 開課範本設定 -->
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> 開課範本設定
+                </h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">開立課程時可快速帶入名稱、價格與說明</p>
+              </div>
+              <button type="button" onclick="addNewTemplateRow()"
+                class="px-2.5 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition flex items-center gap-1 shadow-sm">
+                <i class="fa-solid fa-plus"></i> 新增
+              </button>
+            </div>
+            <div id="templateRowsContainer" class="space-y-2.5"></div>
+          </div>
           <!-- 常用教室 -->
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
@@ -806,6 +822,15 @@
     </div>
     <form id="courseForm" onsubmit="handleCourseSubmit(event)" class="space-y-3.5">
       <input type="hidden" id="editCourseId">
+      <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 space-y-2">
+        <label class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> 快速套用開課範本
+        </label>
+        <select id="formTemplateSelect" onchange="applyCourseTemplate(this.value)"
+          class="w-full text-xs px-3 py-2 rounded-xl border border-blue-300 bg-white text-blue-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+          <option value="">✨ 選擇常用課程範本...</option>
+        </select>
+      </div>
       <div>
         <label class="block text-xs font-semibold text-slate-700 mb-1">
           課程名稱 <span class="text-rose-500">*</span>
@@ -1028,6 +1053,18 @@ var courseMap          = Object.create(null);
 var adminCourses       = [];
 var adminBookings      = [];
 var customClassrooms   = ["高雄-近高美館","台南安南醫院","台北場地"];
+var customCourseTemplates = [
+  { title:"❷ 學習：頌缽入門",    earlyBirdPrice:"4000", regularPrice:"5000",  notes:"想學頌缽，照顧自己" },
+  { title:"❷ 學習：初進階整日班", earlyBirdPrice:"9000", regularPrice:"12000", notes:"想學頌缽，照顧自己，幫助他人" },
+  { title:"❸ 學習：頌缽進階",    earlyBirdPrice:"4000", regularPrice:"5000",  notes:"想進階技能，運用頌缽" },
+  { title:"❹ 團體頌缽音樂療癒",  earlyBirdPrice:"800",  regularPrice:"1000",  notes:"團體放鬆療癒體驗" }
+];
+(function(){
+  try {
+    var s = localStorage.getItem("appsheet_course_templates");
+    if (s) { var p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) customCourseTemplates = p; }
+  } catch(e) {}
+})();
 var earlyBirdDefaultDays = 7;
 var _actionLock        = false;
 
@@ -1823,8 +1860,86 @@ function autoFillEarlyBirdDeadline(){
   d.setDate(d.getDate()-earlyBirdDefaultDays);
   deadlineEl.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
+// ══════════════════════════════════════════════
+// 課程範本
+// ══════════════════════════════════════════════
+function renderPresetOptions() {
+  var sel = document.getElementById("formTemplateSelect");
+  if (!sel) return;
+  sel.innerHTML = '<option value="">✨ 選擇常用課程範本...</option>' +
+    customCourseTemplates.map(function(t, i) {
+      return '<option value="' + i + '">【' + escapeHtml(t.title) + '】早鳥$' +
+        (t.earlyBirdPrice || "-") + '/定價$' + (t.regularPrice || "-") + '</option>';
+    }).join("");
+}
 
+function applyCourseTemplate(idxStr) {
+  if (idxStr === "" || idxStr === null) return;
+  var tpl = customCourseTemplates[parseInt(idxStr, 10)];
+  if (!tpl) return;
+  document.getElementById("formTitle").value        = tpl.title        || "";
+  document.getElementById("formEarlyBirdPrice").value = tpl.earlyBirdPrice || "";
+  document.getElementById("formRegularPrice").value  = tpl.regularPrice  || "";
+  document.getElementById("formNotes").value         = tpl.notes         || "";
+}
+
+function renderSettingsTemplateRows() {
+  var container = document.getElementById("templateRowsContainer");
+  if (!container) return;
+  container.innerHTML = customCourseTemplates.map(function(tpl, idx) {
+    return '<div class="bg-white p-3 rounded-xl border border-slate-200/90 shadow-sm space-y-2">' +
+      '<div class="flex items-center justify-between gap-2">' +
+        '<span class="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">範本 #' + (idx + 1) + '</span>' +
+        '<button type="button" onclick="removeTemplateRow(' + idx + ')" ' +
+          'class="text-slate-400 hover:text-rose-600 text-xs transition px-2 py-0.5 rounded">' +
+          '<i class="fa-solid fa-trash-can mr-1"></i>刪除</button>' +
+      '</div>' +
+      '<div class="grid grid-cols-1 sm:grid-cols-12 gap-2">' +
+        '<div class="sm:col-span-4">' +
+          '<label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程名稱</label>' +
+          '<input type="text" class="template-title-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 ' +
+            'focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold" ' +
+            'value="' + escapeHtmlAttr(tpl.title) + '" placeholder="例如：❷ 學習：頌缽入門">' +
+        '</div>' +
+        '<div class="sm:col-span-2">' +
+          '<label class="block text-[10px] font-bold text-emerald-700 mb-0.5">早鳥價 (NT$)</label>' +
+          '<input type="number" class="template-early-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 ' +
+            'focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-700" ' +
+            'value="' + escapeHtmlAttr(tpl.earlyBirdPrice || "") + '" placeholder="4000">' +
+        '</div>' +
+        '<div class="sm:col-span-2">' +
+          '<label class="block text-[10px] font-bold text-slate-600 mb-0.5">定價 (NT$)</label>' +
+          '<input type="number" class="template-regular-input w-full text-xs px-2 py-1.5 rounded-lg border border-slate-200 ' +
+            'focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700" ' +
+            'value="' + escapeHtmlAttr(tpl.regularPrice || "") + '" placeholder="5000">' +
+        '</div>' +
+        '<div class="sm:col-span-4">' +
+          '<label class="block text-[10px] font-bold text-slate-500 mb-0.5">課程說明</label>' +
+          '<input type="text" class="template-notes-input w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 ' +
+            'focus:outline-none focus:ring-2 focus:ring-blue-500" ' +
+            'value="' + escapeHtmlAttr(tpl.notes || "") + '" placeholder="想學頌缽，照顧自己">' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function addNewTemplateRow() {
+  customCourseTemplates.push({ title:"", earlyBirdPrice:"", regularPrice:"", notes:"" });
+  renderSettingsTemplateRows();
+  setTimeout(function() {
+    var inputs = document.querySelectorAll(".template-title-input");
+    if (inputs.length > 0) inputs[inputs.length - 1].focus();
+  }, 50);
+}
+
+function removeTemplateRow(idx) {
+  if (customCourseTemplates.length <= 1) { alert("至少請保留一組課程範本！"); return; }
+  customCourseTemplates.splice(idx, 1);
+  renderSettingsTemplateRows();
+}
 function openCourseModal(courseId){
+  renderPresetOptions();
   if(courseId){
     var c=null;
     for(var i=0;i<adminCourses.length;i++){if(adminCourses[i].id===courseId){c=adminCourses[i];break;}}
@@ -2194,6 +2309,25 @@ async function handleSaveSettings(e){
   var parsedClassrooms=rawClassrooms.split(/[\n,]/).map(function(s){return s.trim();}).filter(Boolean);
   if(parsedClassrooms.length>0){ customClassrooms=parsedClassrooms; localStorage.setItem("appsheet_classrooms",JSON.stringify(customClassrooms)); }
   earlyBirdDefaultDays=ebDays;
+  // 收集範本設定
+  var titleInputs   = document.querySelectorAll(".template-title-input");
+  var earlyInputs   = document.querySelectorAll(".template-early-input");
+  var regularInputs = document.querySelectorAll(".template-regular-input");
+  var noteInputs    = document.querySelectorAll(".template-notes-input");
+  var newTemplates  = [];
+  titleInputs.forEach(function(ti, idx) {
+    var tVal = ti.value.trim();
+    if (tVal) newTemplates.push({
+      title:        tVal,
+      earlyBirdPrice: earlyInputs[idx]   ? earlyInputs[idx].value.trim()   : "",
+      regularPrice:   regularInputs[idx] ? regularInputs[idx].value.trim() : "",
+      notes:          noteInputs[idx]    ? noteInputs[idx].value.trim()    : ""
+    });
+  });
+  if (newTemplates.length > 0) {
+    customCourseTemplates = newTemplates;
+    localStorage.setItem("appsheet_course_templates", JSON.stringify(customCourseTemplates));
+  }
 
   // 先記錄，避免更新 ADMIN_PASS 後比較值相同
   var passwordChanged=!!(newPass&&newPass!==ADMIN_PASS);
@@ -2439,7 +2573,7 @@ document.addEventListener("DOMContentLoaded",function(){
   applyFontPx(parseFloat(localStorage.getItem("admin_font_px"))||(window.innerWidth>=768?16:21),false);
   checkVersionAndShowBanner();
   checkAdminAuth();
-
+  renderSettingsTemplateRows();
   var urlParams=new URLSearchParams(window.location.search);
   if(urlParams.get("sync")||urlParams.get("api")){
     try{ window.history.replaceState({},document.title,window.location.origin+window.location.pathname); }catch(e){}
