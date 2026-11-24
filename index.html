@@ -293,7 +293,6 @@
       <h3 class="text-lg font-bold text-slate-900 mb-1">預約資料已送出！</h3>
       <p class="text-xs text-slate-500 mb-4">管理員核對款項無誤後，狀態將轉為【報名成功】並通知您。</p>
       <div class="bg-slate-50 rounded-xl p-3 text-left text-xs text-slate-600 mb-3 space-y-1 border border-slate-100">
-        <p><span class="text-slate-400">預約編號：</span><span id="succBookingId" class="font-mono font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">課程名稱：</span><span id="succCourseTitle" class="font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">上課時間：</span><span id="succDateTime" class="text-slate-800"></span></p>
         <p id="succPriceRow" class="hidden"><span class="text-slate-400">繳費金額：</span><span id="succPrice" class="font-black text-emerald-700"></span></p>
@@ -997,7 +996,6 @@
   // 成功 Modal
   // ══════════════════════════════════════════════
   function showSuccessModal(res, course) {
-    $("succBookingId").textContent   = res.bookingId || "";
     $("succCourseTitle").textContent = res.courseTitle || course?.title || "";
     $("succDateTime").textContent = course
       ? `${formatFullDate(course.date)} ${course.startTime}${course.endTime ? " - " + course.endTime : ""}`
