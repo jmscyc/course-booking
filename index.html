@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2563eb">
   <title>霖霖的課程預約系統</title>
-  <link rel="stylesheet" href="tailwind.css?v=3.6.1">
+  <link rel="stylesheet" href="tailwind.css?v=3.6.2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root { --client-font-size: 21px; }
@@ -40,7 +40,6 @@
   </style>
 
   <script>
-    // ── 防閃爍字型 ──
     (function () {
       var saved = parseFloat(localStorage.getItem("custom_font_size"));
       window.currentFontSize = (!isNaN(saved) && saved > 0) ? saved : (window.innerWidth >= 768 ? 16.5 : 21);
@@ -183,12 +182,24 @@
         </button>
       </div>
 
+      <!-- 課程資訊（移除授課教練） -->
       <div class="bg-slate-50 rounded-xl p-3.5 mb-4 text-xs text-slate-600 space-y-1.5 border border-slate-100">
-        <div class="flex items-center gap-2"><i class="fa-regular fa-clock text-blue-500 w-4 text-center"></i><span id="modalDateTime" class="font-semibold text-slate-800"></span></div>
-        <div class="flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-blue-500 w-4 text-center"></i><span id="modalInstructor"></span></div>
-        <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-blue-500 w-4 text-center"></i><span id="modalLocation"></span></div>
-        <div class="flex items-center gap-2"><i class="fa-solid fa-user-group text-blue-500 w-4 text-center"></i><span id="modalSeats"></span></div>
-        <div id="modalNotesRow" class="hidden flex items-start gap-2"><i class="fa-solid fa-circle-info text-blue-500 w-4 text-center mt-0.5"></i><span id="modalNotes" class="leading-relaxed"></span></div>
+        <div class="flex items-center gap-2">
+          <i class="fa-regular fa-clock text-blue-500 w-4 text-center"></i>
+          <span id="modalDateTime" class="font-semibold text-slate-800"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-location-dot text-blue-500 w-4 text-center"></i>
+          <span id="modalLocation"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-group text-blue-500 w-4 text-center"></i>
+          <span id="modalSeats"></span>
+        </div>
+        <div id="modalNotesRow" class="hidden flex items-start gap-2">
+          <i class="fa-solid fa-circle-info text-blue-500 w-4 text-center mt-0.5"></i>
+          <span id="modalNotes" class="leading-relaxed"></span>
+        </div>
         <div id="modalPriceRow" class="hidden flex items-center gap-2 pt-1.5 border-t border-slate-200/70 mt-1.5 flex-wrap">
           <i class="fa-solid fa-tag text-emerald-500 w-4 text-center"></i>
           <span id="modalPriceText" class="font-black text-sm"></span>
@@ -285,7 +296,7 @@
         <p><span class="text-slate-400">預約編號：</span><span id="succBookingId" class="font-mono font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">課程名稱：</span><span id="succCourseTitle" class="font-bold text-slate-800"></span></p>
         <p><span class="text-slate-400">上課時間：</span><span id="succDateTime" class="text-slate-800"></span></p>
-        <p id="succPriceRow" class="hidden"><span class="text-slate-400">應付金額：</span><span id="succPrice" class="font-black text-emerald-700"></span></p>
+        <p id="succPriceRow" class="hidden"><span class="text-slate-400">繳費金額：</span><span id="succPrice" class="font-black text-emerald-700"></span></p>
       </div>
       <div id="succBankBox" class="hidden text-left mb-4">
         <p class="text-[11px] font-bold text-slate-500 mb-1.5"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i>尚未匯款的話，請匯至以下帳戶：</p>
@@ -350,37 +361,37 @@
   "use strict";
 
   // ══════════════════════════════════════════════
-  // ★ 設定：Google Apps Script 部署網址 ★
-  // 部署 GAS 為「網頁應用程式」後，把網址貼在這裡（結尾為 /exec）。
-  // 留空時會改用網址參數 ?sync=... 或此瀏覽器先前記住的網址；都沒有則為示範模式。
+  // ★ GAS 網址設定 ★
   // ══════════════════════════════════════════════
   const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8XO6H117ptrvwJ0gpeehshT2q6k1wuQry-_dduHJWGrwun13r3AiYLxSF2DeZtGaM/exec";
 
-  const APP_VERSION   = "3.6.1";
-  const REFRESH_MIN_MS = 30000;   // 自動重新整理的最短間隔（切回分頁時）
+  const APP_VERSION    = "3.6.2";
+  const REFRESH_MIN_MS = 30000;
   const CACHE_COURSES  = "appsheet_shared_courses";
   const CACHE_SETTINGS = "appsheet_public_settings";
 
-  let API_URL      = "";
-  let allCourses   = [];
-  let settings     = {};
-  let selectedDate = "all";
-  let selectedTitle    = "all";   // 課程篩選
-  let selectedLocation = "all";   // 地點篩選
-  let lastLoadAt   = 0;
-  let loadingNow   = false;
+  let API_URL          = "";
+  let allCourses       = [];
+  let settings         = {};
+  let selectedDate     = "all";
+  let selectedTitle    = "all";
+  let selectedLocation = "all";
+  let lastLoadAt       = 0;
+  let loadingNow       = false;
   let currentPayMethod = "bank";
 
   // ══════════════════════════════════════════════
   // 小工具
   // ══════════════════════════════════════════════
   const $ = id => document.getElementById(id);
+
   function esc(s) {
-    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
   function readJSON(key, fallback) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch (e) { return fallback; }
   }
   function toast(msg, type) {
     const host = $("toastHost");
@@ -389,14 +400,16 @@
       (type === "error" ? "bg-rose-600 text-white" : "bg-slate-900 text-white");
     el.textContent = msg;
     host.appendChild(el);
-    setTimeout(() => { el.style.transition = "opacity .4s"; el.style.opacity = "0"; setTimeout(() => el.remove(), 400); }, 2600);
+    setTimeout(() => {
+      el.style.transition = "opacity .4s"; el.style.opacity = "0";
+      setTimeout(() => el.remove(), 400);
+    }, 2600);
   }
   function normDate(s) {
-    const p = String(s || "").trim().replace(/\//g, "-").split("-");
+    const p = String(s || "").trim().replace(/\//g,"-").split("-");
     if (p.length !== 3) return String(s || "");
-    return `${p[0]}-${p[1].padStart(2, "0")}-${p[2].padStart(2, "0")}`;
+    return `${p[0]}-${p[1].padStart(2,"0")}-${p[2].padStart(2,"0")}`;
   }
-
   function adjustFontSize(delta) {
     window.currentFontSize = Math.min(40, Math.max(12, window.currentFontSize + delta));
     document.documentElement.style.setProperty("--client-font-size", window.currentFontSize + "px");
@@ -404,14 +417,13 @@
   }
 
   // ══════════════════════════════════════════════
-  // 日期 / 價格
+  // 日期 / 價格工具
   // ══════════════════════════════════════════════
-  // 台灣時間 → UTC 毫秒
   function twMs(dateStr, timeStr) {
     const p = normDate(dateStr).split("-");
     const t = String(timeStr || "23:59").split(":");
     if (p.length !== 3 || t.length < 2) return null;
-    const ms = Date.UTC(+p[0], +p[1] - 1, +p[2], (+t[0]) - 8, +t[1]);
+    const ms = Date.UTC(+p[0], +p[1]-1, +p[2], (+t[0])-8, +t[1]);
     return isNaN(ms) ? null : ms;
   }
   function isCourseExpired(c) {
@@ -420,8 +432,12 @@
   }
   function earlyBirdDeadlineMs(d) {
     if (!d) return null;
-    const ms = twMs(d, "23:59");
-    return ms === null ? null : ms + 59000;
+    // 台灣時間當日 23:59:59 轉為 UTC ms
+    const p = normDate(d).split("-");
+    if (p.length !== 3) return null;
+    const ms = Date.UTC(+p[0], +p[1]-1, +p[2], 23 - 8, 59, 59);
+    // 15:59:59 UTC = 台灣 23:59:59
+    return isNaN(ms) ? null : ms;
   }
   function getEffectivePrice(c) {
     const eb = Number(c.earlyBirdPrice) || 0;
@@ -442,22 +458,22 @@
   }
   function formatCountdown(ms) {
     if (ms === null || ms <= 0) return "";
-    const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
+    const m = Math.floor(ms/60000), d = Math.floor(m/1440), h = Math.floor((m%1440)/60);
     if (d > 0) return `倒數 ${d}天${h}時`;
-    if (h > 0) return `倒數 ${h}時${m % 60}分`;
-    return `倒數 ${m % 60}分`;
+    if (h > 0) return `倒數 ${h}時${m%60}分`;
+    return `倒數 ${m%60}分`;
   }
   function formatFullDate(dateStr) {
     const n = normDate(dateStr);
     const p = n.split("-");
     if (p.length !== 3) return dateStr || "";
-    const d = new Date(+p[0], +p[1] - 1, +p[2]);
+    const d = new Date(+p[0], +p[1]-1, +p[2]);
     const wd = isNaN(d.getDay()) ? "" : `(週${"日一二三四五六"[d.getDay()]})`;
     return `${+p[1]}/${+p[2]}${wd}`;
   }
   const money = n => "NT$ " + Number(n).toLocaleString();
 
-  /** 舊資料的「備註說明」可能混入「(早鳥價 4000 / 定價 5000)」，搬到價格欄位並從說明移除 */
+  /** 清洗舊資料：把混在 notes 裡的價格文字搬到獨立欄位 */
   function normalizeCoursePrices(list) {
     if (!Array.isArray(list)) return list;
     const re = /[(（]\s*早鳥價?[\s:：$NT]*([0-9,]+)[\s/／,，]*(?:定價|原價)[\s:：$NT]*([0-9,]+)\s*[)）]/;
@@ -465,36 +481,38 @@
       let notes = String(c.notes || ""), eb = c.earlyBirdPrice || "", rg = c.regularPrice || "";
       const m = notes.match(re);
       if (m) {
-        if (!eb) eb = m[1].replace(/,/g, "");
-        if (!rg) rg = m[2].replace(/,/g, "");
-        notes = notes.replace(m[0], "").trim();
+        if (!eb) eb = m[1].replace(/,/g,"");
+        if (!rg) rg = m[2].replace(/,/g,"");
+        notes = notes.replace(m[0],"").trim();
       }
       return { ...c, notes, earlyBirdPrice: eb, regularPrice: rg };
     });
   }
 
   // ══════════════════════════════════════════════
-  // Demo 資料（僅在未設定 GAS 網址時使用）
+  // Demo 資料
   // ══════════════════════════════════════════════
   const DEMO_COURSES = [
-    { id:"D1", title:"❷ 學習：頌缽入門",    instructor:"霖霖", date:"2027-01-10", startTime:"09:00", endTime:"13:00", capacity:6, bookedCount:5, remaining:1, location:"高雄-近高美館", notes:"想學頌缽，照顧自己", earlyBirdPrice:"4000", regularPrice:"5000", earlyBirdDeadline:"2026-12-31", status:"開啟報名" },
-    { id:"D2", title:"❸ 學習：頌缽進階",    instructor:"霖霖", date:"2027-01-24", startTime:"11:00", endTime:"15:00", capacity:8, bookedCount:3, remaining:5, location:"台北場地",     notes:"想進階技能，運用頌缽", earlyBirdPrice:"4000", regularPrice:"5000", earlyBirdDeadline:"", status:"開啟報名" },
-    { id:"D3", title:"❷ 學習：初進階整日班", instructor:"霖霖", date:"2027-01-17", startTime:"09:00", endTime:"18:00", capacity:4, bookedCount:4, remaining:0, location:"高雄-近高美館", notes:"學習整套頌缽使用方式", earlyBirdPrice:"8000", regularPrice:"12000", earlyBirdDeadline:"", status:"開啟報名" }
+    { id:"D1", title:"❷ 學習：頌缽入門",    date:"2027-01-10", startTime:"09:00", endTime:"13:00", capacity:6, bookedCount:5, remaining:1, location:"高雄-近高美館", notes:"想學頌缽，照顧自己", earlyBirdPrice:"4000", regularPrice:"5000", earlyBirdDeadline:"2026-12-31", status:"開啟報名" },
+    { id:"D2", title:"❸ 學習：頌缽進階",    date:"2027-01-24", startTime:"11:00", endTime:"15:00", capacity:8, bookedCount:3, remaining:5, location:"台北場地",     notes:"想進階技能，運用頌缽", earlyBirdPrice:"4000", regularPrice:"5000", earlyBirdDeadline:"", status:"開啟報名" },
+    { id:"D3", title:"❷ 學習：初進階整日班", date:"2027-01-17", startTime:"09:00", endTime:"18:00", capacity:4, bookedCount:4, remaining:0, location:"高雄-近高美館", notes:"學習整套頌缽使用方式", earlyBirdPrice:"8000", regularPrice:"12000", earlyBirdDeadline:"", status:"開啟報名" }
   ];
-  const DEMO_SETTINGS = { notice:"（示範）課程開始前 2 小時前取消不扣堂數。", bankName:"822 中國信託", bankAccount:"1234-5678-9012", bankHolder:"霖霖身心靈工坊" };
+  const DEMO_SETTINGS = {
+    notice: "（示範）課程開始前 2 小時前取消不扣堂數。",
+    bankName: "822 中國信託", bankAccount: "1234-5678-9012", bankHolder: "霖霖身心靈工坊"
+  };
 
   // ══════════════════════════════════════════════
   // 初始化
   // ══════════════════════════════════════════════
   document.addEventListener("DOMContentLoaded", () => {
-    // 版本升級時清掉舊格式快取
     if (localStorage.getItem("app_version") !== APP_VERSION) {
-      ["appsheet_shared_courses", "appsheet_shared_bookings", "appsheet_bank_name", "appsheet_bank_account", "appsheet_bank_holder"]
+      ["appsheet_shared_courses","appsheet_shared_bookings",
+       "appsheet_bank_name","appsheet_bank_account","appsheet_bank_holder"]
         .forEach(k => localStorage.removeItem(k));
       localStorage.setItem("app_version", APP_VERSION);
     }
 
-    // API 網址：常數 > 網址參數 > 本機記住的
     const urlParams = new URLSearchParams(location.search);
     const queryApi  = urlParams.get("sync") || urlParams.get("api");
     if (GAS_API_URL) {
@@ -505,12 +523,14 @@
     } else {
       API_URL = localStorage.getItem("appsheet_gas_api") || "";
     }
-    if (queryApi) { try { history.replaceState({}, document.title, location.origin + location.pathname); } catch (e) {} }
+    if (queryApi) {
+      try { history.replaceState({}, document.title, location.origin + location.pathname); } catch (e) {}
+    }
 
     selectPayMethod("bank", false);
     loadCourses(true);
 
-    // 早鳥倒數：每 30 秒更新文字；有倒數歸零則重繪
+    // 早鳥倒數每 30 秒更新
     setInterval(() => {
       let expired = false;
       document.querySelectorAll(".eb-countdown[data-eb-deadline]").forEach(el => {
@@ -526,7 +546,17 @@
     const softRefresh = () => { if (Date.now() - lastLoadAt > REFRESH_MIN_MS) loadCourses(false); };
     document.addEventListener("visibilitychange", () => { if (!document.hidden) softRefresh(); });
     window.addEventListener("focus", softRefresh);
-
+    window.addEventListener("storage", (e) => {
+      if (e.key === CACHE_COURSES && e.newValue) {
+        try {
+          const updated = JSON.parse(e.newValue);
+          if (Array.isArray(updated)) {
+            allCourses = normalizeCoursePrices(updated);
+            renderUI();
+          }
+        } catch (_) {}
+      }
+    });
     document.addEventListener("keydown", e => {
       if (e.key !== "Escape") return;
       closeModal(); closeSuccessModal(); closeMyBookingsModal();
@@ -534,7 +564,7 @@
   });
 
   // ══════════════════════════════════════════════
-  // 載入課程：先顯示快取，再背景更新
+  // 載入課程
   // ══════════════════════════════════════════════
   async function loadCourses(force) {
     if (loadingNow) return;
@@ -552,7 +582,6 @@
       return;
     }
 
-    // 有快取就先畫，不閃骨架屏
     if (!allCourses.length) {
       const cached = readJSON(CACHE_COURSES, null);
       if (Array.isArray(cached)) {
@@ -569,17 +598,14 @@
       if (!json.success || !Array.isArray(json.courses)) throw new Error(json.message || "API 回傳異常");
       allCourses = normalizeCoursePrices(json.courses);
       settings   = json.settings || {};
-      localStorage.setItem(CACHE_COURSES, JSON.stringify(allCourses));
+      localStorage.setItem(CACHE_COURSES,  JSON.stringify(allCourses));
       localStorage.setItem(CACHE_SETTINGS, JSON.stringify(settings));
       $("offlineBanner").classList.add("hidden");
       applySettings(); renderUI();
     } catch (err) {
       console.warn("loadCourses 失敗：", err);
-      if (allCourses.length) {
-        $("offlineBanner").classList.remove("hidden");
-      } else {
-        showEmpty(true);
-      }
+      if (allCourses.length) $("offlineBanner").classList.remove("hidden");
+      else showEmpty(true);
     } finally {
       finishLoad();
     }
@@ -591,7 +617,7 @@
   }
 
   // ══════════════════════════════════════════════
-  // 公開設定（提醒事項、銀行帳號）
+  // 公開設定
   // ══════════════════════════════════════════════
   function applySettings() {
     if (settings.systemName) {
@@ -606,7 +632,9 @@
     const html = hasBank ? `
       <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-xs text-blue-950 space-y-1.5">
         <div class="flex items-center justify-between gap-1 flex-wrap">
-          <span class="font-bold text-blue-900 flex items-center gap-1.5"><i class="fa-solid fa-building-columns text-blue-600"></i>收款帳戶資訊</span>
+          <span class="font-bold text-blue-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-building-columns text-blue-600"></i>收款帳戶資訊
+          </span>
           <button type="button" onclick="copyBankAccount(this)"
             class="px-2 py-0.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm active:scale-95 shrink-0">
             <i class="fa-regular fa-copy"></i><span>複製帳號</span>
@@ -625,7 +653,7 @@
   }
 
   function copyBankAccount(btn) {
-    const num = String(settings.bankAccount || "").replace(/[^0-9]/g, "");
+    const num = String(settings.bankAccount || "").replace(/[^0-9]/g,"");
     if (!num) return;
     const done = () => {
       const label = btn && btn.querySelector("span");
@@ -650,12 +678,12 @@
     $("loadingSkeleton").classList.add("hidden");
     $("courseContainer").classList.add("hidden");
     $("noCoursesState").classList.remove("hidden");
-    $("emptyIcon").className   = isError ? "fa-solid fa-wifi text-2xl" : noMatch ? "fa-solid fa-filter text-2xl" : "fa-regular fa-calendar-xmark text-2xl";
+    $("emptyIcon").className    = isError ? "fa-solid fa-wifi text-2xl" : noMatch ? "fa-solid fa-filter text-2xl" : "fa-regular fa-calendar-xmark text-2xl";
     $("emptyTitle").textContent = isError ? "暫時無法載入課程" : noMatch ? "沒有符合篩選條件的課程" : "目前暫無開放預約的課程";
     $("emptyDesc").textContent  = isError ? "請確認網路連線後再試一次" : noMatch ? "換個日期、課程或地點試試看" : "請稍後再回來查看最新排程";
     $("emptyRetry").classList.toggle("hidden", !isError && !noMatch);
     $("emptyRetry").textContent = noMatch ? "顯示全部課程" : "重新載入";
-    $("emptyRetry").onclick = noMatch ? clearFilters : () => loadCourses(true);
+    $("emptyRetry").onclick     = noMatch ? clearFilters : () => loadCourses(true);
     $("courseCount").textContent = "0";
   }
 
@@ -670,30 +698,43 @@
       const sel = selectedDate === val;
       return `<button role="tab" aria-selected="${sel}" onclick="filterByDate('${val}')"
         class="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${sel
-          ? "bg-blue-600 text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}">${label}</button>`;
+          ? "bg-blue-600 text-white shadow-sm"
+          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}">${label}</button>`;
     };
-    $("dateFilterTabs").innerHTML = tab("all", "全部時段") + dates.map(d => tab(d, formatFullDate(d))).join("");
+    $("dateFilterTabs").innerHTML = tab("all","全部時段") + dates.map(d => tab(d, formatFullDate(d))).join("");
 
-    // 課程 / 地點下拉選單（只有 2 種以上選項時才顯示該篩選）
+    // 課程 / 地點下拉
     const titles    = [...new Set(active.map(c => c.title).filter(Boolean))].sort();
     const locations = [...new Set(active.map(c => c.location || "待定教室"))].sort();
-    if (selectedTitle !== "all" && !titles.includes(selectedTitle)) selectedTitle = "all";
+    if (selectedTitle    !== "all" && !titles.includes(selectedTitle))       selectedTitle = "all";
     if (selectedLocation !== "all" && !locations.includes(selectedLocation)) selectedLocation = "all";
-    const opts = (list, allLabel, sel) => `<option value="all">${allLabel}</option>` +
-      list.map(v => `<option value="${esc(v)}"${v === sel ? " selected" : ""}>${esc(v)}</option>`).join("");
-    $("titleFilter").innerHTML    = opts(titles, "全部課程", selectedTitle);
+    const opts = (list, allLabel, sel) =>
+      `<option value="all">${allLabel}</option>` +
+      list.map(v => `<option value="${esc(v)}"${v===sel?" selected":""}>${esc(v)}</option>`).join("");
+    $("titleFilter").innerHTML    = opts(titles,    "全部課程", selectedTitle);
     $("locationFilter").innerHTML = opts(locations, "全部地點", selectedLocation);
-    $("titleFilter").parentElement.classList.toggle("hidden", titles.length < 2);
-    $("locationFilter").parentElement.classList.toggle("hidden", locations.length < 2);
+    // 修改後
     const showTitle = titles.length >= 2, showLoc = locations.length >= 2;
-    $("courseFilterBar").classList.toggle("hidden", !showTitle && !showLoc);
-    $("courseFilterBar").classList.toggle("grid-cols-2", showTitle && showLoc);
-    $("courseFilterBar").classList.toggle("grid-cols-1", !(showTitle && showLoc));
+    const showBar = showTitle || showLoc;
 
-    // 篩選 + 排序：可報名的在前、額滿的在後；各自依時間由近到遠
+    // 先整理 bar 本身
+    $("courseFilterBar").classList.toggle("hidden", !showBar);
+    // 重置 grid class 再設定正確的
+    $("courseFilterBar").classList.remove("grid-cols-1", "grid-cols-2");
+    if (showBar) {
+      $("courseFilterBar").classList.add(
+        (showTitle && showLoc) ? "grid-cols-2" : "grid-cols-1"
+      );
+    }
+
+    // 子元素：用 style.display 取代 hidden class 避免衝突
+    $("titleFilter").closest("label").style.display    = showTitle ? "" : "none";
+    $("locationFilter").closest("label").style.display = showLoc   ? "" : "none";
+
+    // 篩選 + 排序
     const list = active
-      .filter(c => selectedDate === "all" || normDate(c.date) === selectedDate)
-      .filter(c => selectedTitle === "all" || c.title === selectedTitle)
+      .filter(c => selectedDate     === "all" || normDate(c.date) === selectedDate)
+      .filter(c => selectedTitle    === "all" || c.title === selectedTitle)
       .filter(c => selectedLocation === "all" || (c.location || "待定教室") === selectedLocation)
       .map(c => ({ ...c, _full: c.isFull || c.remaining <= 0 }))
       .sort((a, b) => (a._full - b._full) ||
@@ -712,10 +753,11 @@
     const full = c._full;
     const eff  = getEffectivePrice(c);
     const cap  = Number(c.capacity) || 0;
-    const pct  = cap ? Math.min(100, Math.round((Number(c.bookedCount) || 0) / cap * 100)) : 0;
+    const pct  = cap ? Math.min(100, Math.round((Number(c.bookedCount)||0) / cap * 100)) : 0;
     const few  = !full && c.remaining <= 2;
     const barColor = full ? "bg-slate-300" : few ? "bg-rose-500" : pct >= 60 ? "bg-amber-400" : "bg-emerald-500";
 
+    // 早鳥價與定價分開顯示
     const priceHtml = eff.price ? `
       <span class="inline-flex items-baseline gap-1 text-[11px] font-black px-2 py-0.5 rounded-md border ${full
         ? "text-slate-500 bg-slate-100 border-slate-200"
@@ -737,18 +779,23 @@
 
     return `
       <article class="card-in bg-white rounded-2xl p-3.5 border shadow-sm transition-all duration-150 flex flex-col gap-2.5 ${full
-        ? "border-slate-200 bg-slate-50/80" : "border-slate-200/90 hover:shadow-md hover:border-blue-400"}" style="animation-delay:${Math.min(i, 8) * 30}ms">
+        ? "border-slate-200 bg-slate-50/80"
+        : "border-slate-200/90 hover:shadow-md hover:border-blue-400"}" style="animation-delay:${Math.min(i,8)*30}ms">
+
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md border ${full
-            ? "text-slate-600 bg-slate-100 border-slate-200" : "text-blue-700 bg-blue-50 border-blue-100"}">
-            <i class="fa-regular fa-clock text-[10px]"></i>${formatFullDate(c.date)} ${esc(c.startTime)}${c.endTime ? "–" + esc(c.endTime) : ""}
+            ? "text-slate-600 bg-slate-100 border-slate-200"
+            : "text-blue-700 bg-blue-50 border-blue-100"}">
+            <i class="fa-regular fa-clock text-[10px]"></i>${formatFullDate(c.date)} ${esc(c.startTime)}${c.endTime ? "–"+esc(c.endTime) : ""}
           </span>
           ${priceHtml}${countdownHtml}
         </div>
+
         <div class="min-w-0">
           <h3 class="text-sm font-black leading-snug ${full ? "text-slate-500" : "text-slate-900"}">${esc(c.title)}</h3>
           ${c.notes ? `<p class="text-[11px] text-slate-500 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ""}
         </div>
+
         <div class="flex items-end justify-between gap-3 mt-auto">
           <div class="min-w-0 flex-1 space-y-1.5">
             <div class="flex items-center gap-2 text-[11px] text-slate-500 min-w-0">
@@ -759,7 +806,8 @@
               <span class="text-slate-300 shrink-0">|</span>
               <span class="shrink-0">${seatText}</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="報名進度">
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"
+              role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="報名進度">
               <div class="h-full ${barColor} rounded-full transition-all" style="width:${pct}%"></div>
             </div>
           </div>
@@ -787,49 +835,50 @@
     currentPayMethod = method;
     const base = "py-2.5 px-3 rounded-xl border-2 font-bold text-xs flex flex-col items-center justify-center gap-1 transition";
     $("payMethodBank").className = base + (method === "bank"
-      ? " border-blue-600 bg-blue-50/80 text-blue-900 shadow-sm" : " border-slate-200 bg-white hover:bg-blue-50 text-slate-700");
+      ? " border-blue-600 bg-blue-50/80 text-blue-900 shadow-sm"
+      : " border-slate-200 bg-white hover:bg-blue-50 text-slate-700");
     $("payMethodLine").className = base + (method === "line"
-      ? " border-emerald-500 bg-emerald-50/80 text-emerald-900 shadow-sm" : " border-slate-200 bg-white hover:bg-emerald-50 text-slate-700");
+      ? " border-emerald-500 bg-emerald-50/80 text-emerald-900 shadow-sm"
+      : " border-slate-200 bg-white hover:bg-emerald-50 text-slate-700");
     $("payMethodBank").innerHTML = `<i class="fa-solid fa-building-columns text-blue-600 text-sm"></i><span class="whitespace-nowrap">銀行匯款</span>`;
     $("payMethodLine").innerHTML = `<i class="fa-brands fa-line text-emerald-500 text-base"></i><span class="whitespace-nowrap">LINE 轉帳</span>`;
     $("payMethodBank").setAttribute("aria-pressed", method === "bank");
     $("payMethodLine").setAttribute("aria-pressed", method === "line");
     $("bankCodeContainer").classList.toggle("hidden", method !== "bank");
-    $("linePayContainer").classList.toggle("hidden", method !== "line");
+    $("linePayContainer").classList.toggle("hidden",  method !== "line");
     const code = $("studentPaymentCode");
     if (method === "line") code.value = "";
     else if (autoFocus) setTimeout(() => code.focus(), 50);
   }
 
   // ══════════════════════════════════════════════
-  // 報名 Modal
+  // 報名 Modal（移除授課教練）
   // ══════════════════════════════════════════════
   function openBookingModal(courseId) {
     const c = allCourses.find(x => String(x.id) === String(courseId));
     if (!c) return;
-    $("modalCourseId").value       = c.id;
+    $("modalCourseId").value          = c.id;
     $("modalCourseTitle").textContent = c.title;
-    $("modalDateTime").textContent   = `${formatFullDate(c.date)} ${c.startTime}${c.endTime ? " - " + c.endTime : ""}`;
-    $("modalInstructor").textContent = `授課教練：${c.instructor || "霖霖"}`;
-    $("modalLocation").textContent   = `地點：${c.location || "待定"}`;
-    $("modalSeats").textContent      = `剩餘名額：${c.remaining} / ${c.capacity}`;
+    $("modalDateTime").textContent    = `${formatFullDate(c.date)} ${c.startTime}${c.endTime ? " - " + c.endTime : ""}`;
+    $("modalLocation").textContent    = `地點：${c.location || "待定"}`;
+    $("modalSeats").textContent       = `剩餘名額：${c.remaining} / ${c.capacity}`;
     $("modalNotesRow").classList.toggle("hidden", !c.notes);
     $("modalNotes").textContent = c.notes || "";
 
     const eff = getEffectivePrice(c);
     $("modalPriceRow").classList.toggle("hidden", !eff.price);
     if (eff.price) {
-      $("modalPriceText").textContent = money(eff.price) + (eff.isEarlyBird ? "（早鳥價）" : "（定價）");
-      $("modalPriceText").className   = "font-black text-sm " + (eff.isEarlyBird ? "text-emerald-700" : "text-blue-700");
+      $("modalPriceText").textContent      = money(eff.price) + (eff.isEarlyBird ? "（早鳥價）" : "（定價）");
+      $("modalPriceText").className        = "font-black text-sm " + (eff.isEarlyBird ? "text-emerald-700" : "text-blue-700");
       $("modalPriceOriginal").textContent  = eff.original ? money(eff.original) : "";
       $("modalPriceCountdown").textContent = eff.showCountdown ? "⏳ " + formatCountdown(eff.remainMs) : "";
     }
 
-    $("studentName").value  = localStorage.getItem("saved_name")  || "";
-    $("studentPhone").value = localStorage.getItem("saved_phone") || "";
-    $("studentLine").value  = localStorage.getItem("saved_line")  || "";
-    $("studentEmail").value = localStorage.getItem("saved_email") || "";
-    $("studentNotes").value = "";
+    $("studentName").value        = localStorage.getItem("saved_name")  || "";
+    $("studentPhone").value       = localStorage.getItem("saved_phone") || "";
+    $("studentLine").value        = localStorage.getItem("saved_line")  || "";
+    $("studentEmail").value       = localStorage.getItem("saved_email") || "";
+    $("studentNotes").value       = "";
     $("studentPaymentCode").value = "";
     selectPayMethod("bank", false);
 
@@ -848,22 +897,30 @@
   async function handleBookingSubmit(e) {
     e.preventDefault();
     const courseId = $("modalCourseId").value;
-    const name   = $("studentName").value.trim();
-    const phone  = $("studentPhone").value.trim();
-    const lineId = $("studentLine").value.trim();
-    const email  = $("studentEmail").value.trim();
-    const notes  = $("studentNotes").value.trim();
-    const code   = $("studentPaymentCode").value.trim();
+    const name     = $("studentName").value.trim();
+    const phone    = $("studentPhone").value.trim();
+    const lineId   = $("studentLine").value.trim();
+    const email    = $("studentEmail").value.trim();
+    const notes    = $("studentNotes").value.trim();
+    const code     = $("studentPaymentCode").value.trim();
 
-    if (phone.replace(/\D/g, "").length < 8) { alert("請填寫正確的聯絡電話！"); $("studentPhone").focus(); return; }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert("Email 格式不正確，請重新確認或清空不填！"); $("studentEmail").focus(); return; }
+    if (phone.replace(/\D/g,"").length < 8) {
+      alert("請填寫正確的聯絡電話！"); $("studentPhone").focus(); return;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert("Email 格式不正確，請重新確認或清空不填！"); $("studentEmail").focus(); return;
+    }
 
     let paymentCode = "";
     if (currentPayMethod === "bank") {
-      if (!/^[0-9]{5}$/.test(code)) { alert("【銀行匯款】請填寫剛好 5 碼數字的帳號後五碼！"); $("studentPaymentCode").focus(); return; }
+      if (!/^[0-9]{5}$/.test(code)) {
+        alert("【銀行匯款】請填寫剛好 5 碼數字的帳號後五碼！"); $("studentPaymentCode").focus(); return;
+      }
       paymentCode = code;
     } else {
-      if (!lineId) { alert("【LINE 轉帳】請填寫您的 Line ID，以利我們與您對帳！"); $("studentLine").focus(); return; }
+      if (!lineId) {
+        alert("【LINE 轉帳】請填寫您的 Line ID，以利我們與您對帳！"); $("studentLine").focus(); return;
+      }
       paymentCode = "LINE轉帳";
     }
 
@@ -881,13 +938,17 @@
       let res;
       if (!API_URL) {
         await new Promise(r => setTimeout(r, 400));
-        res = { success: true, bookingId: "DEMO-" + Date.now().toString(36), courseTitle: course?.title,
-                dateTime: `${course?.date} ${course?.startTime}` };
+        res = {
+          success: true,
+          bookingId: "DEMO-" + Date.now().toString(36),
+          courseTitle: course?.title,
+          dateTime: `${course?.date} ${course?.startTime}`
+        };
       } else {
         const resp = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "bookCourse", courseId, name, phone, lineId, email, paymentCode, notes })
+          body: JSON.stringify({ action:"bookCourse", courseId, name, phone, lineId, email, paymentCode, notes })
         });
         if (!resp.ok) throw new Error("HTTP " + resp.status);
         res = await resp.json();
@@ -895,15 +956,30 @@
 
       if (res.success) {
         if (course) {
-          course.bookedCount = (Number(course.bookedCount) || 0) + 1;
-          course.remaining   = Math.max(0, (Number(course.remaining) || 0) - 1);
+          course.bookedCount = (Number(course.bookedCount)||0) + 1;
+          course.remaining   = Math.max(0, (Number(course.remaining)||0) - 1);
           course.isFull      = course.remaining <= 0;
           if (API_URL) localStorage.setItem(CACHE_COURSES, JSON.stringify(allCourses));
         }
         closeModal();
         showSuccessModal(res, course);
         renderUI();
-        lastLoadAt = 0; // 下次切回頁面時立即更新最新名額
+        lastLoadAt = 0;
+        if (API_URL) {
+          setTimeout(async () => {
+            try {
+              const resp2 = await fetch(`${API_URL}?action=getCourses`);
+              const json2 = await resp2.json();
+              if (json2.success && Array.isArray(json2.courses)) {
+                allCourses = normalizeCoursePrices(json2.courses);
+                settings   = json2.settings || settings;
+                localStorage.setItem(CACHE_COURSES, JSON.stringify(allCourses));
+                lastLoadAt = Date.now();
+                renderUI();
+              }
+            } catch (_) {}
+          }, 3000);
+        }
       } else {
         alert(res.message || "預約失敗，請重試！");
         if (/額滿|停止|結束|不存在/.test(res.message || "")) loadCourses(true);
@@ -923,18 +999,22 @@
   function showSuccessModal(res, course) {
     $("succBookingId").textContent   = res.bookingId || "";
     $("succCourseTitle").textContent = res.courseTitle || course?.title || "";
-    $("succDateTime").textContent    = course ? `${formatFullDate(course.date)} ${course.startTime}` : (res.dateTime || "");
-    // 以後端計算的金額為準（後端判斷早鳥時間較準確）；舊版後端沒回傳時才用前台計算
+    $("succDateTime").textContent = course
+      ? `${formatFullDate(course.date)} ${course.startTime}${course.endTime ? " - " + course.endTime : ""}`
+      : (res.dateTime || "");
+    // 以後端計算金額為準
     const eff = res.price ? { price: res.price } : (course ? getEffectivePrice(course) : { price: 0 });
     $("succPriceRow").classList.toggle("hidden", !eff.price);
-    $("succPrice").textContent = eff.price ? money(eff.price) + (res.priceLabel ? `（${res.priceLabel}）` : "") : "";
+    $("succPrice").textContent = eff.price
+      ? money(eff.price) + (res.priceLabel ? `（${res.priceLabel}）` : "")
+      : "";
     $("succBankBox").classList.toggle("hidden", currentPayMethod !== "bank");
     $("successModal").classList.remove("hidden");
   }
   function closeSuccessModal() { $("successModal").classList.add("hidden"); }
 
   // ══════════════════════════════════════════════
-  // 學員查詢預約（電話 + 姓名）
+  // 查詢預約（直接從預約記錄讀取上課日期/地點）
   // ══════════════════════════════════════════════
   function openMyBookingsModal() {
     $("myBookingsModal").classList.remove("hidden");
@@ -946,13 +1026,14 @@
   function closeMyBookingsModal() { $("myBookingsModal").classList.add("hidden"); }
 
   const STATUS_UI = {
-    "報名成功": ["bg-emerald-50 text-emerald-700 border-emerald-200", "fa-circle-check", "報名成功", "款項已確認，名額已保留，上課當天抵達教室簽到即可！"],
-    "已收訖":   ["bg-emerald-50 text-emerald-700 border-emerald-200", "fa-circle-check", "報名成功", "款項已確認，名額已保留，上課當天抵達教室簽到即可！"],
-    "已簽到":   ["bg-blue-50 text-blue-700 border-blue-200", "fa-check-double", "已簽到出席", "您已於課堂現場完成報到簽到！"],
-    "已完成":   ["bg-blue-50 text-blue-700 border-blue-200", "fa-flag-checkered", "課程已完成", "感謝您的參與，期待下次再見！"],
-    "已取消":   ["bg-slate-100 text-slate-500 border-slate-200", "fa-ban", "已取消", "此預約已取消或名額已釋出。"]
+    "報名成功": ["bg-emerald-50 text-emerald-700 border-emerald-200", "fa-circle-check",    "報名成功",   "款項已確認，名額已保留，上課當天抵達教室簽到即可！"],
+    "已收訖":   ["bg-emerald-50 text-emerald-700 border-emerald-200", "fa-circle-check",    "報名成功",   "款項已確認，名額已保留，上課當天抵達教室簽到即可！"],
+    "已簽到":   ["bg-blue-50 text-blue-700 border-blue-200",          "fa-check-double",    "已簽到出席", "您已於課堂現場完成報到簽到！"],
+    "已完成":   ["bg-blue-50 text-blue-700 border-blue-200",          "fa-flag-checkered",  "課程已完成", "感謝您的參與，期待下次再見！"],
+    "已取消":   ["bg-slate-100 text-slate-500 border-slate-200",      "fa-ban",             "已取消",     "此預約已取消或名額已釋出。"]
   };
-  const STATUS_PENDING = ["bg-amber-50 text-amber-700 border-amber-200", "fa-hourglass-half", "待確認入帳", "已收到您的預約，正在核對款項，確認無誤後將更新為報名成功！"];
+  const STATUS_PENDING = ["bg-amber-50 text-amber-700 border-amber-200", "fa-hourglass-half", "待確認入帳",
+    "已收到您的預約，正在核對款項，確認無誤後將更新為報名成功！"];
 
   async function queryMyBookings() {
     const phone = $("queryPhoneInput").value.trim();
@@ -982,7 +1063,9 @@
     if (!bookings.length) {
       list.innerHTML = `
         <div class="text-center py-8 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
-          <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-receipt"></i></div>
+          <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-lg">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
           <p class="text-xs font-bold text-slate-700">查無預約紀錄</p>
           <p class="text-[11px] text-slate-400">請確認手機號碼與姓名是否與報名時一致</p>
         </div>`;
@@ -992,21 +1075,36 @@
     list.innerHTML = bookings.map(b => {
       const st = (b["簽到狀態"] || "待確認").trim();
       const [badge, icon, title, desc] = STATUS_UI[st] || STATUS_PENDING;
-      const when = b["上課日期"] ? `${formatFullDate(b["上課日期"])} ${b["上課時間"] || ""}` : "";
+
+      // 直接從預約記錄讀取上課日期和地點
+      const classDate     = b["上課日期"] || "";
+      const classLocation = b["上課地點"] || "";
+      const classTime     = b["上課時間"] || "";
+      const whenStr       = classDate ? formatFullDate(classDate) + (classTime ? " " + classTime : "") : "";
+      const price         = b["繳費金額"] ? money(b["繳費金額"]) : "";
+
       return `
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5 ${st === "已取消" ? "opacity-60" : ""}">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5 ${st==="已取消"?"opacity-60":""}">
           <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badge}"><i class="fa-solid ${icon}"></i>${title}</span>
-              <h4 class="font-bold text-slate-900 text-sm mt-1.5 leading-snug">${esc(b["課程名稱"] || "-")}</h4>
-              ${when ? `<p class="text-[11px] text-blue-700 font-semibold mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${esc(when)}${b["地點"] ? "　" + esc(b["地點"]) : ""}</p>` : ""}
+            <div class="min-w-0 flex-1">
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badge}">
+                <i class="fa-solid ${icon}"></i>${title}
+              </span>
+              <h4 class="font-bold text-slate-900 text-sm mt-1.5 leading-snug">${esc(b["課程名稱"]||"-")}</h4>
+              ${whenStr ? `<p class="text-[11px] text-blue-700 font-semibold mt-0.5">
+                <i class="fa-regular fa-clock mr-1"></i>${esc(whenStr)}
+              </p>` : ""}
+              ${classLocation ? `<p class="text-[11px] text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>${esc(classLocation)}
+              </p>` : ""}
             </div>
-            <span class="text-xs font-bold text-slate-700 shrink-0">${esc(b["學員姓名"])}</span>
+            <span class="text-xs font-bold text-slate-700 shrink-0">${esc(b["學員姓名"]||"")}</span>
           </div>
           <div class="bg-slate-50 rounded-xl p-2.5 text-xs text-slate-600 space-y-1 border border-slate-100">
             <div class="flex items-center justify-between text-[11px] text-slate-500 gap-2 flex-wrap">
-              <span>報名：${esc(b["報名時間"] || "-")}</span>
-              <span>付款：<b>${esc(b["匯款五碼"] || "未備註")}</b></span>
+              <span>報名：${esc(b["報名時間"]||"-")}</span>
+              <span>付款：<b>${esc(b["匯款五碼"]||"未備註")}</b></span>
+              ${price ? `<span class="text-emerald-700 font-bold">繳費：${esc(price)}</span>` : ""}
             </div>
             <p class="text-[11px] leading-relaxed pt-1 text-slate-600 border-t border-slate-200/60">${desc}</p>
           </div>
