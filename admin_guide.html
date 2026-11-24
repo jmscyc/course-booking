@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>課程預約系統 — 管理後台使用手冊 v3.6.8</title>
+  <title>課程預約系統 — 管理後台使用手冊</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -12,6 +12,7 @@
       --amber: #d97706; --amber-light: #fffbeb; --amber-mid: #fde68a;
       --purple: #7c3aed; --purple-light: #f5f3ff; --purple-mid: #ddd6fe;
       --rose: #e11d48; --rose-light: #fff1f2; --rose-mid: #fecdd3;
+      --sky: #0ea5e9; --sky-light: #f0f9ff; --sky-mid: #bae6fd;
       --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
       --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
       --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b;
@@ -31,11 +32,10 @@
 
     /* ── Sidebar ── */
     .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0; width: 260px;
+      position: fixed; top: 0; left: 0; bottom: 0; width: 268px;
       background: var(--slate-900); color: #fff;
       display: flex; flex-direction: column;
-      z-index: 100; overflow-y: auto;
-      transition: transform .3s;
+      z-index: 100; overflow-y: auto; transition: transform .3s;
     }
     .sidebar-logo {
       padding: 24px 20px 16px;
@@ -48,7 +48,7 @@
     }
     .sidebar-logo h2 { font-size: 14px; font-weight: 800; line-height: 1.4; }
     .sidebar-logo p { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
-    .nav-section { padding: 16px 12px 4px; }
+    .nav-section { padding: 14px 12px 4px; }
     .nav-section-label {
       font-size: 10px; font-weight: 700; color: var(--slate-500);
       letter-spacing: .08em; padding: 0 8px; margin-bottom: 4px;
@@ -59,14 +59,17 @@
       padding: 9px 12px; border-radius: var(--radius-xs);
       font-size: 13px; font-weight: 600; color: var(--slate-300);
       cursor: pointer; transition: background .15s, color .15s;
-      text-decoration: none; border: none; background: none; width: 100%;
-      text-align: left;
+      text-decoration: none; border: none; background: none;
+      width: 100%; text-align: left;
     }
-    .nav-item:hover, .nav-item.active {
-      background: rgba(255,255,255,.08); color: #fff;
-    }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,.08); color: #fff; }
     .nav-item.active { background: var(--blue); color: #fff; }
     .nav-item i { width: 16px; text-align: center; font-size: 13px; }
+    .nav-new-badge {
+      margin-left: auto; font-size: 9px; font-weight: 800;
+      background: #f59e0b; color: #fff;
+      padding: 1px 6px; border-radius: 20px; white-space: nowrap;
+    }
     .nav-step-num {
       margin-left: auto; min-width: 20px; height: 20px;
       display: flex; align-items: center; justify-content: center;
@@ -93,14 +96,14 @@
     }
 
     /* ── Main ── */
-    .main { margin-left: 260px; padding: 40px 48px; max-width: 960px; }
+    .main { margin-left: 268px; padding: 40px 48px; max-width: 980px; }
 
     /* ── Sections ── */
     .section { display: none; animation: fadeIn .25s ease; }
     .section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-    /* ── Typography ── */
+    /* ── Hero ── */
     .page-hero {
       background: linear-gradient(135deg, var(--slate-900) 0%, #1e3a5f 100%);
       color: #fff; border-radius: var(--radius); padding: 40px 40px 36px;
@@ -119,7 +122,14 @@
     }
     .page-hero h1 { font-size: 26px; font-weight: 900; line-height: 1.3; }
     .page-hero p { font-size: 14px; color: rgba(255,255,255,.7); margin-top: 8px; max-width: 540px; }
+    .new-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 800; color: #fff;
+      background: #f59e0b; padding: 2px 8px; border-radius: 20px;
+      vertical-align: middle; margin-left: 6px;
+    }
 
+    /* ── Typography ── */
     h2.sec-title {
       font-size: 19px; font-weight: 900; color: var(--slate-900);
       display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
@@ -131,7 +141,7 @@
     }
     h3.sub-title {
       font-size: 15px; font-weight: 800; color: var(--slate-800);
-      margin: 28px 0 12px; display: flex; align-items: center; gap-8px;
+      margin: 24px 0 12px; display: flex; align-items: center;
     }
     h3.sub-title i { margin-right: 8px; }
 
@@ -141,16 +151,28 @@
       border: 1.5px solid var(--slate-200); padding: 24px;
       box-shadow: var(--shadow); margin-bottom: 20px;
     }
-    .card-sm {
-      background: #fff; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--slate-200); padding: 16px 20px;
-      box-shadow: var(--shadow); margin-bottom: 12px;
+    .card-blue   { background: var(--blue-light);   border-color: var(--blue-mid);   }
+    .card-green  { background: var(--green-light);  border-color: var(--green-mid);  }
+    .card-amber  { background: var(--amber-light);  border-color: var(--amber-mid);  }
+    .card-purple { background: var(--purple-light); border-color: var(--purple-mid); }
+    .card-rose   { background: var(--rose-light);   border-color: var(--rose-mid);   }
+    .card-sky    { background: var(--sky-light);    border-color: var(--sky-mid);    }
+    .card-new {
+      background: #fffbeb; border: 2px solid #f59e0b;
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+      box-shadow: var(--shadow);
     }
-    .card-blue  { background: var(--blue-light);   border-color: var(--blue-mid);   }
-    .card-green { background: var(--green-light);  border-color: var(--green-mid);  }
-    .card-amber { background: var(--amber-light);  border-color: var(--amber-mid);  }
-    .card-purple{ background: var(--purple-light); border-color: var(--purple-mid); }
-    .card-rose  { background: var(--rose-light);   border-color: var(--rose-mid);   }
+    .card-new-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .card-new-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #f59e0b; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .card-new-title { font-size: 14px; font-weight: 900; color: #78350f; }
+    .card-new-sub   { font-size: 11px; color: #92400e; margin-top: 2px; }
 
     /* ── Feature Grid ── */
     .feature-grid {
@@ -162,6 +184,7 @@
       border: 1.5px solid var(--slate-200);
       padding: 20px 18px; text-align: center;
       box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
+      position: relative;
     }
     .feature-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
     .feature-item .fi-icon {
@@ -171,6 +194,11 @@
     }
     .feature-item h4 { font-size: 13px; font-weight: 800; color: var(--slate-800); }
     .feature-item p  { font-size: 11px; color: var(--slate-500); margin-top: 4px; line-height: 1.5; }
+    .feature-item .fi-new {
+      position: absolute; top: 10px; right: 10px;
+      font-size: 9px; font-weight: 800; background: #f59e0b;
+      color: #fff; padding: 2px 6px; border-radius: 20px;
+    }
 
     /* ── Steps ── */
     .steps-row {
@@ -194,7 +222,6 @@
       background: var(--blue); color: #fff;
       font-size: 14px; font-weight: 900;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
     }
     .step-box h4 { font-size: 12px; font-weight: 800; color: var(--slate-800); }
     .step-box p  { font-size: 11px; color: var(--slate-500); }
@@ -225,16 +252,16 @@
     .badge-purple { display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--purple-light);color:var(--purple);border:1px solid var(--purple-mid); }
     .badge-rose   { display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--rose-light);color:var(--rose);border:1px solid var(--rose-mid); }
     .badge-slate  { display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--slate-100);color:var(--slate-600);border:1px solid var(--slate-200); }
+    .badge-new    { display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#fef3c7;color:#92400e;border:1px solid #fde68a; }
 
     /* ── Mock UI ── */
     .mockup {
       background: var(--slate-100); border-radius: var(--radius);
-      border: 1.5px solid var(--slate-200); padding: 16px;
-      margin: 16px 0;
+      border: 1.5px solid var(--slate-200); padding: 16px; margin: 16px 0;
     }
     .mockup-bar {
       background: var(--slate-900); border-radius: 10px 10px 0 0;
-      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; display: flex; align-items: center; gap: 8px;
       margin: -16px -16px 16px; color: #fff; font-size: 12px;
     }
     .mockup-bar .dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -248,6 +275,7 @@
     .mock-btn-amber  { background: var(--amber);  color: #fff; }
     .mock-btn-slate  { background: var(--slate-200); color: var(--slate-700); }
     .mock-btn-rose   { background: var(--rose);   color: #fff; }
+    .mock-btn-purple { background: var(--purple); color: #fff; }
     .mock-field {
       background: #fff; border: 1.5px solid var(--slate-200);
       border-radius: 8px; padding: 7px 12px;
@@ -260,6 +288,21 @@
     }
     .mock-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .mock-row > * { flex: 1; }
+    .mock-select {
+      background: #fff; border: 1.5px solid var(--blue-mid);
+      border-radius: 8px; padding: 7px 12px;
+      font-size: 12px; font-weight: 700; color: var(--blue);
+      display: block; width: 100%; margin-bottom: 8px;
+    }
+    .mock-template-row {
+      background: #fff; border: 1.5px solid var(--slate-200);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .mock-template-label {
+      font-size: 10px; font-weight: 800; color: var(--blue);
+      background: var(--blue-light); padding: 2px 8px;
+      border-radius: 20px; display: inline-block; margin-bottom: 8px;
+    }
 
     /* ── Flow ── */
     .flow {
@@ -272,9 +315,7 @@
       display: flex; align-items: flex-start; gap: 16px;
       padding: 18px 20px; position: relative;
     }
-    .flow-item + .flow-item {
-      border-top: 1px solid var(--slate-100);
-    }
+    .flow-item + .flow-item { border-top: 1px solid var(--slate-100); }
     .flow-icon {
       width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -282,11 +323,6 @@
     }
     .flow-content h4 { font-size: 13px; font-weight: 800; color: var(--slate-900); }
     .flow-content p  { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
-    .flow-arrow {
-      position: absolute; left: 36px; bottom: -10px;
-      width: 36px; display: flex; justify-content: center;
-      color: var(--slate-300); font-size: 14px; z-index: 1;
-    }
 
     /* ── Alert ── */
     .alert {
@@ -307,10 +343,7 @@
       background: var(--slate-50); border-radius: var(--radius-sm);
       border: 1.5px solid var(--slate-200); margin-bottom: 16px;
     }
-    .status-node {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 4px; text-align: center;
-    }
+    .status-node { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
     .status-node .sn-box {
       padding: 6px 12px; border-radius: 20px;
       font-size: 11px; font-weight: 800; white-space: nowrap;
@@ -320,10 +353,7 @@
 
     /* ── Stat Cards ── */
     .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-    .stat-card {
-      border-radius: var(--radius-sm); padding: 18px;
-      display: flex; flex-direction: column; gap: 6px;
-    }
+    .stat-card { border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 6px; }
     .stat-card .sc-num { font-size: 28px; font-weight: 900; }
     .stat-card .sc-label { font-size: 11px; font-weight: 700; }
     .stat-card .sc-desc { font-size: 11px; opacity: .7; }
@@ -333,17 +363,12 @@
       background: #fff; border-radius: var(--radius-sm);
       border-left: 4px solid var(--blue);
       padding: 14px 18px; font-size: 13px;
-      color: var(--slate-700); box-shadow: var(--shadow);
-      margin-bottom: 16px;
+      color: var(--slate-700); box-shadow: var(--shadow); margin-bottom: 16px;
     }
-    .tip-box strong { color: var(--blue); }
 
     /* ── Checklist ── */
     .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .checklist li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 13px; color: var(--slate-700);
-    }
+    .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--slate-700); }
     .checklist li i { color: var(--green); margin-top: 2px; font-size: 14px; flex-shrink: 0; }
 
     /* ── Tabs ── */
@@ -361,7 +386,7 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ── Notice Warn ── */
+    /* ── Warn List ── */
     .warn-list { display: flex; flex-direction: column; gap: 10px; }
     .warn-item {
       display: flex; align-items: flex-start; gap: 12px;
@@ -370,6 +395,15 @@
       padding: 14px 16px; font-size: 13px;
     }
     .warn-item i { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+    /* ── Diff Badge ── */
+    .diff-box {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 800;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .diff-new { background: #fef3c7; color: #78350f; border: 1px solid #fde68a; }
+    .diff-updated { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
 
     /* ── Responsive ── */
     @media (max-width: 768px) {
@@ -390,24 +424,23 @@
 </head>
 <body>
 
-<!-- Hamburger -->
 <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
   <i class="fa-solid fa-bars"></i>
 </button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-<!-- Sidebar -->
+<!-- ══ Sidebar ══ -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="badge"><i class="fa-solid fa-book-open mr-1"></i>使用手冊</div>
     <h2>課程預約系統<br>管理後台</h2>
-    <p>版本 v3.6.8</p>
+    <p>最新版本（含新功能說明）</p>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-label">開始使用</div>
     <button class="nav-item active" onclick="showSection('intro')">
-      <i class="fa-solid fa-house"></i> 系統介紹
+      <i class="fa-solid fa-house"></i> 系統介紹與新功能
     </button>
     <button class="nav-item" onclick="showSection('login')">
       <i class="fa-solid fa-lock"></i> 登入後台
@@ -419,6 +452,10 @@
     <button class="nav-item" onclick="showSection('setup')">
       <i class="fa-solid fa-gear"></i> 系統設定
       <span class="nav-step-num">1</span>
+    </button>
+    <button class="nav-item" onclick="showSection('template')">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> 開課範本設定
+      <span class="nav-new-badge">NEW</span>
     </button>
     <button class="nav-item" onclick="showSection('course')">
       <i class="fa-solid fa-calendar-plus"></i> 開立課程
@@ -452,15 +489,46 @@
   </div>
 </nav>
 
-<!-- Main -->
+<!-- ══ Main ══ -->
 <main class="main">
 
-  <!-- ══ 介紹 ══ -->
+  <!-- ══════════════════════ 系統介紹 ══════════════════════ -->
   <div class="section active" id="sec-intro">
     <div class="page-hero">
-      <div class="tag"><i class="fa-solid fa-wand-magic-sparkles"></i> 歡迎使用</div>
+      <div class="tag"><i class="fa-solid fa-wand-magic-sparkles"></i> 歡迎使用 · 最新版本</div>
       <h1>課程預約系統<br>管理後台</h1>
-      <p>專為開課老師與工作室設計，從報名、收款到名冊管理，全部整合在一個畫面。</p>
+      <p>專為開課老師與工作室設計，本版本新增「開課範本」功能，開課速度更快！</p>
+    </div>
+
+    <!-- 新功能亮點 -->
+    <div class="card-new" style="margin-bottom:24px">
+      <div class="card-new-header">
+        <div class="card-new-icon"><i class="fa-solid fa-star"></i></div>
+        <div>
+          <div class="card-new-title">✨ 本版本新增功能</div>
+          <div class="card-new-sub">與上一版本相比的重要更新</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        <div style="background:#fff;border-radius:10px;border:1.5px solid #fde68a;padding:14px">
+          <div style="font-size:12px;font-weight:800;color:#78350f;margin-bottom:6px">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i>開課範本快速套用
+          </div>
+          <div style="font-size:12px;color:#92400e">設定常用課程範本（名稱＋價格＋說明），開課時一鍵套用，省去重複輸入的時間。</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;border:1.5px solid #fde68a;padding:14px">
+          <div style="font-size:12px;font-weight:800;color:#78350f;margin-bottom:6px">
+            <i class="fa-solid fa-list text-amber-500 mr-1"></i>範本管理介面
+          </div>
+          <div style="font-size:12px;color:#92400e">在「系統設定」中可新增、編輯、刪除多組課程範本，所有範本儲存於裝置本機。</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;border:1.5px solid #fde68a;padding:14px">
+          <div style="font-size:12px;font-weight:800;color:#78350f;margin-bottom:6px">
+            <i class="fa-solid fa-rotate text-amber-500 mr-1"></i>版本更新機制改善
+          </div>
+          <div style="font-size:12px;color:#92400e">版本偵測使用後台專屬 Key，不再與學員端互相干擾，避免誤觸發更新提示。</div>
+        </div>
+      </div>
     </div>
 
     <h2 class="sec-title">
@@ -473,6 +541,12 @@
         <div class="fi-icon" style="background:var(--blue)"><i class="fa-solid fa-calendar-days"></i></div>
         <h4>線上開課</h4>
         <p>設定課程時間、地點、價格，學員直接在網頁報名</p>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:#f59e0b"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h4>開課範本 <span class="new-tag">NEW</span></h4>
+        <p>預設常用課程資訊，開課只需選範本、填時間即可</p>
+        <div class="fi-new">NEW</div>
       </div>
       <div class="feature-item">
         <div class="fi-icon" style="background:var(--green)"><i class="fa-solid fa-money-bill-wave"></i></div>
@@ -488,11 +562,6 @@
         <div class="fi-icon" style="background:var(--amber)"><i class="fa-solid fa-chart-pie"></i></div>
         <h4>歷史統計</h4>
         <p>自動統計回流學員、累積人次、忠實學員排行</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon" style="background:#0ea5e9)"><i class="fa-brands fa-telegram" style="color:#fff"></i></div>
-        <h4>即時通知</h4>
-        <p>有人報名時 Telegram 或 Email 馬上通知你</p>
       </div>
       <div class="feature-item">
         <div class="fi-icon" style="background:#16a34a"><i class="fa-solid fa-table"></i></div>
@@ -516,13 +585,13 @@
       <div class="step-box">
         <div class="step-num">2</div>
         <h4>系統設定</h4>
-        <p>填入名稱、帳號、通知</p>
+        <p>填入名稱、帳號、範本、通知</p>
       </div>
       <div class="step-arrow"><i class="fa-solid fa-chevron-right"></i></div>
       <div class="step-box">
         <div class="step-num">3</div>
         <h4>開立課程</h4>
-        <p>填寫課程資訊並發布</p>
+        <p>套用範本快速發布</p>
       </div>
       <div class="step-arrow"><i class="fa-solid fa-chevron-right"></i></div>
       <div class="step-box">
@@ -534,19 +603,18 @@
 
     <div class="alert alert-blue">
       <i class="fa-solid fa-circle-info"></i>
-      <div>建議第一次使用時，先花 <strong>5 分鐘完成「系統設定」</strong>，再開立課程，這樣學員報名時就能看到正確的收款資訊和課程說明。</div>
+      <div>建議第一次使用時，先花 <strong>5 分鐘完成「系統設定」</strong>，順便設定「開課範本」，之後每次開課只需 1 分鐘！</div>
     </div>
   </div>
 
-  <!-- ══ 登入 ══ -->
+  <!-- ══════════════════════ 登入 ══════════════════════ -->
   <div class="section" id="sec-login">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-lock"></i> 安全驗證</div>
       <h1>登入後台</h1>
-      <p>進入管理後台前，需要輸入管理密碼進行身份驗證。</p>
+      <p>進入管理後台前，需要輸入管理密碼進行身份驗證。密碼直接對照 Google 試算表驗證，安全可靠。</p>
     </div>
 
-    <!-- Mock 登入畫面 -->
     <div class="mockup">
       <div class="mockup-bar">
         <div class="dot" style="background:#ff5f56"></div>
@@ -570,21 +638,20 @@
       </div>
     </div>
 
-    <h2 class="sec-title" style="margin-top:28px">
-      <span class="icon" style="background:var(--slate-700)"><i class="fa-solid fa-circle-question"></i></span>
-      登入操作說明
-    </h2>
-
     <table class="info-table card">
       <thead><tr><th>操作</th><th>說明</th></tr></thead>
       <tbody>
         <tr>
           <td><strong>輸入密碼後按 Enter</strong></td>
-          <td>或點「解鎖進入後台」按鈕，系統會向 Google 試算表驗證密碼</td>
+          <td>或點「解鎖進入後台」按鈕，系統向 Google 試算表驗證密碼</td>
         </tr>
         <tr>
           <td><strong>密碼錯誤</strong></td>
           <td>畫面出現紅色提示，輸入框清空，可重新輸入</td>
+        </tr>
+        <tr>
+          <td><strong>重新整理不需再登入</strong></td>
+          <td>登入狀態保存於 Session，關閉分頁後才需重新登入</td>
         </tr>
         <tr>
           <td><strong>返回學員端</strong></td>
@@ -595,16 +662,16 @@
 
     <div class="alert alert-amber">
       <i class="fa-solid fa-triangle-exclamation"></i>
-      <div><strong>預設密碼請洽系統建置人員。</strong>建議登入後立即到「系統設定」修改為自己的密碼，避免他人存取。</div>
+      <div><strong>預設密碼請洽系統建置人員。</strong>建議登入後立即到「系統設定」修改為自己的密碼。</div>
     </div>
   </div>
 
-  <!-- ══ 系統設定 ══ -->
+  <!-- ══════════════════════ 系統設定 ══════════════════════ -->
   <div class="section" id="sec-setup">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-gear"></i> 首次必做 · 步驟 1</div>
       <h1>系統設定</h1>
-      <p>登入後請先完成這些設定，學員報名時才能看到正確的資訊。</p>
+      <p>登入後請先完成這些設定，包含新版「開課範本」管理，讓日後開課更順手。</p>
     </div>
 
     <div class="alert alert-blue">
@@ -612,15 +679,9 @@
       <div>設定完成後，記得點畫面底部的 <strong>「儲存所有設定」</strong> 按鈕，所有設定才會生效。</div>
     </div>
 
-    <!-- 設定清單 -->
-    <h2 class="sec-title">
-      <span class="icon" style="background:var(--blue)"><i class="fa-solid fa-list-check"></i></span>
-      設定項目一覽
-    </h2>
-
     <!-- 2-1 基本資訊 -->
     <div class="card card-blue" style="margin-bottom:16px">
-      <h3 class="sub-title"><i class="fa-solid fa-pen-to-square" style="color:var(--blue)"></i> 2-1 基本資訊</h3>
+      <h3 class="sub-title"><i class="fa-solid fa-pen-to-square" style="color:var(--blue)"></i> 基本資訊</h3>
       <table class="info-table">
         <thead><tr><th>設定項目</th><th>說明</th><th>範例</th></tr></thead>
         <tbody>
@@ -650,108 +711,73 @@
 
     <!-- 2-2 收款帳號 -->
     <div class="card card-green" style="margin-bottom:16px">
-      <h3 class="sub-title"><i class="fa-solid fa-building-columns" style="color:var(--green)"></i> 2-2 收款帳號設定</h3>
+      <h3 class="sub-title"><i class="fa-solid fa-building-columns" style="color:var(--green)"></i> 收款帳號設定</h3>
       <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">學員報名後需要匯款，這裡設定的資訊會自動顯示在報名完成頁面。</p>
-
       <div class="mockup">
         <div class="mockup-bar">
-          <div class="dot" style="background:#ff5f56"></div>
-          <div class="dot" style="background:#ffbd2e"></div>
-          <div class="dot" style="background:#27c93f"></div>
-          <span style="opacity:.6;font-size:12px">收款帳號設定區塊</span>
+          <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
+          <span style="opacity:.6;font-size:12px">收款帳號設定</span>
         </div>
         <div class="mock-row">
-          <div>
-            <span class="mock-field-label">銀行代碼與名稱</span>
-            <div class="mock-field">822 中國信託</div>
-          </div>
-          <div>
-            <span class="mock-field-label">收款帳號</span>
-            <div class="mock-field" style="font-family:monospace;font-weight:700">1234-5678-9012</div>
-          </div>
-          <div>
-            <span class="mock-field-label">戶名</span>
-            <div class="mock-field">霖霖身心靈工坊</div>
-          </div>
+          <div><span class="mock-field-label">銀行代碼與名稱</span><div class="mock-field">822 中國信託</div></div>
+          <div><span class="mock-field-label">收款帳號</span><div class="mock-field" style="font-family:monospace;font-weight:700">1234-5678-9012</div></div>
+          <div><span class="mock-field-label">戶名</span><div class="mock-field">霖霖身心靈工坊</div></div>
         </div>
       </div>
     </div>
 
     <!-- 2-3 密碼 -->
     <div class="card" style="margin-bottom:16px">
-      <h3 class="sub-title"><i class="fa-solid fa-key" style="color:var(--amber)"></i> 2-3 修改管理密碼</h3>
+      <h3 class="sub-title"><i class="fa-solid fa-key" style="color:var(--amber)"></i> 修改管理密碼</h3>
       <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">在「後台管理登入密碼」區塊輸入新密碼後儲存即可。</p>
       <div class="alert alert-amber" style="margin-bottom:0">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <div><strong>留空代表不變更密碼</strong>，只有輸入新密碼才會更新。建議設定 8 字元以上，包含英數字。</div>
+        <div><strong>留空代表不變更密碼</strong>，只有輸入新密碼才會更新。建議設定 8 字元以上含英數字。</div>
       </div>
     </div>
 
     <!-- 2-4 Google 試算表 -->
     <div class="card card-green" style="margin-bottom:16px">
-      <h3 class="sub-title"><i class="fa-solid fa-table" style="color:var(--green)"></i> 2-4 確認 Google 試算表連線</h3>
-      <ul class="checklist" style="margin-bottom:14px">
+      <h3 class="sub-title"><i class="fa-solid fa-table" style="color:var(--green)"></i> 確認 Google 試算表連線</h3>
+      <ul class="checklist">
         <li><i class="fa-solid fa-circle-check"></i>在「Google 試算表雲端資料庫」區塊，點「<strong>測試連線</strong>」按鈕</li>
         <li><i class="fa-solid fa-circle-check"></i>看到 <span class="badge-green"><i class="fa-solid fa-circle-check"></i>連線測試成功</span> 代表正常</li>
         <li><i class="fa-solid fa-circle-check"></i>區塊標題旁會顯示綠色「已串接 Google 試算表」標籤</li>
       </ul>
-      <div class="alert alert-rose" style="margin-bottom:0">
-        <i class="fa-solid fa-circle-exclamation"></i>
-        <div>若顯示連線失敗，請確認網路是否正常，或聯繫系統建置人員確認 GAS 設定。</div>
-      </div>
     </div>
 
     <!-- 2-5 通知設定 -->
     <div class="card card-blue" style="margin-bottom:16px">
-      <h3 class="sub-title"><i class="fa-solid fa-bell" style="color:var(--blue)"></i> 2-5 推播通知設定（強烈建議開啟）</h3>
-      <p style="font-size:13px;color:var(--slate-600);margin-bottom:16px">有人報名時，系統可以主動通知你，不用一直盯著畫面。</p>
-
+      <h3 class="sub-title"><i class="fa-solid fa-bell" style="color:var(--blue)"></i> 推播通知設定</h3>
       <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab(this,'notify-tab')">📱 Telegram 通知</button>
-        <button class="tab-btn" onclick="switchTab(this,'email-tab')">📧 Email 通知</button>
+        <button class="tab-btn active" onclick="switchTab(this,'notify-tg')">📱 Telegram</button>
+        <button class="tab-btn" onclick="switchTab(this,'notify-email')">📧 Email</button>
       </div>
-
-      <div class="tab-panel active" id="notify-tab">
+      <div class="tab-panel active" id="notify-tg">
         <table class="info-table">
           <thead><tr><th>步驟</th><th>說明</th></tr></thead>
           <tbody>
-            <tr>
-              <td><span class="badge-blue">步驟 1</span></td>
-              <td>在 Telegram 搜尋 <code style="background:var(--slate-100);padding:2px 6px;border-radius:4px">@BotFather</code>，建立一個 Bot，取得 <strong>Bot Token</strong></td>
-            </tr>
-            <tr>
-              <td><span class="badge-blue">步驟 2</span></td>
-              <td>取得你要接收通知的 <strong>Chat ID</strong>（個人或群組皆可）</td>
-            </tr>
-            <tr>
-              <td><span class="badge-blue">步驟 3</span></td>
-              <td>填入 Bot Token 與 Chat ID 後，點「<strong>測試 Telegram 推播</strong>」確認是否收到訊息</td>
-            </tr>
+            <tr><td><span class="badge-blue">1</span></td><td>在 Telegram 搜尋 <code style="background:var(--slate-100);padding:2px 6px;border-radius:4px">@BotFather</code>，建立 Bot，取得 <strong>Bot Token</strong></td></tr>
+            <tr><td><span class="badge-blue">2</span></td><td>取得你要接收通知的 <strong>Chat ID</strong>（個人或群組皆可）</td></tr>
+            <tr><td><span class="badge-blue">3</span></td><td>填入後點「<strong>測試 Telegram 推播</strong>」確認收到訊息</td></tr>
           </tbody>
         </table>
-        <div class="alert alert-green" style="margin-top:12px;margin-bottom:0">
-          <i class="fa-solid fa-circle-check"></i>
-          <div>Telegram 通知免費使用，訊息秒到，是最推薦的即時通知方式。</div>
-        </div>
       </div>
-
-      <div class="tab-panel" id="email-tab">
+      <div class="tab-panel" id="notify-email">
         <table class="info-table">
           <thead><tr><th>欄位</th><th>說明</th></tr></thead>
           <tbody>
-            <tr><td><strong>管理員收件 Email</strong> <span class="req">*</span></td><td>新報名時系統通知這個信箱</td></tr>
-            <tr><td><strong>寄件者顯示名稱</strong></td><td>信件上顯示的發件人名稱，例如「霖霖課程系統」</td></tr>
-            <tr><td><strong>學員確認信開關</strong></td><td>開啟後，每次「確認入帳」會詢問是否同時寄信給學員</td></tr>
+            <tr><td><strong>管理員收件 Email</strong></td><td>新報名時系統通知這個信箱</td></tr>
+            <tr><td><strong>寄件者顯示名稱</strong></td><td>信件上顯示的發件人名稱</td></tr>
+            <tr><td><strong>學員確認信開關</strong></td><td>開啟後，確認入帳時詢問是否同時寄信給學員</td></tr>
           </tbody>
         </table>
-        <p style="font-size:12px;color:var(--slate-500);margin-top:10px">填完後點「<strong>發送測試 Email</strong>」確認可以正常收信。</p>
       </div>
     </div>
 
     <div class="card" style="text-align:center;padding:28px">
       <div style="font-size:30px;margin-bottom:10px">💾</div>
       <div style="font-size:15px;font-weight:800;color:var(--slate-900);margin-bottom:6px">所有設定填完後</div>
-      <div style="font-size:13px;color:var(--slate-500);margin-bottom:16px">點畫面底部的按鈕儲存</div>
       <div class="mock-btn mock-btn-blue" style="display:inline-flex">
         <i class="fa-solid fa-floppy-disk"></i> 儲存所有設定
       </div>
@@ -761,67 +787,258 @@
     </div>
   </div>
 
-  <!-- ══ 開立課程 ══ -->
+  <!-- ══════════════════════ 開課範本（NEW） ══════════════════════ -->
+  <div class="section" id="sec-template">
+    <div class="page-hero" style="background:linear-gradient(135deg,#78350f,#b45309)">
+      <div class="tag" style="background:rgba(254,243,199,.2);color:#fef3c7">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> 全新功能
+      </div>
+      <h1>開課範本設定</h1>
+      <p>預先設定好常用課程的名稱、價格與說明，開課時一鍵套用，省去重複輸入的麻煩！</p>
+    </div>
+
+    <div class="card-new">
+      <div class="card-new-header">
+        <div class="card-new-icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <div>
+          <div class="card-new-title">什麼是「開課範本」？</div>
+          <div class="card-new-sub">開課前必讀，了解如何善用此功能</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--slate-700);line-height:1.8">
+        如果你長期開設固定幾種課程（例如：頌缽入門、頌缽進階、音療體驗），每次開課都要重新輸入課程名稱和價格會很麻煩。<br><br>
+        「開課範本」就是讓你把這些固定資訊預先存好，下次開課時從下拉選單選一下，名稱、價格、說明全部自動帶入，你只需要填入日期和時間就完成了！
+      </p>
+    </div>
+
+    <h2 class="sec-title">
+      <span class="icon" style="background:#f59e0b"><i class="fa-solid fa-list-check"></i></span>
+      如何設定範本？
+    </h2>
+
+    <div class="flow">
+      <div class="flow-item">
+        <div class="flow-icon" style="background:var(--blue)"><i class="fa-solid fa-gear"></i></div>
+        <div class="flow-content">
+          <h4>步驟 1：進入「系統設定」頁籤</h4>
+          <p>點上方頁籤列的「⚙️ 系統設定」</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-icon" style="background:#f59e0b"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="flow-content">
+          <h4>步驟 2：找到「開課範本設定」區塊</h4>
+          <p>在「早鳥截止預設天數」下方，可以看到範本管理區</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-icon" style="background:var(--green)"><i class="fa-solid fa-plus"></i></div>
+        <div class="flow-content">
+          <h4>步驟 3：點「＋ 新增」按鈕新增範本</h4>
+          <p>每個範本包含：課程名稱、早鳥價、定價、課程說明四個欄位</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-icon" style="background:var(--purple)"><i class="fa-solid fa-floppy-disk"></i></div>
+        <div class="flow-content">
+          <h4>步驟 4：點「儲存所有設定」</h4>
+          <p>範本儲存在裝置本機，下次開啟後台會自動載入</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mock 範本設定畫面 -->
+    <h2 class="sec-title">
+      <span class="icon" style="background:var(--slate-700)"><i class="fa-solid fa-eye"></i></span>
+      範本設定畫面長這樣
+    </h2>
+
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
+        <span style="opacity:.6;font-size:12px">系統設定 → 開課範本設定</span>
+      </div>
+
+      <div style="background:#f8fafc;border:1.5px solid var(--slate-200);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:var(--slate-900);display:flex;align-items:center;gap:6px">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue)"></i> 開課範本設定
+            </div>
+            <div style="font-size:11px;color:var(--slate-500);margin-top:2px">開立課程時可快速帶入名稱、價格與說明</div>
+          </div>
+          <div class="mock-btn mock-btn-blue" style="font-size:11px;padding:5px 10px">
+            <i class="fa-solid fa-plus"></i> 新增
+          </div>
+        </div>
+
+        <!-- 範本 1 -->
+        <div class="mock-template-row">
+          <div class="mock-template-label">範本 #1</div>
+          <div class="mock-row">
+            <div>
+              <span class="mock-field-label">課程名稱</span>
+              <div class="mock-field" style="font-weight:700;color:var(--slate-900)">❷ 學習：頌缽入門</div>
+            </div>
+            <div>
+              <span class="mock-field-label" style="color:var(--green)">早鳥價 (NT$)</span>
+              <div class="mock-field" style="color:var(--green);font-weight:700">4000</div>
+            </div>
+            <div>
+              <span class="mock-field-label">定價 (NT$)</span>
+              <div class="mock-field" style="font-weight:700">5000</div>
+            </div>
+            <div>
+              <span class="mock-field-label">課程說明</span>
+              <div class="mock-field">想學頌缽，照顧自己</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 範本 2 -->
+        <div class="mock-template-row">
+          <div class="mock-template-label">範本 #2</div>
+          <div class="mock-row">
+            <div>
+              <span class="mock-field-label">課程名稱</span>
+              <div class="mock-field" style="font-weight:700;color:var(--slate-900)">❸ 學習：頌缽進階</div>
+            </div>
+            <div>
+              <span class="mock-field-label" style="color:var(--green)">早鳥價 (NT$)</span>
+              <div class="mock-field" style="color:var(--green);font-weight:700">4000</div>
+            </div>
+            <div>
+              <span class="mock-field-label">定價 (NT$)</span>
+              <div class="mock-field" style="font-weight:700">5000</div>
+            </div>
+            <div>
+              <span class="mock-field-label">課程說明</span>
+              <div class="mock-field">想進階技能，運用頌缽</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 範本欄位說明 -->
+    <h2 class="sec-title" style="margin-top:28px">
+      <span class="icon" style="background:var(--blue)"><i class="fa-solid fa-table-list"></i></span>
+      範本欄位說明
+    </h2>
+
+    <table class="info-table card">
+      <thead><tr><th>欄位</th><th>說明</th><th>範例</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>課程名稱</strong></td>
+          <td>套用後自動填入「開課表單」的課程名稱欄位</td>
+          <td style="color:var(--slate-500)">❷ 學習：頌缽入門</td>
+        </tr>
+        <tr>
+          <td><strong>早鳥價 (NT$)</strong></td>
+          <td>套用後自動填入早鳥優惠金額</td>
+          <td style="color:var(--green);font-weight:700">4,000</td>
+        </tr>
+        <tr>
+          <td><strong>定價 (NT$)</strong></td>
+          <td>套用後自動填入一般定價金額</td>
+          <td style="color:var(--slate-700);font-weight:700">5,000</td>
+        </tr>
+        <tr>
+          <td><strong>課程說明</strong></td>
+          <td>套用後自動填入課程詳細說明文字</td>
+          <td style="color:var(--slate-500)">想學頌缽，照顧自己</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-amber">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <div>
+        <strong>注意：範本資料儲存在你的裝置本機（瀏覽器），換裝置或換瀏覽器時需要重新設定。</strong><br>
+        <span style="font-size:12px">套用範本後，你還是可以手動修改任何欄位，範本只是幫你「預填」，不會鎖定內容。</span>
+      </div>
+    </div>
+
+    <!-- 開課時如何使用範本 -->
+    <h2 class="sec-title" style="margin-top:28px">
+      <span class="icon" style="background:#f59e0b"><i class="fa-solid fa-bolt"></i></span>
+      開課時如何套用範本？
+    </h2>
+
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
+        <span style="opacity:.6;font-size:12px">開立新課程時段 → 快速套用開課範本</span>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid var(--blue-mid);border-radius:10px;padding:12px;margin-bottom:12px">
+        <span style="font-size:11px;font-weight:800;color:#1d4ed8;display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 快速套用開課範本
+        </span>
+        <div class="mock-select">✨ 選擇常用課程範本...▾</div>
+        <div style="font-size:11px;color:var(--blue);margin-top:-4px">👆 從這裡選擇範本，課程名稱、價格、說明會自動填入下方欄位</div>
+      </div>
+      <div>
+        <span class="mock-field-label">課程名稱 <span style="color:red">*</span></span>
+        <div class="mock-field" style="font-weight:700;color:var(--slate-900)">❷ 學習：頌缽入門</div>
+        <div class="mock-row">
+          <div><span class="mock-field-label" style="color:var(--green)">早鳥價 (NT$)</span><div class="mock-field" style="color:var(--green);font-weight:700">4000</div></div>
+          <div><span class="mock-field-label">定價 (NT$)</span><div class="mock-field" style="font-weight:700">5000</div></div>
+        </div>
+        <span class="mock-field-label">課程詳細說明</span>
+        <div class="mock-field">想學頌缽，照顧自己</div>
+        <div style="font-size:11px;color:var(--green);font-weight:700;text-align:center;margin-top:8px">
+          ✅ 以上欄位已自動填入！只需再填入日期與時間即可完成開課
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      💡 <strong>小技巧：</strong>開課範本只有「快速帶入」的作用，套用後你仍可以自由修改任何欄位。例如這次的早鳥價想特別調整，直接在欄位裡改就好。
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 開立課程 ══════════════════════ -->
   <div class="section" id="sec-course">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-calendar-plus"></i> 步驟 2</div>
       <h1>開立課程</h1>
-      <p>設定完成後，就可以開始建立課程。點「課程維護」頁籤，再點「開立新課程時段」。</p>
+      <p>設定好範本後，開課只需選範本、填時間，幾秒鐘就完成！點「課程維護」→「開立新課程時段」。</p>
     </div>
 
-    <!-- Mock 課程表單 -->
+    <!-- Mock 完整開課表單 -->
     <div class="mockup" style="margin-bottom:24px">
       <div class="mockup-bar">
-        <div class="dot" style="background:#ff5f56"></div>
-        <div class="dot" style="background:#ffbd2e"></div>
-        <div class="dot" style="background:#27c93f"></div>
+        <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
         <span style="opacity:.6;font-size:12px">開立新課程時段</span>
       </div>
+
+      <!-- 範本選取區（NEW） -->
+      <div style="background:#eff6ff;border:1.5px solid var(--blue-mid);border-radius:10px;padding:12px;margin-bottom:12px">
+        <span style="font-size:11px;font-weight:800;color:#1d4ed8;display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 快速套用開課範本
+          <span class="new-tag">NEW</span>
+        </span>
+        <div class="mock-select">【❷ 學習：頌缽入門】早鳥$4000/定價$5000▾</div>
+      </div>
+
       <div>
-        <span class="mock-field-label">課程名稱 <span class="req">*</span></span>
-        <div class="mock-field" style="font-weight:700;color:var(--slate-800)">❷ 學習：頌缽入門工作坊</div>
-
+        <span class="mock-field-label">課程名稱 <span style="color:red">*</span></span>
+        <div class="mock-field" style="font-weight:700;color:var(--slate-900)">❷ 學習：頌缽入門工作坊</div>
         <div class="mock-row">
-          <div>
-            <span class="mock-field-label">開課日期 <span class="req">*</span></span>
-            <div class="mock-field">2025-08-15</div>
-          </div>
-          <div>
-            <span class="mock-field-label">開始時間 <span class="req">*</span></span>
-            <div class="mock-field">09:00</div>
-          </div>
-          <div>
-            <span class="mock-field-label">結束時間 <span class="req">*</span></span>
-            <div class="mock-field">13:00</div>
-          </div>
+          <div><span class="mock-field-label">開課日期 <span style="color:red">*</span></span><div class="mock-field">2025-08-15</div></div>
+          <div><span class="mock-field-label">開始時間 <span style="color:red">*</span></span><div class="mock-field">09:00</div></div>
+          <div><span class="mock-field-label">結束時間 <span style="color:red">*</span></span><div class="mock-field">13:00</div></div>
         </div>
-
         <div class="mock-row">
-          <div>
-            <span class="mock-field-label">人數上限 <span class="req">*</span></span>
-            <div class="mock-field" style="font-weight:700">8</div>
-          </div>
-          <div>
-            <span class="mock-field-label">虛擬報名數</span>
-            <div class="mock-field" style="color:var(--amber);font-weight:700">3</div>
-          </div>
+          <div><span class="mock-field-label">人數上限 <span style="color:red">*</span></span><div class="mock-field" style="font-weight:700">8</div></div>
+          <div style="background:var(--amber-light);border-radius:8px;padding:8px"><span class="mock-field-label" style="color:var(--amber)">虛擬報名數 👻</span><div class="mock-field" style="color:var(--amber);font-weight:700;border-color:var(--amber-mid)">3</div></div>
         </div>
-
         <div class="mock-row">
-          <div>
-            <span class="mock-field-label">早鳥價 (NT$)</span>
-            <div class="mock-field" style="color:var(--green);font-weight:800">4,000</div>
-          </div>
-          <div>
-            <span class="mock-field-label">定價 (NT$)</span>
-            <div class="mock-field" style="font-weight:800">5,000</div>
-          </div>
-          <div>
-            <span class="mock-field-label">早鳥截止日</span>
-            <div class="mock-field" style="color:var(--amber)">2025-08-08</div>
-          </div>
+          <div><span class="mock-field-label" style="color:var(--green)">早鳥價 (NT$)</span><div class="mock-field" style="color:var(--green);font-weight:700">4000</div></div>
+          <div><span class="mock-field-label">定價 (NT$)</span><div class="mock-field" style="font-weight:700">5000</div></div>
+          <div><span class="mock-field-label" style="color:var(--amber)">早鳥截止日</span><div class="mock-field" style="color:var(--amber);font-weight:700">2025-08-08</div></div>
         </div>
-
         <div style="display:flex;gap:8px;margin-top:8px">
           <div class="mock-btn mock-btn-slate" style="flex:1;justify-content:center">取消</div>
           <div class="mock-btn mock-btn-blue" style="flex:2;justify-content:center">
@@ -843,7 +1060,7 @@
         <tbody>
           <tr><td><strong>課程名稱</strong> <span class="req">*</span></td><td>顯示給學員看的課程標題</td></tr>
           <tr><td><strong>人數上限</strong> <span class="req">*</span></td><td>實際可報名的最大人數（系統自動計算剩餘名額）</td></tr>
-          <tr><td><strong>開課日期</strong> <span class="req">*</span></td><td>選擇上課日期，早鳥截止日會自動計算</td></tr>
+          <tr><td><strong>開課日期</strong> <span class="req">*</span></td><td>選擇上課日期，早鳥截止日自動計算</td></tr>
           <tr><td><strong>開始 / 結束時間</strong> <span class="req">*</span></td><td>課程的起訖時間</td></tr>
         </tbody>
       </table>
@@ -870,19 +1087,9 @@
             <td><strong>虛擬報名數</strong></td>
             <td>顯示給學員的報名人數會加上此數字，讓課程看起來更熱門<br><span style="color:var(--slate-500);font-size:11px">※ 實際名額不受影響，學員看不到此設定</span></td>
           </tr>
-          <tr>
-            <td><strong>教室 / 上課地點</strong></td>
-            <td>從常用清單選取（在系統設定中管理），或自行輸入自訂地點</td>
-          </tr>
-          <tr>
-            <td><strong>報名狀態</strong></td>
-            <td>
-              <span class="badge-green"><i class="fa-solid fa-circle"></i>開啟報名</span>
-              <span class="badge-slate" style="margin-left:4px">暫停報名</span>
-              <span class="badge-rose" style="margin-left:4px">已結束</span>
-            </td>
-          </tr>
-          <tr><td><strong>課程說明</strong></td><td>課程特色、注意事項等詳細描述，顯示在學員報名頁</td></tr>
+          <tr><td><strong>教室 / 上課地點</strong></td><td>從常用清單選取，或自行輸入自訂地點</td></tr>
+          <tr><td><strong>報名狀態</strong></td><td><span class="badge-green">開啟報名</span> <span class="badge-slate" style="margin-left:4px">暫停報名</span> <span class="badge-rose" style="margin-left:4px">已結束</span></td></tr>
+          <tr><td><strong>課程說明</strong></td><td>顯示在學員報名頁的詳細說明</td></tr>
         </tbody>
       </table>
     </div>
@@ -890,68 +1097,10 @@
     <div class="card" style="background:var(--green-light);border-color:var(--green-mid);text-align:center;padding:24px">
       <div style="font-size:28px;margin-bottom:8px">🎉</div>
       <div style="font-size:14px;font-weight:800;color:#065f46">儲存後課程立即發布到學員報名頁！</div>
-      <div style="font-size:12px;color:#047857;margin-top:4px">學員馬上可以看到並報名</div>
     </div>
-
-    <!-- 課程列表說明 -->
-    <h2 class="sec-title" style="margin-top:36px">
-      <span class="icon" style="background:var(--slate-700)"><i class="fa-solid fa-list"></i></span>
-      課程列表與狀態標示
-    </h2>
-
-    <div class="mockup">
-      <div class="mockup-bar">
-        <div class="dot" style="background:#ff5f56"></div>
-        <div class="dot" style="background:#ffbd2e"></div>
-        <div class="dot" style="background:#27c93f"></div>
-        <span style="opacity:.6;font-size:12px">課程維護列表</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <!-- 課程卡 1 -->
-        <div style="background:#fff;border-radius:10px;border:1.5px solid var(--slate-200);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:6px">8/15(五) 09:00</span>
-              <span class="badge-green"><i class="fa-solid fa-circle" style="font-size:8px"></i>開啟報名</span>
-            </div>
-            <div style="font-size:13px;font-weight:800;color:var(--slate-900)">❷ 學習：頌缽入門工作坊</div>
-            <div style="font-size:11px;color:var(--slate-500);margin-top:2px"><i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>高雄-近高美館 · 已報 <strong style="color:var(--blue)">5</strong>/8</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <div class="mock-btn mock-btn-slate" style="font-size:11px;padding:5px 10px"><i class="fa-solid fa-pen"></i> 編輯</div>
-            <div class="mock-btn" style="background:var(--rose-light);color:var(--rose);font-size:11px;padding:5px 10px"><i class="fa-solid fa-trash-can"></i></div>
-          </div>
-        </div>
-        <!-- 課程卡 2（額滿）-->
-        <div style="background:#fff;border-radius:10px;border:1.5px solid var(--slate-200);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:6px">9/20(六) 14:00</span>
-              <span class="badge-rose"><i class="fa-solid fa-lock" style="font-size:8px"></i>已額滿</span>
-            </div>
-            <div style="font-size:13px;font-weight:800;color:var(--slate-900)">❶ 體驗：靜心冥想入門</div>
-            <div style="font-size:11px;color:var(--slate-500);margin-top:2px"><i class="fa-solid fa-location-dot mr-1"></i>台南安南醫院 · 已報 <strong style="color:var(--rose)">8</strong>/8</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <div class="mock-btn mock-btn-slate" style="font-size:11px;padding:5px 10px"><i class="fa-solid fa-pen"></i> 編輯</div>
-            <div class="mock-btn" style="background:var(--rose-light);color:var(--rose);font-size:11px;padding:5px 10px"><i class="fa-solid fa-trash-can"></i></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <table class="info-table card" style="margin-top:16px">
-      <thead><tr><th>狀態</th><th>說明</th></tr></thead>
-      <tbody>
-        <tr><td><span class="badge-green"><i class="fa-solid fa-circle" style="font-size:8px"></i>開啟報名</span></td><td>學員可正常報名</td></tr>
-        <tr><td><span class="badge-slate">暫停報名</span></td><td>暫時關閉，學員無法報名</td></tr>
-        <tr><td><span class="badge-rose"><i class="fa-solid fa-lock" style="font-size:8px"></i>已額滿</span></td><td>報名人數達上限，自動顯示</td></tr>
-        <tr><td><span class="badge-slate"><i class="fa-solid fa-clock-rotate-left" style="font-size:8px"></i>已結束</span></td><td>課程時間過後自動歸入「過往統計」</td></tr>
-      </tbody>
-    </table>
   </div>
 
-  <!-- ══ 預約名冊 ══ -->
+  <!-- ══════════════════════ 預約名冊 ══════════════════════ -->
   <div class="section" id="sec-booking">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-address-book"></i> 日常操作</div>
@@ -990,7 +1139,7 @@
         <div class="flow-icon" style="background:var(--blue)"><i class="fa-solid fa-clipboard-check"></i></div>
         <div class="flow-content">
           <h4>上課當天 → 點「現場簽到」</h4>
-          <p>狀態更新為「🎯 已簽到」，確認學員到場</p>
+          <p>狀態更新為「🎯 已簽到」</p>
         </div>
       </div>
       <div class="flow-item">
@@ -1002,49 +1151,30 @@
       </div>
     </div>
 
-    <!-- 狀態流程圖 -->
-    <h2 class="sec-title" style="margin-top:32px">
+    <h2 class="sec-title" style="margin-top:28px">
       <span class="icon" style="background:var(--blue)"><i class="fa-solid fa-diagram-project"></i></span>
       預約狀態說明
     </h2>
 
     <div class="status-flow">
-      <div class="status-node">
-        <div class="sn-box badge-amber">⏳ 待確認</div>
-        <div class="sn-label">剛報名</div>
-      </div>
+      <div class="status-node"><div class="sn-box badge-amber">⏳ 待確認</div><div class="sn-label">剛報名</div></div>
       <div class="status-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="status-node">
-        <div class="sn-box badge-green">✅ 報名成功</div>
-        <div class="sn-label">已確認收款</div>
-      </div>
+      <div class="status-node"><div class="sn-box badge-green">✅ 報名成功</div><div class="sn-label">已確認收款</div></div>
       <div class="status-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="status-node">
-        <div class="sn-box badge-blue">🎯 已簽到</div>
-        <div class="sn-label">現場到場</div>
-      </div>
+      <div class="status-node"><div class="sn-box badge-blue">🎯 已簽到</div><div class="sn-label">現場到場</div></div>
       <div class="status-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="status-node">
-        <div class="sn-box badge-slate">🏁 已完成</div>
-        <div class="sn-label">課程結束</div>
-      </div>
+      <div class="status-node"><div class="sn-box badge-slate">🏁 已完成</div><div class="sn-label">課程結束</div></div>
       <div class="status-arrow" style="color:var(--rose-mid)"><i class="fa-solid fa-arrow-down"></i></div>
-      <div class="status-node">
-        <div class="sn-box badge-rose">❌ 已取消</div>
-        <div class="sn-label">可還原</div>
-      </div>
+      <div class="status-node"><div class="sn-box badge-rose">❌ 已取消</div><div class="sn-label">可還原</div></div>
     </div>
 
     <!-- Mock 名冊 -->
     <div class="mockup" style="margin-bottom:24px">
       <div class="mockup-bar">
-        <div class="dot" style="background:#ff5f56"></div>
-        <div class="dot" style="background:#ffbd2e"></div>
-        <div class="dot" style="background:#27c93f"></div>
+        <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
         <span style="opacity:.6;font-size:12px">預約名冊</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <!-- 待確認 -->
         <div style="background:#fff;border-radius:10px;border:1.5px solid var(--amber-mid);padding:12px 16px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <div>
@@ -1058,11 +1188,10 @@
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <div class="mock-btn mock-btn-slate" style="font-size:11px;padding:5px 10px"><i class="fa-solid fa-pen"></i> 修改</div>
               <div class="mock-btn mock-btn-green" style="font-size:11px;padding:5px 12px"><i class="fa-solid fa-circle-check"></i> 確認入帳</div>
-              <div class="mock-btn" style="background:var(--slate-100);color:var(--slate-500);font-size:11px;padding:5px 10px">取消</div>
+              <div class="mock-btn mock-btn-slate" style="font-size:11px;padding:5px 10px">取消</div>
             </div>
           </div>
         </div>
-        <!-- 報名成功 -->
         <div style="background:#fff;border-radius:10px;border:1.5px solid var(--green-mid);padding:12px 16px">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <div>
@@ -1090,41 +1219,13 @@
     <table class="info-table card">
       <thead><tr><th>按鈕</th><th>何時出現</th><th>用途</th></tr></thead>
       <tbody>
-        <tr>
-          <td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-pen text-blue-600"></i> 修改</span></td>
-          <td>任何狀態</td>
-          <td>修改學員資料、備註、金額、狀態等所有欄位</td>
-        </tr>
-        <tr>
-          <td><span class="mock-btn mock-btn-green" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-circle-check"></i> 確認入帳</span></td>
-          <td>待確認</td>
-          <td>確認收到款項，狀態更新為「報名成功」，可選擇寄確認信</td>
-        </tr>
-        <tr>
-          <td><span class="mock-btn mock-btn-blue" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-clipboard-check"></i> 現場簽到</span></td>
-          <td>報名成功</td>
-          <td>上課當天學員到場時點此</td>
-        </tr>
-        <tr>
-          <td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-rotate-left"></i> 取消簽到</span></td>
-          <td>已簽到</td>
-          <td>誤操作時還原回「報名成功」</td>
-        </tr>
-        <tr>
-          <td><span class="badge-green" style="cursor:default"><i class="fa-brands fa-line"></i> LINE 快捷</span></td>
-          <td>有填 Line ID</td>
-          <td>複製通知訊息並跳轉至學員 LINE，快速聯繫</td>
-        </tr>
-        <tr>
-          <td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px">取消</span></td>
-          <td>非取消狀態</td>
-          <td>標記為「已取消」，資料保留，可隨時還原</td>
-        </tr>
-        <tr>
-          <td><span class="mock-btn mock-btn-rose" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-trash-can"></i> 刪除</span></td>
-          <td>已取消</td>
-          <td>永久刪除此筆記錄（<strong>不可還原，請謹慎操作</strong>）</td>
-        </tr>
+        <tr><td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-pen"></i> 修改</span></td><td>任何狀態</td><td>修改學員資料、備註、金額、狀態等所有欄位</td></tr>
+        <tr><td><span class="mock-btn mock-btn-green" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-circle-check"></i> 確認入帳</span></td><td>待確認</td><td>確認收到款項，狀態更新為「報名成功」，可選擇寄確認信</td></tr>
+        <tr><td><span class="mock-btn mock-btn-blue" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-clipboard-check"></i> 現場簽到</span></td><td>報名成功</td><td>上課當天學員到場時點此</td></tr>
+        <tr><td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-rotate-left"></i> 取消簽到</span></td><td>已簽到</td><td>誤操作時還原回「報名成功」</td></tr>
+        <tr><td><span class="badge-green" style="cursor:default"><i class="fa-brands fa-line"></i> LINE 快捷</span></td><td>有填 Line ID</td><td>複製通知訊息並跳轉至學員 LINE，快速聯繫</td></tr>
+        <tr><td><span class="mock-btn mock-btn-slate" style="font-size:11px;padding:4px 10px">取消</span></td><td>非取消狀態</td><td>標記為「已取消」，資料保留，可還原</td></tr>
+        <tr><td><span class="mock-btn mock-btn-rose" style="font-size:11px;padding:4px 10px"><i class="fa-solid fa-trash-can"></i> 刪除</span></td><td>已取消</td><td>永久刪除（<strong>不可還原，請謹慎</strong>）</td></tr>
       </tbody>
     </table>
 
@@ -1134,7 +1235,6 @@
     </h2>
 
     <div class="card">
-      <p style="font-size:13px;color:var(--slate-600);margin-bottom:16px">點「✏️ 修改」按鈕後，可以修改以下所有欄位：</p>
       <div class="mockup">
         <div class="mockup-bar">
           <div class="dot" style="background:#ff5f56"></div><div class="dot" style="background:#ffbd2e"></div><div class="dot" style="background:#27c93f"></div>
@@ -1161,29 +1261,23 @@
       </div>
       <div class="alert alert-amber" style="margin-top:14px;margin-bottom:0">
         <i class="fa-solid fa-lock"></i>
-        <div><strong>管理備註</strong>只有你看得到，學員完全不知道，可以放心填寫內部備忘，例如：已私訊確認、已開立收據等。</div>
+        <div><strong>管理備註</strong>只有你看得到，學員完全不知道，可以安心填寫內部備忘。</div>
       </div>
     </div>
   </div>
 
-  <!-- ══ 過往統計 ══ -->
+  <!-- ══════════════════════ 過往統計 ══════════════════════ -->
   <div class="section" id="sec-history">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-chart-pie"></i> 自動統計</div>
       <h1>過往統計</h1>
-      <p>課程結束後，資料自動歸入此區，幫你掌握學員輪廓與課程成效。</p>
+      <p>課程結束後，資料自動歸入此區，幫你掌握學員輪廓與課程成效。不需手動操作。</p>
     </div>
 
     <div class="alert alert-blue">
       <i class="fa-solid fa-circle-info"></i>
-      <div>課程時間結束後，相關預約記錄會<strong>自動移入「過往統計」</strong>，不需手動操作。「預約名冊」只顯示尚未結束的課程。</div>
+      <div>課程時間結束後，相關預約記錄會<strong>自動移入「過往統計」</strong>。「預約名冊」只顯示尚未結束的課程。</div>
     </div>
-
-    <!-- 統計卡片 -->
-    <h2 class="sec-title">
-      <span class="icon" style="background:var(--purple)"><i class="fa-solid fa-chart-bar"></i></span>
-      頂部三大關鍵數字
-    </h2>
 
     <div class="stat-cards">
       <div class="stat-card" style="background:var(--blue-light);border:1.5px solid var(--blue-mid)">
@@ -1203,27 +1297,20 @@
       </div>
     </div>
 
-    <!-- 兩個子模式 -->
-    <h2 class="sec-title" style="margin-top:8px">
-      <span class="icon" style="background:var(--blue)"><i class="fa-solid fa-layer-group"></i></span>
-      兩種檢視模式
-    </h2>
-
     <div class="tab-nav">
-      <button class="tab-btn active" onclick="switchTab(this,'hist-records')">📋 過往明細</button>
-      <button class="tab-btn" onclick="switchTab(this,'hist-students')">🏆 學員統計</button>
+      <button class="tab-btn active" onclick="switchTab(this,'hist-rec')">📋 過往明細</button>
+      <button class="tab-btn" onclick="switchTab(this,'hist-stu')">🏆 學員統計</button>
     </div>
 
-    <div class="tab-panel active" id="hist-records">
+    <div class="tab-panel active" id="hist-rec">
       <div class="card">
         <h3 class="sub-title"><i class="fa-solid fa-list-ul" style="color:var(--blue)"></i> 過往明細</h3>
-        <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">所有已結束課程的報名記錄列表，含已取消記錄。可搜尋、排序，並繼續操作（確認入帳、修改）。</p>
+        <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">所有已結束課程的報名記錄列表，含已取消記錄。可搜尋、排序，並繼續操作。</p>
         <table class="info-table">
           <thead><tr><th>功能</th><th>說明</th></tr></thead>
           <tbody>
             <tr><td>🔍 搜尋</td><td>可搜尋學員姓名、電話、課程名稱、備註</td></tr>
             <tr><td>📅 依開課時間排序</td><td>最近的課程排在最前面</td></tr>
-            <tr><td>🕒 依報名時間排序</td><td>最新報名的記錄排在最前面</td></tr>
             <tr><td>✅ 確認入帳</td><td>歷史記錄中若有未確認的，仍可補確認</td></tr>
             <tr><td>✏️ 修改</td><td>可修改歷史記錄中的任何欄位</td></tr>
           </tbody>
@@ -1231,12 +1318,9 @@
       </div>
     </div>
 
-    <div class="tab-panel" id="hist-students">
+    <div class="tab-panel" id="hist-stu">
       <div class="card">
         <h3 class="sub-title"><i class="fa-solid fa-trophy" style="color:var(--amber)"></i> 學員統計</h3>
-        <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">以學員為單位統計歷史參與次數，快速看出誰是你的忠實鐵粉。</p>
-
-        <!-- Mock 學員排行 -->
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
           <div style="display:flex;align-items:center;gap:12px;background:var(--amber-light);border:1.5px solid var(--amber-mid);border-radius:10px;padding:12px 16px">
             <div style="font-size:22px">🥇</div>
@@ -1248,13 +1332,7 @@
             <div style="flex:1"><div style="font-weight:800;font-size:14px">陳志豪</div><div style="font-size:11px;color:var(--slate-500)">0923-333-444</div></div>
             <div style="text-align:right"><span style="font-size:18px;font-weight:900;color:var(--slate-600)">3 次</span><div style="font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:20px;margin-top:2px">回流學員</div></div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--slate-200);border-radius:10px;padding:12px 16px">
-            <div style="font-size:22px">🥉</div>
-            <div style="flex:1"><div style="font-weight:800;font-size:14px">張淑芬</div><div style="font-size:11px;color:var(--slate-500)">0934-555-666</div></div>
-            <div style="text-align:right"><span style="font-size:18px;font-weight:900;color:var(--slate-600)">2 次</span><div style="font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:20px;margin-top:2px">回流學員</div></div>
-          </div>
         </div>
-
         <table class="info-table">
           <thead><tr><th>標示</th><th>條件</th><th>說明</th></tr></thead>
           <tbody>
@@ -1267,7 +1345,7 @@
     </div>
   </div>
 
-  <!-- ══ 實用技巧 ══ -->
+  <!-- ══════════════════════ 實用技巧 ══════════════════════ -->
   <div class="section" id="sec-tips">
     <div class="page-hero">
       <div class="tag"><i class="fa-solid fa-lightbulb"></i> 進階功能</div>
@@ -1275,58 +1353,53 @@
       <p>掌握這些小技巧，讓你的後台操作更順手。</p>
     </div>
 
-    <!-- 字體調整 -->
     <div class="card card-blue" style="margin-bottom:16px">
       <h3 class="sub-title"><i class="fa-solid fa-text-height" style="color:var(--blue)"></i> 調整字體大小</h3>
-      <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">右上角標題列提供字體縮放，系統會記住你的偏好設定，下次開啟自動套用。</p>
+      <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">右上角標題列提供字體縮放，系統會記住你的偏好設定。</p>
       <div style="display:inline-flex;align-items:center;background:var(--slate-800);border-radius:10px;padding:4px 8px;gap:4px">
-        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:900;cursor:pointer;font-size:13px">A⁻</div>
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:900;font-size:13px">A⁻</div>
         <div style="min-width:40px;text-align:center;font-size:12px;font-weight:700;color:#94a3b8;font-family:monospace">21px</div>
-        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:900;cursor:pointer;font-size:13px">A⁺</div>
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:900;font-size:13px">A⁺</div>
       </div>
     </div>
 
-    <!-- 連線狀態 -->
     <div class="card" style="margin-bottom:16px">
       <h3 class="sub-title"><i class="fa-solid fa-wifi" style="color:var(--green)"></i> 連線狀態燈號</h3>
-      <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">標題列左側的小圓點隨時顯示目前連線狀態。</p>
       <table class="info-table">
         <tbody>
           <tr>
             <td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.2)"></span></td>
-            <td><strong>綠色閃爍</strong></td>
-            <td>已正常連線 Google 試算表</td>
+            <td><strong>綠色閃爍</strong></td><td>已正常連線 Google 試算表</td>
           </tr>
           <tr>
             <td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--rose)"></span></td>
-            <td><strong>紅色</strong></td>
-            <td>連線失敗，點右上角重新整理</td>
+            <td><strong>紅色</strong></td><td>連線失敗，點右上角重新整理</td>
           </tr>
           <tr>
             <td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--slate-400)"></span></td>
-            <td><strong>灰色</strong></td>
-            <td>連線中，請稍候</td>
+            <td><strong>灰色</strong></td><td>連線中，請稍候</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- 跨裝置 -->
     <div class="card card-green" style="margin-bottom:16px">
       <h3 class="sub-title"><i class="fa-solid fa-mobile-screen" style="color:var(--green)"></i> 在其他裝置使用</h3>
-      <p style="font-size:13px;color:var(--slate-600);margin-bottom:14px">想在其他手機或電腦開啟後台，不需要重新設定，只要掃描 QR Code 即可。</p>
       <ul class="checklist">
         <li><i class="fa-solid fa-circle-check"></i>進入「<strong>系統設定</strong>」頁籤</li>
         <li><i class="fa-solid fa-circle-check"></i>點「<strong>複製管理後台網址</strong>」或「<strong>顯示 QR Code</strong>」</li>
         <li><i class="fa-solid fa-circle-check"></i>在新裝置開啟連結，或掃描 QR Code</li>
         <li><i class="fa-solid fa-circle-check"></i>輸入管理密碼，即可正常使用</li>
       </ul>
-      <div class="tip-box" style="margin-top:14px;margin-bottom:0;border-left-color:var(--green)">
-        💡 同理，可以切換到「<strong>學員報名頁</strong>」模式，產生分享給學員的 QR Code 或連結。
+      <div class="alert alert-amber" style="margin-top:12px;margin-bottom:0">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>開課範本不會隨 QR Code 同步！</strong><br>
+          <span style="font-size:12px">範本儲存在裝置本機，換到新裝置後需要在「系統設定 → 開課範本設定」重新建立。</span>
+        </div>
       </div>
     </div>
 
-    <!-- 重新整理 -->
     <div class="card" style="margin-bottom:16px">
       <h3 class="sub-title"><i class="fa-solid fa-rotate-right" style="color:var(--slate-600)"></i> 重新整理資料</h3>
       <table class="info-table">
@@ -1338,9 +1411,34 @@
         </tbody>
       </table>
     </div>
+
+    <div class="card card-blue" style="margin-bottom:0">
+      <h3 class="sub-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue)"></i> 開課範本使用技巧</h3>
+      <table class="info-table">
+        <thead><tr><th>情境</th><th>建議做法</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>每次開同一門課</td>
+            <td>設好一個範本，開課只需選日期和時間即可</td>
+          </tr>
+          <tr>
+            <td>有不同地點的同款課</td>
+            <td>設兩個範本（如「頌缽入門-高雄」與「頌缽入門-台南」），或套用後手動改地點</td>
+          </tr>
+          <tr>
+            <td>臨時調整這次的價格</td>
+            <td>套用範本後直接在欄位修改，不影響範本本身的設定</td>
+          </tr>
+          <tr>
+            <td>換新手機</td>
+            <td>先在新手機重新設定範本，再透過 QR Code 或連結開啟後台</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- ══ 注意事項 ══ -->
+  <!-- ══════════════════════ 注意事項 ══════════════════════ -->
   <div class="section" id="sec-notice">
     <div class="page-hero" style="background:linear-gradient(135deg,#7f1d1d,#991b1b)">
       <div class="tag" style="background:rgba(254,205,211,.2);color:#fecdd3"><i class="fa-solid fa-triangle-exclamation"></i> 請務必閱讀</div>
@@ -1353,7 +1451,7 @@
         <i class="fa-solid fa-trash-can" style="color:var(--rose)"></i>
         <div>
           <strong style="display:block;margin-bottom:2px;color:var(--rose)">刪除預約記錄 — 永久且不可還原</strong>
-          <span style="font-size:12px;color:var(--slate-600)">「刪除」按鈕只在「已取消」狀態才出現。請先確認不再需要此筆資料，刪除後無法找回。若只是不要顯示在名冊，建議使用「取消」而非刪除。</span>
+          <span style="font-size:12px;color:var(--slate-600)">「刪除」按鈕只在「已取消」狀態才出現。請先確認不再需要此筆資料再刪除，刪除後無法找回。若只是不要顯示在名冊，建議使用「取消」而非刪除。</span>
         </div>
       </div>
       <div class="warn-item">
@@ -1364,38 +1462,45 @@
         </div>
       </div>
       <div class="warn-item">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--amber)"></i>
+        <div>
+          <strong style="display:block;margin-bottom:2px;color:var(--amber)">開課範本儲存於裝置本機，換裝置需重新設定</strong>
+          <span style="font-size:12px;color:var(--slate-600)">範本資料存在瀏覽器，不會上傳至 Google 試算表，也不會隨 QR Code 或連結同步。換手機或換瀏覽器後需重新到「系統設定 → 開課範本設定」建立。</span>
+        </div>
+      </div>
+      <div class="warn-item">
         <i class="fa-solid fa-lock" style="color:var(--amber)"></i>
         <div>
           <strong style="display:block;margin-bottom:2px;color:var(--amber)">管理備註只有你看得到</strong>
-          <span style="font-size:12px;color:var(--slate-600)">「管理備註」欄位對學員完全不可見，可以安心填寫內部備忘，例如：已私訊確認、已開立收據、特殊注意事項等。</span>
+          <span style="font-size:12px;color:var(--slate-600)">「管理備註」欄位對學員完全不可見，可以安心填寫內部備忘。</span>
         </div>
       </div>
       <div class="warn-item">
         <i class="fa-solid fa-ghost" style="color:var(--purple)"></i>
         <div>
           <strong style="display:block;margin-bottom:2px;color:var(--purple)">虛擬報名數不影響實際名額</strong>
-          <span style="font-size:12px;color:var(--slate-600)">設定虛擬報名數後，學員看到的報名人數會增加，但實際可報名名額不受影響。例如：上限 8 人、虛擬 3 人，學員看到「已報 3/8」，實際可再接受 8 位真實學員。</span>
+          <span style="font-size:12px;color:var(--slate-600)">設定虛擬報名數後，學員看到的報名人數會增加，但實際可報名名額不受影響。</span>
         </div>
       </div>
       <div class="warn-item">
         <i class="fa-solid fa-tag" style="color:var(--green)"></i>
         <div>
           <strong style="display:block;margin-bottom:2px;color:var(--green)">早鳥價到期自動切換，不需手動操作</strong>
-          <span style="font-size:12px;color:var(--slate-600)">設定早鳥截止日後，到了台灣時間 23:59，前台會自動顯示定價，不需要你回來手動修改。</span>
+          <span style="font-size:12px;color:var(--slate-600)">設定早鳥截止日後，到了台灣時間 23:59，前台會自動顯示定價。</span>
         </div>
       </div>
       <div class="warn-item">
         <i class="fa-solid fa-table" style="color:var(--blue)"></i>
         <div>
-          <strong style="display:block;margin-bottom:2px;color:var(--blue)">所有資料存在你的 Google 試算表</strong>
-          <span style="font-size:12px;color:var(--slate-600)">資料不依賴任何第三方平台，可以隨時開啟 Google 試算表查看、備份或匯出。建議定期下載備份 Excel 檔案。</span>
+          <strong style="display:block;margin-bottom:2px;color:var(--blue)">所有課程與報名資料存在你的 Google 試算表</strong>
+          <span style="font-size:12px;color:var(--slate-600)">資料不依賴任何第三方平台，可以隨時開啟 Google 試算表查看、備份或匯出。建議定期下載 Excel 備份。</span>
         </div>
       </div>
       <div class="warn-item">
         <i class="fa-solid fa-rotate-right" style="color:var(--slate-600)"></i>
         <div>
           <strong style="display:block;margin-bottom:2px">看到「版本更新」橫幅請立即更新</strong>
-          <span style="font-size:12px;color:var(--slate-600)">系統頂部出現藍紫色橫幅時，代表有新版本，點「立即更新」重新整理頁面，以確保所有功能正常運作。</span>
+          <span style="font-size:12px;color:var(--slate-600)">系統頂部出現藍紫色橫幅時，代表有新版本，點「立即更新」重新整理頁面。</span>
         </div>
       </div>
     </div>
@@ -1405,7 +1510,7 @@
       <div style="font-size:15px;font-weight:800;color:var(--slate-900);margin-bottom:4px">如有任何問題</div>
       <div style="font-size:13px;color:var(--slate-500)">請聯繫系統建置人員，我們會盡快協助您</div>
       <div style="margin-top:16px;font-size:12px;color:var(--slate-400)">
-        <i class="fa-solid fa-code-branch mr-1"></i>課程預約系統 管理後台 · 版本 v3.6.8
+        <i class="fa-solid fa-code-branch mr-1"></i>課程預約系統 管理後台 · 最新版本
       </div>
     </div>
   </div>
@@ -1413,7 +1518,6 @@
 </main>
 
 <script>
-  // Section 切換
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1422,23 +1526,19 @@
     const btn = document.querySelector(`.nav-item[onclick="showSection('${id}')"]`);
     if (btn) btn.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // 手機：收起 sidebar
     if (window.innerWidth <= 768) toggleSidebar(false);
   }
 
-  // Tab 切換（通用）
   function switchTab(btn, panelId) {
     const nav = btn.closest('.tab-nav');
     nav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // 找同層的 tab-panel
-    const container = nav.nextElementSibling?.parentElement || nav.parentElement;
+    const container = nav.parentElement;
     container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(panelId);
     if (target) target.classList.add('active');
   }
 
-  // Sidebar 開關
   function toggleSidebar(forceClose) {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
