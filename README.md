@@ -1,6 +1,3 @@
-以下是更新後的 README.md，完整反映 v3.6.8 的所有功能：
-
-```markdown
 # 霖霖的課程預約系統 (Course Booking Web App)
 
 > 從 AppSheet 轉移至 **GitHub Pages + Google Sheets** 的零成本高彈性解決方案。  
