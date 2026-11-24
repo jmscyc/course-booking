@@ -51,6 +51,7 @@
   </style>
   <script>
     const APP_VERSION = "3.6.8";
+    const ADMIN_VERSION_KEY = "admin_app_version";
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8XO6H117ptrvwJ0gpeehshT2q6k1wuQry-_dduHJWGrwun13r3AiYLxSF2DeZtGaM/exec";
     (function(){
       var saved = parseFloat(localStorage.getItem("admin_font_px"));
@@ -918,16 +919,23 @@
 // ══════════════════════════════════════════════
 function checkVersionAndShowBanner(){
   ["headerVersionLabel","settingVersionLabel"].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent=APP_VERSION;
+    var el=document.getElementById(id);
+    if(el) el.textContent=APP_VERSION;
   });
-  var saved=localStorage.getItem("app_version");
-  if(saved&&saved!==APP_VERSION){
-    var b=document.getElementById("updateBanner"); if(b) b.style.display="flex";
+
+  // 改用後台專屬版本 key
+  var saved = localStorage.getItem(ADMIN_VERSION_KEY);
+
+  if(saved && saved !== APP_VERSION){
+    var b = document.getElementById("updateBanner");
+    if(b) b.style.display = "flex";
   }
-  localStorage.setItem("app_version",APP_VERSION);
+
+  localStorage.setItem(ADMIN_VERSION_KEY, APP_VERSION);
 }
+
 function doForceRefresh(){
-  localStorage.setItem("app_version",APP_VERSION);
+  localStorage.setItem(ADMIN_VERSION_KEY, APP_VERSION);
   window.location.reload(true);
 }
 
@@ -2393,10 +2401,6 @@ async function loadFullAdminData(force){
       return;
     }
 
-    if(json.version&&json.version!==APP_VERSION){
-      var banner=document.getElementById("updateBanner"); if(banner) banner.style.display="flex";
-    }
-
     adminCourses=Array.isArray(json.courses)?normalizeCoursePrices(json.courses):[];
     adminBookings=Array.isArray(json.bookings)?json.bookings:[];
 
@@ -2427,6 +2431,10 @@ async function loadFullAdminData(force){
 // BUG1（前版）：不重複清除 localStorage，頂部 IIFE 已清
 // ══════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded",function(){
+  if (!localStorage.getItem("admin_version_migrated")) {
+    localStorage.removeItem("app_version");
+    localStorage.setItem("admin_version_migrated", "1");
+  }
   localStorage.removeItem("admin_app_font_size"); // 清舊版字體 key
   applyFontPx(parseFloat(localStorage.getItem("admin_font_px"))||(window.innerWidth>=768?16:21),false);
   checkVersionAndShowBanner();
