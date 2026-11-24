@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2563eb">
   <title>霖霖的課程預約系統</title>
-  <link rel="stylesheet" href="tailwind.css?v=3.6.0">
+  <link rel="stylesheet" href="tailwind.css?v=3.6.1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root { --client-font-size: 21px; }
@@ -57,7 +57,7 @@
         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
           <i class="fa-solid fa-spa text-xs sm:text-sm"></i>
         </div>
-        <span class="font-extrabold text-xs sm:text-base text-slate-800 tracking-tight whitespace-nowrap">霖霖頌缽教學</span>
+        <span id="brandName" class="font-extrabold text-xs sm:text-base text-slate-800 tracking-tight whitespace-nowrap truncate">霖霖頌缽教學</span>
       </div>
 
       <div class="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -110,6 +110,22 @@
     <div class="relative">
       <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pr-6" id="dateFilterTabs" role="tablist"></div>
       <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent"></div>
+    </div>
+
+    <!-- 課程 / 地點篩選 -->
+    <div id="courseFilterBar" class="hidden grid grid-cols-2 gap-2">
+      <label class="relative block">
+        <span class="sr-only">篩選課程</span>
+        <i class="fa-solid fa-book-open absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 text-[11px] pointer-events-none"></i>
+        <select id="titleFilter" onchange="setCourseFilter('title', this.value)"
+          class="w-full text-xs font-semibold text-slate-700 pl-8 pr-2 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+      </label>
+      <label class="relative block">
+        <span class="sr-only">篩選地點</span>
+        <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-rose-500 text-[11px] pointer-events-none"></i>
+        <select id="locationFilter" onchange="setCourseFilter('location', this.value)"
+          class="w-full text-xs font-semibold text-slate-700 pl-8 pr-2 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+      </label>
     </div>
 
     <!-- 標題列 -->
@@ -200,7 +216,7 @@
             class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
         </div>
         <div>
-          <label for="studentEmail" class="block text-xs font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(選填，確認入帳後自動寄送確認信)</span></label>
+          <label for="studentEmail" class="block text-xs font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(選填，確認入帳後可收到確認信)</span></label>
           <div class="relative">
             <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
             <input type="email" id="studentEmail" maxlength="100" autocomplete="email" placeholder="example@gmail.com"
@@ -338,9 +354,9 @@
   // 部署 GAS 為「網頁應用程式」後，把網址貼在這裡（結尾為 /exec）。
   // 留空時會改用網址參數 ?sync=... 或此瀏覽器先前記住的網址；都沒有則為示範模式。
   // ══════════════════════════════════════════════
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzLqx6a2HqyKRqTuXkWGc9AvAMa3SBe8vRqfCU-P7nVJT3sSaKLj1mirabS1mBRO0dPYQ/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8XO6H117ptrvwJ0gpeehshT2q6k1wuQry-_dduHJWGrwun13r3AiYLxSF2DeZtGaM/exec";
 
-  const APP_VERSION   = "3.6.0";
+  const APP_VERSION   = "3.6.1";
   const REFRESH_MIN_MS = 30000;   // 自動重新整理的最短間隔（切回分頁時）
   const CACHE_COURSES  = "appsheet_shared_courses";
   const CACHE_SETTINGS = "appsheet_public_settings";
@@ -349,6 +365,8 @@
   let allCourses   = [];
   let settings     = {};
   let selectedDate = "all";
+  let selectedTitle    = "all";   // 課程篩選
+  let selectedLocation = "all";   // 地點篩選
   let lastLoadAt   = 0;
   let loadingNow   = false;
   let currentPayMethod = "bank";
@@ -439,6 +457,22 @@
   }
   const money = n => "NT$ " + Number(n).toLocaleString();
 
+  /** 舊資料的「備註說明」可能混入「(早鳥價 4000 / 定價 5000)」，搬到價格欄位並從說明移除 */
+  function normalizeCoursePrices(list) {
+    if (!Array.isArray(list)) return list;
+    const re = /[(（]\s*早鳥價?[\s:：$NT]*([0-9,]+)[\s/／,，]*(?:定價|原價)[\s:：$NT]*([0-9,]+)\s*[)）]/;
+    return list.map(c => {
+      let notes = String(c.notes || ""), eb = c.earlyBirdPrice || "", rg = c.regularPrice || "";
+      const m = notes.match(re);
+      if (m) {
+        if (!eb) eb = m[1].replace(/,/g, "");
+        if (!rg) rg = m[2].replace(/,/g, "");
+        notes = notes.replace(m[0], "").trim();
+      }
+      return { ...c, notes, earlyBirdPrice: eb, regularPrice: rg };
+    });
+  }
+
   // ══════════════════════════════════════════════
   // Demo 資料（僅在未設定 GAS 網址時使用）
   // ══════════════════════════════════════════════
@@ -522,7 +556,7 @@
     if (!allCourses.length) {
       const cached = readJSON(CACHE_COURSES, null);
       if (Array.isArray(cached)) {
-        allCourses = cached;
+        allCourses = normalizeCoursePrices(cached);
         settings   = readJSON(CACHE_SETTINGS, {});
         applySettings(); renderUI();
       }
@@ -533,7 +567,7 @@
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       const json = await resp.json();
       if (!json.success || !Array.isArray(json.courses)) throw new Error(json.message || "API 回傳異常");
-      allCourses = json.courses;
+      allCourses = normalizeCoursePrices(json.courses);
       settings   = json.settings || {};
       localStorage.setItem(CACHE_COURSES, JSON.stringify(allCourses));
       localStorage.setItem(CACHE_SETTINGS, JSON.stringify(settings));
@@ -560,7 +594,10 @@
   // 公開設定（提醒事項、銀行帳號）
   // ══════════════════════════════════════════════
   function applySettings() {
-    if (settings.systemName) document.title = settings.systemName;
+    if (settings.systemName) {
+      document.title = settings.systemName;
+      $("brandName").textContent = settings.systemName;
+    }
     const notice = (settings.notice || "").trim();
     $("noticeBox").classList.toggle("hidden", !notice);
     $("noticeText").textContent = notice;
@@ -609,14 +646,16 @@
   // ══════════════════════════════════════════════
   // 渲染
   // ══════════════════════════════════════════════
-  function showEmpty(isError) {
+  function showEmpty(isError, noMatch) {
     $("loadingSkeleton").classList.add("hidden");
     $("courseContainer").classList.add("hidden");
     $("noCoursesState").classList.remove("hidden");
-    $("emptyIcon").className   = isError ? "fa-solid fa-wifi text-2xl" : "fa-regular fa-calendar-xmark text-2xl";
-    $("emptyTitle").textContent = isError ? "暫時無法載入課程" : "目前暫無開放預約的課程";
-    $("emptyDesc").textContent  = isError ? "請確認網路連線後再試一次" : "請稍後再回來查看最新排程";
-    $("emptyRetry").classList.toggle("hidden", !isError);
+    $("emptyIcon").className   = isError ? "fa-solid fa-wifi text-2xl" : noMatch ? "fa-solid fa-filter text-2xl" : "fa-regular fa-calendar-xmark text-2xl";
+    $("emptyTitle").textContent = isError ? "暫時無法載入課程" : noMatch ? "沒有符合篩選條件的課程" : "目前暫無開放預約的課程";
+    $("emptyDesc").textContent  = isError ? "請確認網路連線後再試一次" : noMatch ? "換個日期、課程或地點試試看" : "請稍後再回來查看最新排程";
+    $("emptyRetry").classList.toggle("hidden", !isError && !noMatch);
+    $("emptyRetry").textContent = noMatch ? "顯示全部課程" : "重新載入";
+    $("emptyRetry").onclick = noMatch ? clearFilters : () => loadCourses(true);
     $("courseCount").textContent = "0";
   }
 
@@ -635,14 +674,34 @@
     };
     $("dateFilterTabs").innerHTML = tab("all", "全部時段") + dates.map(d => tab(d, formatFullDate(d))).join("");
 
+    // 課程 / 地點下拉選單（只有 2 種以上選項時才顯示該篩選）
+    const titles    = [...new Set(active.map(c => c.title).filter(Boolean))].sort();
+    const locations = [...new Set(active.map(c => c.location || "待定教室"))].sort();
+    if (selectedTitle !== "all" && !titles.includes(selectedTitle)) selectedTitle = "all";
+    if (selectedLocation !== "all" && !locations.includes(selectedLocation)) selectedLocation = "all";
+    const opts = (list, allLabel, sel) => `<option value="all">${allLabel}</option>` +
+      list.map(v => `<option value="${esc(v)}"${v === sel ? " selected" : ""}>${esc(v)}</option>`).join("");
+    $("titleFilter").innerHTML    = opts(titles, "全部課程", selectedTitle);
+    $("locationFilter").innerHTML = opts(locations, "全部地點", selectedLocation);
+    $("titleFilter").parentElement.classList.toggle("hidden", titles.length < 2);
+    $("locationFilter").parentElement.classList.toggle("hidden", locations.length < 2);
+    const showTitle = titles.length >= 2, showLoc = locations.length >= 2;
+    $("courseFilterBar").classList.toggle("hidden", !showTitle && !showLoc);
+    $("courseFilterBar").classList.toggle("grid-cols-2", showTitle && showLoc);
+    $("courseFilterBar").classList.toggle("grid-cols-1", !(showTitle && showLoc));
+
     // 篩選 + 排序：可報名的在前、額滿的在後；各自依時間由近到遠
-    const list = (selectedDate === "all" ? active : active.filter(c => normDate(c.date) === selectedDate))
+    const list = active
+      .filter(c => selectedDate === "all" || normDate(c.date) === selectedDate)
+      .filter(c => selectedTitle === "all" || c.title === selectedTitle)
+      .filter(c => selectedLocation === "all" || (c.location || "待定教室") === selectedLocation)
       .map(c => ({ ...c, _full: c.isFull || c.remaining <= 0 }))
       .sort((a, b) => (a._full - b._full) ||
         (`${normDate(a.date)} ${a.startTime}` < `${normDate(b.date)} ${b.startTime}` ? -1 : 1));
 
     $("courseCount").textContent = list.length;
-    if (!list.length) { showEmpty(false); return; }
+    const filtering = selectedDate !== "all" || selectedTitle !== "all" || selectedLocation !== "all";
+    if (!list.length) { showEmpty(false, active.length > 0 && filtering); return; }
     $("noCoursesState").classList.add("hidden");
     const container = $("courseContainer");
     container.classList.remove("hidden");
@@ -715,6 +774,11 @@
   }
 
   function filterByDate(d) { selectedDate = d; renderUI(); }
+  function setCourseFilter(type, val) {
+    if (type === "title") selectedTitle = val; else selectedLocation = val;
+    renderUI();
+  }
+  function clearFilters() { selectedDate = selectedTitle = selectedLocation = "all"; renderUI(); }
 
   // ══════════════════════════════════════════════
   // 付款方式
@@ -860,9 +924,10 @@
     $("succBookingId").textContent   = res.bookingId || "";
     $("succCourseTitle").textContent = res.courseTitle || course?.title || "";
     $("succDateTime").textContent    = course ? `${formatFullDate(course.date)} ${course.startTime}` : (res.dateTime || "");
-    const eff = course ? getEffectivePrice(course) : { price: 0 };
+    // 以後端計算的金額為準（後端判斷早鳥時間較準確）；舊版後端沒回傳時才用前台計算
+    const eff = res.price ? { price: res.price } : (course ? getEffectivePrice(course) : { price: 0 });
     $("succPriceRow").classList.toggle("hidden", !eff.price);
-    $("succPrice").textContent = eff.price ? money(eff.price) : "";
+    $("succPrice").textContent = eff.price ? money(eff.price) + (res.priceLabel ? `（${res.priceLabel}）` : "") : "";
     $("succBankBox").classList.toggle("hidden", currentPayMethod !== "bank");
     $("successModal").classList.remove("hidden");
   }
