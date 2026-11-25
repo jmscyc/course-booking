@@ -287,7 +287,7 @@
           <select id="bookingSortMode" onchange="renderBookingsTable()" aria-label="排序方式"
             class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
             <option value="classTime">📅 依開課時間（近→遠）</option>
-            <option value="bookedTime">🕒 依報名時間（新→舊）</option>
+            <option value="bookedTime" selected>🕒 依報名時間（新→舊）</option>
           </select>
           <select id="bookingStatusFilter" onchange="renderBookingsTable()" aria-label="預約狀態"
             class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
@@ -1471,7 +1471,7 @@ function renderCoursesTable(){
 function renderBookingsTable(){
   var q=(document.getElementById("bookingSearchInput").value||"").toLowerCase();
   var sf=document.getElementById("bookingStatusFilter").value;
-  var sortMode=(document.getElementById("bookingSortMode")||{}).value||"classTime";
+  var sortMode=(document.getElementById("bookingSortMode")||{}).value||"bookedTime";
 
   var actives=adminBookings.filter(function(b){ return !isBookingInHistory(b); });
   var filtered=actives.filter(function(b){
