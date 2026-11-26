@@ -2343,7 +2343,9 @@ async function handleSaveSettings(e){
           earlyBirdDefaultDays:String(ebDays),
           telegramEnabled, tgBotToken, tgChatId,
           emailEnabled, adminEmail, senderName, studentEmailEnabled,
-          bankName, bankAccount, bankHolder})});
+          bankName, bankAccount, bankHolder,
+          courseTemplates: newTemplates
+        })});
       var res=await resp.json();
       finishSave();
       if(res&&res.success){
@@ -2493,6 +2495,18 @@ function fillSettingsForm(cfg){
   setVal("settingBankName",cfg["銀行名稱"]);
   setVal("settingBankAccount",cfg["銀行帳號"]);
   setVal("settingBankHolder",cfg["戶名"]);
+  if (cfg["開課範本"]) {
+    try {
+      var arr = JSON.parse(cfg["開課範本"]);
+      if (Array.isArray(arr) && arr.length > 0) {
+        customCourseTemplates = arr;
+        localStorage.setItem("appsheet_course_templates", JSON.stringify(arr));
+        renderSettingsTemplateRows();
+      }
+    } catch (e) {
+      console.warn("開課範本解析失敗：", e);
+    }
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2505,6 +2519,7 @@ async function loadFullAdminData(force){
   if(adminLoading) return;
   if(!force&&Date.now()-lastAdminLoadAt<30000) return;
   if(hasApi()&&!ADMIN_PASS) return;
+  if(force) settingsFormLoaded = false;
 
   adminLoading=true;
   var refreshIcon=document.getElementById("adminRefreshIcon");
